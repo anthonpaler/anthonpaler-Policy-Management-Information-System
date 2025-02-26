@@ -1,0 +1,20 @@
+.bread-crumbs{
+    display: flex;
+    gap: 13px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.bread-crumbs h5{
+    margin: 0;
+}
+.bread-crumbs .divider{
+    height: 30px;
+    width: 1px;
+    background-color: var(--bs-secondary-bg);
+}
+.bread-crumbs a{
+    color: var(--text-color);
+}
+.bread-crumbs a:hover{
+    color: var(--bs-primary);
+}

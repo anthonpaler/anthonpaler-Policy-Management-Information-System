@@ -1,0 +1,37 @@
+.logo-con{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.logo-con > div{
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+.logo-con .logo{
+    height: 40px;
+    width: 40px
+}
+.logo-con > div h3{
+    font-family: "Anton", serif;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 2.1em;
+    color: var(--bs-primary);
+    cursor: pointer;
+}
+.logo-con h6{
+    font-size: 1em;
+    color: #a1acb8 !important;
+}
+.logo-con hr{
+    margin: 0;
+}
+
+.login-action-label{
+    font-size: 1.3em;
+    font-family: "Anton SC", serif;
+    font-weight: 300;
+    font-style: normal;
+    margin: 0;
+}

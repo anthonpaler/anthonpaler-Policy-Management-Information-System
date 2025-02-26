@@ -1,0 +1,23 @@
+@import "alert.css";
+@import "badge.css";
+@import "breadcrumbs.css";
+@import "button.css";
+@import "demo.css";
+@import "forms.css";
+@import "input.css";
+@import "modal.css";
+@import "navbar.css";
+@import "pagination.css";
+@import "table.css";
+@import "tracker.css";
+@import "cards.css";
+
+@import "pages/dashboard.css";
+@import "pages/login.css";
+
+@import "layout/layout.css";
+@import "layout/sidebar.css";
+
+
+
+/* SIDE BAR CSS */

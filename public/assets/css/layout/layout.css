@@ -1,0 +1,4 @@
+.content-wrapper>div,
+nav{
+    max-width: 100% !important;
+}
