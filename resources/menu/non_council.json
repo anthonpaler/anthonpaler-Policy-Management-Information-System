@@ -1,0 +1,35 @@
+{
+  
+    "menu": [
+          {
+              "menuHeader": "MENUS"
+          },
+          {
+              "url": "/",
+              "name": "Dashboards",
+              "icon": "menu-icon tf-icons bx bx-home-circle",
+              "slug": "dashboard"
+          },
+          {
+              "url": "/",
+              "name": "Meetings",
+              "icon": "menu-icon tf-icons bx bx-box",
+              "slug": "meetings"
+          },
+          {
+              "url": "/",
+              "name": "My Proposals",
+              "icon": "menu-icon tf-icons bx bx-file",
+              "slug": "my proposals"
+          },
+          {
+              "menuHeader": "OTHERS"
+          },
+          {
+              "url": "/",
+              "name": "Order of Business",
+              "icon": "menu-icon tf-icons bx bx-power-off",
+              "slug": "Log out"
+          }
+      ]
+  }
