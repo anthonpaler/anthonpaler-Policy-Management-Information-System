@@ -13,6 +13,12 @@ return new class extends Migration
     {
         Schema::create('proposals', function (Blueprint $table) {
             $table->id();
+            $table->string('title', 255);
+            $table->integer('type');
+            $table->integer('sub_type')->nullable();
+            $table->tinyInteger('action');
+            $table->foreignId('employee_id')->constrained('employees')->onDelete('cascade');
+            $table->foreignId('campus_id')->constrained('campus')->onDelete('cascade');
             $table->timestamps();
         });
     }

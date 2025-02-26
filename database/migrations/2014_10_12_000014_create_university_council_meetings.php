@@ -13,6 +13,17 @@ return new class extends Migration
     {
         Schema::create('university_council_meetings', function (Blueprint $table) {
             $table->id();
+            $table->dateTime('submission_start');
+            $table->dateTime('submission_end');
+            $table->dateTime('meeting_date_time');
+            $table->string('modality', 25);
+            $table->tinyInteger('quarter');
+            $table->integer('year');
+            $table->tinyInteger('council_type');
+            $table->tinyInteger('mode_if_online');
+            $table->text('link');
+            $table->text('description');
+            $table->foreignId('creator_id')->constrained('employees')->onDelete('cascade');
             $table->timestamps();
         });
     }

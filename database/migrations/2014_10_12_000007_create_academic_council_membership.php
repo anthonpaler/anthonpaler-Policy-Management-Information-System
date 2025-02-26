@@ -11,8 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('local_meeting_agenda', function (Blueprint $table) {
+        Schema::create('academic_council_membership', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('employee_id')->constrained('employees')->onDelete('cascade');
+
             $table->timestamps();
         });
     }
@@ -22,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('local_meeting_agenda');
+        Schema::dropIfExists('academic_council_membership');
     }
 };

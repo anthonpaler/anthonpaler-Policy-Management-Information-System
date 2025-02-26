@@ -11,8 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('local_meeting_agenda', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('local_council_meeting_id')->constrained('local_council_meetings')->onDelete('cascade');
+            $table->foreignId('local_proposal_id')->constrained('proposals')->onDelete('cascade');
+            $table->tinyInteger('status');
             $table->timestamps();
         });
     }
@@ -22,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('local_meeting_agenda');
     }
 };

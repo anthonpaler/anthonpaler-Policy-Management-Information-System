@@ -13,7 +13,14 @@ return new class extends Migration
     {
         Schema::create('proposal_files', function (Blueprint $table) {
             $table->id();
+            $table->text('file');
+            $table->tinyInteger('version');
+            $table->tinyInteger('file_status');
+            $table->tinyInteger('is_active');
+            $table->tinyInteger('file_reference_id')->nullable();
             $table->timestamps();
+            $table->foreignId('proposals_id')->constrained('proposals')->onDelete('cascade');
+
         });
     }
 

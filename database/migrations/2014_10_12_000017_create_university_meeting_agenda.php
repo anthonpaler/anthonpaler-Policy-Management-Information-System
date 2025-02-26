@@ -13,6 +13,12 @@ return new class extends Migration
     {
         Schema::create('university_meeting_agenda', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('local_meeting_agenda_id')->constrained('local_meeting_agenda')->onDelete('cascade');
+            $table->foreignId('university_proposal_id')->constrained('proposals')->onDelete('cascade');
+            $table->foreignId('university_meeting_id')->constrained('university_council_meetings')->onDelete('cascade');
+
+            $table->tinyInteger('status');
+
             $table->timestamps();
         });
     }

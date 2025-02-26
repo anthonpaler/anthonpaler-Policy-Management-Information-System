@@ -13,6 +13,13 @@ return new class extends Migration
     {
         Schema::create('proposal_logs', function (Blueprint $table) {
             $table->id();
+            $table->tinyInteger('status');
+            $table->text('comments')->nullable();
+            $table->string('file_id', 255);
+
+            $table->foreignId('proposals_id')->constrained('proposals')->onDelete('cascade');
+            $table->foreignId('employee_id')->constrained('employees')->onDelete('cascade');
+
             $table->timestamps();
         });
     }
