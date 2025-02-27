@@ -23,9 +23,11 @@ return new class extends Migration
             $table->text('link')->nullable();
             $table->text('description')->nullable();
             $table->unsignedInteger('venue')->nullable();
+            $table->tinyInteger('status')->default(0);
             $table->foreign('venue')->references('id')->on('venues');
             $table->foreignId('creator_id')->constrained('employees')->onDelete('cascade');
             $table->timestamps();
+            $table->softdeletes();
         });
     }
 

@@ -71,7 +71,9 @@ Route::middleware(['auth', 'super_admin'])->prefix('super-admin')->group(functio
 Route::middleware(['auth', 'local_secretary'])->prefix('local-campus-secretary')->group(function() {
     Route::get('/dashboard', [Analytics::class, 'index'])->name('local_sec.dashboard');
     Route::get('/meetings', [MeetingController::class, 'viewMeetings'])->name('local_sec.meetings');
-    Route::get('/meetings/create-meeting', [MeetingController::class, 'viewCreateMeeting'])->name('local_sec.create_meeting');
+    Route::get('/meetings/create-meeting', [MeetingController::class, 'viewCreateMeeting'])->name('local_sec.view_create_meeting');
+    Route::post('/meetings/create', [MeetingController::class, 'createMeeting'])->name('local_sec.meetings.create');
+
     Route::get('/meetings/edit-meeting', [MeetingController::class, 'viewEditMeeting'])->name('local_sec.edit_meeting');
 });
 
