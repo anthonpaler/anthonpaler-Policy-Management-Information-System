@@ -24,6 +24,8 @@ return new class extends Migration
             $table->unsignedBigInteger('campus_id');
             $table->text('link');
             $table->text('description');
+            $table->unsignedBigInteger('venue');
+            $table->foreign('venue')->references('id')->on('venues');
             $table->foreignId('creator_id')->constrained('employees')->onDelete('cascade');
             $table->foreign('campus_id')->references('id')->on('campus');
             $table->timestamps();

@@ -83,7 +83,6 @@ class LoginController extends Controller
             // Determine the role based on the conditions
               if ($isLocalSecretary) {
                   $role = 3;
-                          // Local Campus Secretary
 
               } elseif($isUniversitySecretary){
                   $role = 4;

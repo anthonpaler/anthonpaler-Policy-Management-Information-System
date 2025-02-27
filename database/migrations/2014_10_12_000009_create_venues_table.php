@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name', 255);
             $table->unsignedBigInteger('campus_id');
+            
 
             $table->foreign('campus_id')->references('id')->on('campus');
 

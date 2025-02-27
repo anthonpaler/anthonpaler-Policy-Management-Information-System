@@ -23,6 +23,8 @@ return new class extends Migration
             $table->tinyInteger('mode_if_online');
             $table->text('link');
             $table->text('description');
+            $table->unsignedBigInteger('venue');
+            $table->foreign('venue')->references('id')->on('venues');
             $table->foreignId('creator_id')->constrained('employees')->onDelete('cascade');
             $table->timestamps();
         });
