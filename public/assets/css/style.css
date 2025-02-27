@@ -20,4 +20,102 @@
 
 
 
-/* SIDE BAR CSS */
+/* MEETING DETAILS CSS */
+.fade-bg-con{
+  width: 100%;
+  /* border: 1px dashed red; */
+  height: 200px;
+  position: relative;
+}
+.fade-bg-con::before{
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  background: #ffffff;
+  background: -webkit-linear-gradient(0deg, #ffffff 0%, rgba(255, 255, 255, 0) 100%);
+  background: linear-gradient(0deg, #ffffff 0%, rgba(255, 255, 255, 0) 100%);
+  content: "";
+}
+.meeting-head-text{
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  /* border: 1px dashed red; */
+  width: 100%;
+  padding: 20px;
+  /* overflow-y: scroll; */
+}
+.fade-bg-con img{
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+
+/* FOR SUBMIT PROPOSAL */
+.c-field-p{
+    position: relative;
+    /* border: 1px dashed red; */
+  }
+  .search-drop-card{
+    position: absolute;
+    top: 80px;
+    z-index: 10;
+  }
+  .search-drop-card ul{
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .proponent-con{
+    padding: 15px;
+    min-height: 170px !important;
+    /* background-color: var(--bs-body-bg); */
+  }
+  .proponent-con ul{
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .proponent-con ul li{
+    width: 100%;
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid var(--bs-secondary-border-subtle);
+    background-color: var(--bs-white);
+  }
+
+  
+/* Dropzone Custom CSS */
+.dropzone{
+    border: 1px dashed  var(--bs-secondary-border-subtle) !important;
+    border-radius: 7px !important;
+}
+
+
+
+/* RESPONSICE MEDIA QUERY */
+@media only screen and (max-width: 700px) {
+  .navbar-nav-text {
+    display: none;
+  }
+  .user-info-dashboard .user-profile{
+    width: 80px;
+    height: 80px;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+}
+@media only screen and (max-width: 600px) {
+  .meeting-sub-details {
+    display: none !important;
+  }
+}
+@media only screen and (max-width: 500px) {
+  nav .user-info {
+    display: none;
+  }
+}

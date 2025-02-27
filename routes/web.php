@@ -44,8 +44,75 @@ use App\Http\Controllers\form_layouts\VerticalForm;
 use App\Http\Controllers\form_layouts\HorizontalForm;
 use App\Http\Controllers\tables\Basic as TablesBasic;
 
+use App\Http\Controllers\MeetingController;
+
+
 // Main Page Route
 Route::get('/', [Analytics::class, 'index'])->name('dashboard-analytics');
+
+
+
+Route::get('/sample', function () {
+  return view('content.sample');
+});
+
+
+// MEETING ROUTES
+Route::get('/meetings', [MeetingController::class, 'viewMeetings'])->name('meetings');
+Route::get('/meetings/create-meeting', [MeetingController::class, 'viewCreateMeeting'])->name('create_meeting');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // layout
 Route::get('/layouts/without-menu', [WithoutMenu::class, 'index'])->name('layouts-without-menu');

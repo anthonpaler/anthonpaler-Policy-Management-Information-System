@@ -1,0 +1,309 @@
+@extends('layouts/contentNavbarLayout')
+
+@section('title', 'Proposals')
+
+@section('content')
+<div class="d-flex justify-content-between">
+    <div class="bread-crumbs overflow-auto" style="max-width: 100%; white-space: nowrap;">
+        <h5>Dashboard</h5>
+        <div class="divider"></div>
+        <a href="/">
+            <i class='bx bx-home-alt' ></i>
+        </a>
+        <i class='bx bx-chevron-right' ></i>
+        <a href="{{route(    getUserRole().'.proposals')}}">Meetings Proposals</a>
+        <i class='bx bx-chevron-right' ></i>
+        <a href="#">Proposals</a>
+    </div>
+
+</div>
+@php 
+    $actionColors = [ 'secondary', 'primary', 'success', 'warning', 'info', 'danger']; 
+@endphp 
+<!-- Basic Bootstrap Table -->
+<div class="card">
+    <div class="d-flex gap-3 justify-content-between align-items-center p-4">
+        <h5 class="m-0">
+            {{ config('meetings.quaterly_meetings.'.$meeting->quarter) }} @if ($meeting->level == 0)
+                {{ config('meetings.council_types.local_level.'.$meeting->council_type) }}
+            @elseif ($meeting->level == 1)
+                {{ config('meetings.council_types.university_level.'.$meeting->council_type) }}
+            @else
+                {{ config('meetings.council_types.board_level.'.$meeting->council_type) }}
+            @endif 
+            {{ $meeting->year }}
+        </h5>
+        <div class="d-flex align-items-center gap-2">
+            <span class="text-muted fw-light">Status: </span>
+            <span class="badge bg-label-{{ $meeting->status == 0? 'success' : 'danger' }} me-1">
+                {{ config('meetings.status.'.$meeting->status) }}
+            </span>
+        </div>
+    </div>
+    <div class="d-flex justify-content-between w-100 ps-4 pe-4">
+        <div class="w-100 ">
+            <div class="d-flex justify-content-between w-100 gap-3 border-bottom pb-3">
+                <h6 class="text-muted p-0">LIST OF MEETING'S PROPOSAL</h6>
+
+                @if (!in_array(auth()->user()->role, [0,1,2,6]))
+                    <div class="d-flex justify-content-between gap-3">
+                        <div class="d-flex gap-3 w-100">
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-primary text-nowrap">Proposal Action</button>
+                                <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span class="visually-hidden">Toggle Dropdown</span>
+                                </button>
+
+                                @php
+                                    $currentDateTime = now();
+                                    $meetingDateTime = \Carbon\Carbon::parse($meeting->meeting_date_time);
+                                @endphp
+
+                                <ul class="dropdown-menu">
+                                    @foreach (array_slice(config('proposals.proposal_action'), 0, 7, true) as $index => $item)
+                                        @php
+                                            // Skip indices 2, 4, 5, and 6
+                                            if (in_array($index, [1, 4, 5, 6])) {
+                                                continue;
+                                            }
+
+                                            if(auth()->user()->role == 5 ){
+                                                if (in_array($index, [3])) {
+                                                    continue;
+                                                }
+                                            }
+
+                                            $isDisabled = true; 
+                                            
+                                            if ($meetingDateTime) {
+                                                if ($currentDateTime->greaterThan($meetingDateTime)) {
+                                                    $isDisabled = in_array($index, [0, 1]); // Enable 0 & 1 if current date is before meeting date
+                                                }
+                                                 else {
+                                                    $isDisabled = in_array($index, [2, 3, 4, 5, 6]); // Enable 2-6 if current date is after or equal to meeting date
+                                                }
+                                            }
+                                        @endphp
+                                        
+                                        <li>
+                                            <span class="dropdown-item proposal-action {{ $index === 6 ? 'text-danger' : '' }} {{ $isDisabled ? 'disabled' : '' }}" 
+                                                data-id="{{ $index }}" 
+                                                data-label="{{ $item }}">
+                                                {{ $item }}
+                                            </span>
+                                        </li>
+
+                                        @if (in_array($index, [1, 5])) 
+                                            <li><hr class="dropdown-divider"></li>
+                                        @endif
+                                    @endforeach
+                                </ul>
+
+                            </div>
+                            <div class=" flex-grow-1">
+                                <input type="text" class="form-control flex-grow-1" data-id="" value="Select Action" id="proposalStatusInput"  disabled>
+                            </div>
+                        </div>
+                        @if ($meeting->status == 1)
+                            <button type="button" class="btn btn-danger d-flex gap-2" disabled>
+                                <i class='bx bxs-lock-alt' ></i>
+                            </button>
+                        @else
+                            <button type="button" id="okButton" class="btn btn-success d-flex gap-2" {{ $meeting->status == 1 ? 'disabled': '' }}>
+                                <i class="fa-regular fa-circle-check"></i>
+                            </button>
+                        @endif
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="card-datatable pt-0">
+            <div class="table-responsive text-nowrap">
+                <table id="proposalTable" class="datatables-basic table table-striped w-100">
+                    <thead>
+                        <tr>
+                            @if (!in_array(auth()->user()->role, [0,1,2,6]))
+                                <td>
+                                    <!-- <input type="checkbox" class="form-check-input"> -->
+                                </td>
+                            @endif
+                            <th>#</th>
+                            <th>Proponent</th>
+                            <th>Proposal Title</th>
+                            <th>Type</th>
+                            <th>Requested Action</th>
+                            <th>Current Level</th>
+                            <th>Current Status</th>
+                            <th>File</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="">
+                        @foreach($proposals as $proposal)
+                        <tr data-proponent="{{ $proposal->proponent }}" data-title="{{ $proposal->title }}">
+                            @if (!in_array(auth()->user()->role, [0,1,2,6]))
+                                @if ($meeting->status == 1)
+                                    <td>
+                                        <span class="text-danger"><i class='bx bxs-lock-alt' ></i></span>       
+                                    </td>                 
+                                @else
+                                    @if($meetingDateTime && $currentDateTime->lessThan($meetingDateTime))
+                                        <td>
+                                            <input type="checkbox" 
+                                            class="form-check-input select-proposal" 
+                                            data-id="{{ encrypt($proposal->id) }}" 
+                                            {{ (!in_array($proposal->status , [0, 8])) ? 'disabled' : '' }}>
+                                        </td>
+                                    @elseif($meetingDateTime && $currentDateTime->greaterThan($meetingDateTime))
+                                        <td>
+                                            <input type="checkbox" 
+                                            class="form-check-input select-proposal" 
+                                            data-id="{{ encrypt($proposal->id) }}" 
+                                            {{ (!in_array($proposal->status , [1])) ? 'disabled' : '' }}>
+                                        </td>
+                                    @endif
+                                @endif                            
+                            @endif
+                            <td>{{ $loop->iteration }}</td>
+                            <td>
+                            <div class="d-flex align-items-center">
+                                    <div class="d-flex flex-column gap-3">
+                                        @foreach ($proposal->proponentsList as $proponent)
+                                            <div class="d-flex gap-3 align-items-center">
+                                                <div data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $proponent->name }}" class="avatar avatar-sm pull-up">
+                                                    <img class="rounded-circle" src="{{ $proponent->image ?? '/default-avatar.png' }}" alt="Avatar">
+                                                </div>
+                                                <span>{{ $proponent->name }}</span>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div style="min-width: 300px; max-width: 500px; white-space: wrap; ">
+                                    <a href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->id)]) }}" >{{ $proposal->title }}</a>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-label-{{ $actionColors[$proposal->type] ?? 'primary' }}" style="text-transform: none;">
+                                    {{ config('proposals.matters.'.$proposal->type) }}
+                                </span>
+                            </td>
+                            <td> {{ config('proposals.requested_action.'.$proposal->action) }}</td>
+                            <td>{{config('meetings.level.'.$proposal->level)}}</td>
+                            <td>
+                                <div style="width: 230px; white-space: nowrap; ">
+                                    <small class="mb-0 align-items-center d-flex w-px-100">
+                                        <i class='bx bx-radio-circle-marked text-{{ $actionColors[$proposal->status] ?? 'primary' }}'></i>
+                                        {{ config('proposals.status.'.$proposal->status) }}
+                                    </small>
+                                </div>
+                            </td>
+                            <td>
+                                @if($proposal->files->count() > 0)
+                                    <button class="btn btn-sm btn-success d-flex gap-2 view-files"
+                                            data-files="{{ json_encode($proposal->files) }}" 
+                                            data-title="{{ $proposal->title }}">
+                                        <i class='bx bx-file'></i> View Files
+                                    </button>
+                                @else
+                                    <span class="text-muted">No Files</span>
+                                @endif
+                            </td>
+
+                            <td>
+                                <div class="d-flex gap-2 align-items-center">
+                                    @if(in_array(auth()->user()->role, [0,1,2,6]))
+                                        <div class="dropdown">
+                                            <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                                <i class="bx bx-dots-vertical-rounded"></i>
+                                            </button>
+                                            <div class="dropdown-menu">
+                                                <a class="dropdown-item" href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->id)]) }} ">
+                                                    <i class="fa-regular fa-eye me-3"></i>View Details
+                                                </a>
+                                                
+                                                @if(in_array($proposal->status, [2,5,6]))
+                                                    <a class="dropdown-item" href="{{ route(getUserRole().'.proposal.edit', ['proposal_id' => encrypt($proposal->id)]) }}">
+                                                        <i class='bx bx-right-arrow-circle me-3'></i>Resubmit Proposal
+                                                    </a>
+                                                @endif
+                                                @if(!$proposal->is_edit_disabled)
+                                                    <a class="dropdown-item" href="{{ route(getUserRole().'.proposal.edit', ['proposal_id' => encrypt($proposal->id)]) }}">
+                                                        <i class="bx bx-edit-alt me-3"></i>Edit Proposal
+                                                    </a>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @else
+                                        <a href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->id)]) }} "  class="btn btn-sm btn-primary d-flex gap-2"><i class="fa-regular fa-eye" disabled></i>View Details</a>
+                                    @endif
+                                </div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                    <!-- <tfoot class="">
+                        <tr>
+                            <th></th>
+                            <th>#</th>
+                            <th>Proponent/s</th>
+                            <th style="max-width: 500px; ">
+                                Proposal Title
+                            </th>
+                            <th>Type</th>
+                            <th>Requested Action</th>
+                            <th>Current Level</th>
+                            <th>Current Status</th>
+                            <th>File</th>
+                            <th>Actions</th>
+                        </tr>
+                    </tfoot> -->
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal Files-->
+<div class="modal fade" id="proposalFIleModal" tabindex="-1" aria-labelledby="proposalFIleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">PROPOSAL FILES</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="modalFiles">
+            
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Preview File -->
+<div class="modal fade" id="fileModal" tabindex="-1" aria-labelledby="fileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="fileModalLabel">File Preview</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <iframe id="fileIframe" src="" width="100%" height="600px" frameborder="0"></iframe>
+        </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    var proposalStatus = @json(config('proposals.status'));
+</script>
+<script src="{{asset('assets/js/proposal.js')}}"></script>
+<script src="{{asset('assets/js/pagination.js')}}"></script>
+
+@endsection
