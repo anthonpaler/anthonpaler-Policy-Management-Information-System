@@ -62,6 +62,12 @@ Route::post('/logout', [LoginController::class, 'destroy'])->name('auth.logout')
 
 
 
+Route::middleware(['auth', 'super_admin'])->prefix('super-admin')->group(function() {
+  Route::get('/dashboard', [Analytics::class, 'index'])->name('super_admin.dashboard');
+});
+
+
+
 Route::middleware(['auth', 'local_secretary'])->prefix('local-campus-secretary')->group(function() {
     Route::get('/dashboard', [Analytics::class, 'index'])->name('local_sec.dashboard');
     Route::get('/meetings', [MeetingController::class, 'viewMeetings'])->name('local_sec.meetings');

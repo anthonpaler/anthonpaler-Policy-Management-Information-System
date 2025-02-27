@@ -7,7 +7,8 @@ return [
         3 => 'Local Campus Secretary',
         4 => 'University Secretary',
         5 => 'Board Secretary',
-        6 => 'Not Defined'
+        6 => 'Not Defined',
+        7=> 'Super Admin'
     ],
     'route_role' => [
         0 => 'proponent',

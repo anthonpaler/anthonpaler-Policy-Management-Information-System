@@ -20,6 +20,8 @@ return new class extends Migration
             $table->foreign('local_proposal_id')->nullable()->references('id')->on('proposals')->onDelete('cascade');
             $table->tinyInteger('status');
             $table->timestamps();
+            $table->softdeletes();
+
         });
     }
 

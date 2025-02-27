@@ -62,6 +62,21 @@ return [
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
+        
+        'hrmis' => [
+            'driver' => 'mysql',
+            'host' => env('DB_HOST2', '127.0.0.1'),
+            'port' => env('DB_PORT2', '3306'),
+            'database' => env('DB_DATABASE2', 'db_hrmis'),
+            'username' => env('DB_USERNAME2', 'issp'),
+            'password' => env('DB_PASSWORD2', 'Q34nHS&fIK80!0F'),
+            'unix_socket' => env('DB_SOCKET2', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ],
 
         'pgsql' => [
             'driver' => 'pgsql',

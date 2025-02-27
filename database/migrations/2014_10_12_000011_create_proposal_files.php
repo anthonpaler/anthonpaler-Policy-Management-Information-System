@@ -21,6 +21,8 @@ return new class extends Migration
             $table->unsignedInteger('proposal_id');
 
             $table->timestamps();
+            $table->softdeletes();
+
             $table->foreign('proposal_id')->nullable()->references('id')->on('proposals')->onDelete('cascade');
 
         });

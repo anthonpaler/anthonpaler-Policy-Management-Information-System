@@ -23,6 +23,8 @@ return new class extends Migration
             $table->foreignId('employee_id')->nullable()->constrained('employees')->onDelete('cascade');
             $table->rememberToken();
             $table->timestamps();
+            $table->softdeletes();
+
         });
     }
 

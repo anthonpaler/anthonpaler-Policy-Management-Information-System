@@ -25,6 +25,8 @@ return new class extends Migration
             $table->foreign('bor_meeting_id')->references('id')->on('bor_meetings')->onDelete('cascade');
             $table->tinyInteger('status');
             $table->timestamps();
+            $table->softdeletes();
+
         });
     }
 

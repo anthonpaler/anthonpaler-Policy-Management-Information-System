@@ -13,6 +13,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Session;
+
 class LoginController extends Controller
 {
     //   */
@@ -110,7 +112,7 @@ class LoginController extends Controller
                   $role = 0;
                    // Academic Council
 
-                }elseif ($request->email == "reyanthonpaler1@gmail.com") {
+                }elseif ($request->email == "kortomandac@gmail.com") {
                   $role = 7;
                    // Super Admin
 

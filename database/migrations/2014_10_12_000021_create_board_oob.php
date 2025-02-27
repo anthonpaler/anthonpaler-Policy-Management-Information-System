@@ -18,6 +18,8 @@ return new class extends Migration
             $table->tinyInteger('status');
             $table->text('preliminaries');
             $table->timestamps();
+            $table->softdeletes();
+
         });
     }
 

@@ -19,6 +19,8 @@ return new class extends Migration
             $table->text('preliminaries');
 
             $table->timestamps();
+            $table->softdeletes();
+
         });
     }
 

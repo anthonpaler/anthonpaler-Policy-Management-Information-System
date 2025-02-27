@@ -1,0 +1,15 @@
+{
+"menu": [
+    {
+        "menuHeader": "MENUS"
+    },
+
+    {
+        "url": "/",
+        "title": "Dashboard",
+        "name": "Dashboard",
+        "icon": "menu-icon tf-icons bx bx-home-circle",
+        "slug": "dashboard"
+    }
+    ]
+}
