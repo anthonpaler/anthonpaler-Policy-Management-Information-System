@@ -64,26 +64,10 @@ Route::post('/logout', [LoginController::class, 'destroy'])->name('auth.logout')
 
 Route::middleware(['auth', 'local_secretary'])->prefix('local-campus-secretary')->group(function() {
     Route::get('/dashboard', [Analytics::class, 'index'])->name('local_sec.dashboard');
+    Route::get('/meetings', [MeetingController::class, 'viewMeetings'])->name('local_sec.meetings');
+    Route::get('/meetings/create-meeting', [MeetingController::class, 'viewCreateMeeting'])->name('local_sec.create_meeting');
+    Route::get('/meetings/edit-meeting', [MeetingController::class, 'viewEditMeeting'])->name('local_sec.edit_meeting');
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 Route::get('/sample', function () {
@@ -92,8 +76,7 @@ Route::get('/sample', function () {
 
 
 // MEETING ROUTES
-Route::get('/meetings', [MeetingController::class, 'viewMeetings'])->name('meetings');
-Route::get('/meetings/create-meeting', [MeetingController::class, 'viewCreateMeeting'])->name('create_meeting');
+
 
 
 

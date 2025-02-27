@@ -16,13 +16,13 @@ return new class extends Migration
 
             $table->unsignedInteger('local_meeting_agenda_id')->nullable();
             $table->unsignedInteger('university_meeting_agenda_id')->nullable();
-            $table->unsignedInteger('board_proposal_id')->nullable();
-            $table->unsignedInteger('bor_meeting_id')->nullable();
+            $table->unsignedInteger('board_proposal_id');
+            $table->unsignedInteger('bor_meeting_id');
 
             $table->foreign('local_meeting_agenda_id')->nullable()->references('id')->on('local_meeting_agenda')->onDelete('cascade');
             $table->foreign('university_meeting_agenda_id')->nullable()->references('id')->on('university_meeting_agenda')->onDelete('cascade');
-            $table->foreign('board_proposal_id')->nullable()->nullable()->references('id')->on('proposals')->onDelete('cascade');
-            $table->foreign('bor_meeting_id')->nullable()->nullable()->references('id')->on('bor_meetings')->onDelete('cascade');
+            $table->foreign('board_proposal_id')->references('id')->on('proposals')->onDelete('cascade');
+            $table->foreign('bor_meeting_id')->references('id')->on('bor_meetings')->onDelete('cascade');
             $table->tinyInteger('status');
             $table->timestamps();
         });

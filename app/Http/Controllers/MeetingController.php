@@ -14,5 +14,8 @@ class MeetingController extends Controller
     {
         return view ('content.meetings.createMeeting');
     }
-
+    public function viewEditMeeting(Request $request)
+    {
+        return view ('content.meetings.editMeeting');
+    }
 }

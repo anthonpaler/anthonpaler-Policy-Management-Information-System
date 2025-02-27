@@ -13,13 +13,13 @@ return new class extends Migration
     {
         Schema::create('employees', function (Blueprint $table) {
             $table->id();
-            $table->string('FirstName');
+            $table->string('FirstName')->nullable();
             $table->string('MiddleName')->nullable();
-            $table->string('LastName');
+            $table->string('LastName')->nullable();
             $table->string('EmailAddress');
-            $table->string('Cellphone');
+            $table->string('Cellphone')->nullable();
             $table->unsignedBigInteger('campus');
-            $table->text('profilephoto');
+            $table->text('profilephoto')->nullable();
             $table->foreign('campus')->references('id')->on('campus');
 
             $table->timestamps();

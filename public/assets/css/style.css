@@ -6,7 +6,6 @@
 @import "forms.css";
 @import "input.css";
 @import "modal.css";
-@import "navbar.css";
 @import "pagination.css";
 @import "table.css";
 @import "tracker.css";
@@ -17,6 +16,7 @@
 
 @import "layout/layout.css";
 @import "layout/sidebar.css";
+@import "layout/navbar.css";
 
 
 

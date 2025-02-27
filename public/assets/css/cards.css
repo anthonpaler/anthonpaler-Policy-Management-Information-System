@@ -3,3 +3,6 @@
     -moz-box-shadow: 0 9.5px 17px 0 #dddddd;
     box-shadow: 0 9.5px 17px 0 #dddddd;
 } */
+.col .card{
+    min-width: 300px;
+}

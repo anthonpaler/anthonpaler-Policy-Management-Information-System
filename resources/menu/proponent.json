@@ -1,41 +1,41 @@
 {
   
-  "menu": [
-        {
-            "menuHeader": "MENUS"
-        },
-        {
-            "url": "/",
-            "name": "Dashboards",
-            "icon": "menu-icon tf-icons bx bx-home-circle",
-            "slug": "dashboard"
-        },
-        {
-            "url": "/",
-            "name": "Meetings",
-            "icon": "menu-icon tf-icons bx bx-box",
-            "slug": "meetings"
-        },
-        {
-            "url": "/",
-            "name": "My Proposals",
-            "icon": "menu-icon tf-icons bx bx-file",
-            "slug": "my proposals"
-        },
-        {
-            "url": "/",
-            "name": "Order of Business",
-            "icon": "menu-icon tf-icons bx bx-objects-horizontal-left",
-            "slug": "order of business"
-        },
-        {
-            "menuHeader": "OTHERS"
-        },
-        {
-            "url": "/",
-            "name": "Order of Business",
-            "icon": "menu-icon tf-icons bx bx-power-off",
-            "slug": "Log out"
-        }
-    ]
-}
+    "menu": [
+          {
+              "menuHeader": "MENUS"
+          },
+          {
+              "url": "/",
+              "name": "Dashboards",
+              "icon": "menu-icon tf-icons bx bx-home-circle",
+              "slug": "dashboard"
+          },
+          {
+              "url": "/",
+              "name": "Meetings",
+              "icon": "menu-icon tf-icons bx bx-box",
+              "slug": "meetings"
+          },
+          {
+              "url": "/",
+              "name": "My Proposals",
+              "icon": "menu-icon tf-icons bx bx-file",
+              "slug": "my proposals"
+          },
+          {
+              "url": "/",
+              "name": "Order of Business",
+              "icon": "menu-icon tf-icons bx bx-objects-horizontal-left",
+              "slug": "order of business"
+          },
+          {
+              "menuHeader": "OTHERS"
+          },
+          {
+              "url": "/",
+              "name": "Log out",
+              "icon": "menu-icon tf-icons bx bx-power-off",
+              "slug": "Log out"
+          }
+      ]
+  }

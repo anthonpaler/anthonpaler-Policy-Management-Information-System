@@ -14,14 +14,18 @@
     <i class='bx bx-chevron-right' ></i>
     <a href="#">Create Meeting</a>
 </div>
-
+<div class="d-flex justify-content-between align-items-center flex-wrap mb-3 border-top pt-3">
+    <h5 class="mb-0">Call for Submission</h5>
+    <small class="text-muted float-end">Please fill the details accordingly.</small>
+</div>
 <form method="POST" action="" id="meetingForm">
+@csrf
     <div class="row">
         <div class="col mb-4">
             <div class="card" style="height: 100%;">
                 <div class="card-body">
-                    <h6 class="text-primary">MEETING INFORMATION</h6>
-                    <div class="mb-3">
+                    <small class="text-primary">MEETING INFORMATION</small>
+                    <div class="mb-3 mt-3">
                         <label class="form-label" for="sub_type">Council Type<span class="ms-1 text-danger">*</span></label>
                         <div class="input-group input-group-merge">
                         <span id="basic-icon-default-phone2" class="input-group-text">
@@ -64,12 +68,12 @@
         <div class="col mb-4">
             <div class="card" style="height: 100%;">
                 <div class="card-body">
-                    <h6 class="text-primary">OTHER INFORMATION</h6>
-                    <div class="mb-3">
+                    <small class="text-primary">SUBMISSION / MEETING DATES</small>
+                    <div class="mb-3 mt-3">
                         <label class="form-label" for="title">Quarter <span class="ms-1 text-danger">*</span></label>
                         <div class="input-group input-group-merge">
                             <span id="basic-icon-default-company2" class="input-group-text">
-                                <i class="bx bx-buildings"></i>
+                                <i class='bx bx-border-all'></i>
                             </span>
 
                             <select class="form-control @error('quarter') is-invalid @enderror" name="quarter" required>
@@ -89,7 +93,7 @@
                         <label class="form-label" for="title">Year <span class="ms-1 text-danger">*</span></label>
                         <div class="input-group input-group-merge">
                             <span id="basic-icon-default-company2" class="input-group-text">
-                                <i class="bx bx-buildings"></i>
+                                <i class='bx bx-calendar-alt'></i>
                             </span>
                             <select class="form-control @error('year') is-invalid @enderror" name="year" required>
                                 <option value="">Select Year</option>
@@ -168,7 +172,7 @@
                                     <label class="form-label" for="status">Modality</label>
                                     <div class="input-group input-group-merge">
                                         <span id="basic-icon-default-company2" class="input-group-text">
-                                            <i class="bx bx-buildings"></i>
+                                            <i class='bx bx-shape-square' ></i>
                                         </span>
                                         <select
                                         id="modality"

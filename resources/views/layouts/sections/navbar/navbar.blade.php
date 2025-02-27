@@ -39,11 +39,11 @@ $navbarDetached = ($navbarDetached ?? '');
         <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
             <div class="d-flex gap-3">
                 <div class="flex-grow-1 user-info">
-                    <span class="fw-medium d-flex justify-content-end">{{ auth()->user()->name }}</span>
-                    <small class="text-muted d-flex justify-content-end">{{ config('usersetting.role.'.auth()->user()->role) }}</small>
+                    <span class="fw-medium d-flex justify-content-end">{{ session('name') }}</span>
+                    <small class="text-muted d-flex justify-content-end">{{ config('usersetting.role.'.session('user_role')) }}</small>
                 </div>
                 <div class="avatar avatar-online">
-                    <img src="{{ auth()->user()->image }}" alt class="w-px-40 h-auto rounded-circle" />
+                    <img src="{{session('profile_photo') }}" alt class="w-px-40 h-auto rounded-circle" />
                 </div>
             </div>
         </a>
@@ -53,12 +53,12 @@ $navbarDetached = ($navbarDetached ?? '');
                 <div class="d-flex">
                     <div class="flex-shrink-0 me-3">
                         <div class="avatar avatar-online">
-                        <img src="{{ auth()->user()->image }}" alt class="w-px-40 h-auto rounded-circle" />
+                        <img src="{{session('profile_photo') }}" alt class="w-px-40 h-auto rounded-circle" />
                         </div>
                     </div>
                     <div class="flex-grow-1">
-                        <span class="fw-semibold d-block">{{ auth()->user()->name }}</span>
-                        <small class="text-muted">{{ config('usersetting.role.'.auth()->user()->role) }}</small>
+                        <span class="fw-semibold d-block">{{session('name') }}</span>
+                        <small class="text-muted">{{ config('usersetting.role.'.session('user_role')) }}</small>
                     </div>
                 </div>
             </a>

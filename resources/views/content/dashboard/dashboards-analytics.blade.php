@@ -21,7 +21,7 @@
     <div class="card">
       <div class="card-content dashboard-bg-con">
         <div class="dashboard-bg">
-          <img src="{{asset('assets/img/backgrounds/slsu_bg.jpeg') }}"  class="img-fluid rounded-top user-timeline-image" alt="user timeline image">
+          <img src="{{asset('assets/img/backgrounds/slsu_bg_2.jpeg') }}"  class="img-fluid rounded-top user-timeline-image" alt="user timeline image">
         </div>
         <div class="user-info-dashboard d-flex gap-3 p-3">
           <div class="user-profile">
