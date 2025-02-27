@@ -12,8 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('university_council_meetings', function (Blueprint $table) {
-            $table->id();
-            $table->dateTime('submission_start');
+            $table->unsignedInteger('id')->autoIncrement();            $table->dateTime('submission_start');
             $table->dateTime('submission_end');
             $table->dateTime('meeting_date_time');
             $table->string('modality', 25);
@@ -23,7 +22,7 @@ return new class extends Migration
             $table->tinyInteger('mode_if_online');
             $table->text('link');
             $table->text('description');
-            $table->unsignedBigInteger('venue');
+            $table->unsignedInteger('venue');
             $table->foreign('venue')->references('id')->on('venues');
             $table->foreignId('creator_id')->constrained('employees')->onDelete('cascade');
             $table->timestamps();

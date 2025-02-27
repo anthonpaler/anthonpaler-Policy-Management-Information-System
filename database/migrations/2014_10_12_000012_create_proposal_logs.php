@@ -16,8 +16,10 @@ return new class extends Migration
             $table->tinyInteger('status');
             $table->text('comments')->nullable();
             $table->string('file_id', 255);
+            $table->unsignedInteger('proposal_id');
 
-            $table->foreignId('proposals_id')->constrained('proposals')->onDelete('cascade');
+
+            $table->foreign('proposal_id')->nullable()->references('id')->on('proposals')->onDelete('cascade');
             $table->foreignId('employee_id')->constrained('employees')->onDelete('cascade');
 
             $table->timestamps();

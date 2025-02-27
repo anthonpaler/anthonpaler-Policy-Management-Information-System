@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('proposals', function (Blueprint $table) {
-            $table->id();
+            $table->unsignedInteger('id')->autoIncrement();
             $table->string('title', 255);
             $table->integer('type');
             $table->integer('sub_type')->nullable();

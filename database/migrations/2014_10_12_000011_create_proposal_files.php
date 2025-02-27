@@ -18,8 +18,10 @@ return new class extends Migration
             $table->tinyInteger('file_status');
             $table->tinyInteger('is_active');
             $table->tinyInteger('file_reference_id')->nullable();
+            $table->unsignedInteger('proposal_id');
+
             $table->timestamps();
-            $table->foreignId('proposals_id')->constrained('proposals')->onDelete('cascade');
+            $table->foreign('proposal_id')->nullable()->references('id')->on('proposals')->onDelete('cascade');
 
         });
     }

@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('image', 255)->nullable();
             $table->integer('role')->nullable();
             $table->string('google_id')->nullable();
-            $table->foreignId('employee_id')->constrained('employees')->onDelete('cascade');
+            $table->foreignId('employee_id')->nullable()->constrained('employees')->onDelete('cascade');
             $table->rememberToken();
             $table->timestamps();
         });

@@ -12,8 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('board_oob', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('bor_meeting_id')->constrained('bor_meetings')->onDelete('cascade');
+            $table->unsignedInteger('id')->autoIncrement();
+            $table->unsignedInteger('bor_meeting_id')->nullable();
+            $table->foreign('bor_meeting_id')->nullable()->references('id')->on('bor_meetings')->onDelete('cascade');
             $table->tinyInteger('status');
             $table->text('preliminaries');
             $table->timestamps();

@@ -12,8 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('local_oob', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('local_council_meeting_id')->constrained('local_council_meetings')->onDelete('cascade');
+            $table->unsignedInteger('id')->autoIncrement();
+            $table->unsignedInteger('local_council_meeting_id')->nullable();
+            $table->foreign('local_council_meeting_id')->nullable()->references('id')->on('local_council_meetings')->onDelete('cascade');
             $table->tinyInteger('status');
             $table->text('preliminaries');
             $table->timestamps();

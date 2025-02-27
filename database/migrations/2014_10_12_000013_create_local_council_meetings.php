@@ -12,8 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('local_council_meetings', function (Blueprint $table) {
-            $table->id();
-            $table->dateTime('submission_start');
+            $table->unsignedInteger('id')->autoIncrement();            $table->dateTime('submission_start');
             $table->dateTime('submission_end');
             $table->dateTime('meeting_date_time');
             $table->string('modality', 25);
@@ -24,8 +23,8 @@ return new class extends Migration
             $table->unsignedBigInteger('campus_id');
             $table->text('link');
             $table->text('description');
-            $table->unsignedBigInteger('venue');
-            $table->foreign('venue')->references('id')->on('venues');
+            $table->unsignedInteger('venue_id');
+            $table->foreign('venue_id')->references('id')->on('venues');
             $table->foreignId('creator_id')->constrained('employees')->onDelete('cascade');
             $table->foreign('campus_id')->references('id')->on('campus');
             $table->timestamps();

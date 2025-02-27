@@ -12,8 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('university_oob', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('university_council_meeting_id')->constrained('university_council_meetings')->onDelete('cascade');
+            $table->unsignedInteger('id')->autoIncrement();
+            $table->unsignedInteger('university_council_meeting_id')->nullable();
+            $table->foreign('university_council_meeting_id')->nullable()->references('id')->on('university_council_meetings')->onDelete('cascade');
             $table->tinyInteger('status');
             $table->text('preliminaries');
 

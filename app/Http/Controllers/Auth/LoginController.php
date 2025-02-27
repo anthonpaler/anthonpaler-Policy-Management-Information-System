@@ -124,7 +124,7 @@ class LoginController extends Controller
                     'image' => $request->image,
                     'password' => Hash::make(Str::random(10)), // Generate a random password
                     'role' => $role,
-                    'employee_id' => $employee->id, // Save the employee ID
+                    'employee_id' => $employee->id, 
                 ]);
 
             } else {
