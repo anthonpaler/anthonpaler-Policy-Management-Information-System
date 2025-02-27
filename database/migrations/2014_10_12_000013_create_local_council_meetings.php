@@ -25,6 +25,7 @@ return new class extends Migration
             $table->text('description');
             $table->unsignedInteger('venue_id');
             $table->foreign('venue_id')->references('id')->on('venues');
+            $table->tinyInteger('status')->default(0);
             $table->foreignId('creator_id')->constrained('employees')->onDelete('cascade');
             $table->foreign('campus_id')->references('id')->on('campus');
             $table->timestamps();

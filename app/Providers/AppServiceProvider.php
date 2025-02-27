@@ -4,6 +4,9 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Validator;
+use App\Models\LocalCouncilMeeting;
+use App\Models\UniversityCouncilMeeting;
+use App\Models\BorMeeting;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -35,12 +38,14 @@ class AppServiceProvider extends ServiceProvider
           $year = $parameters[0];
           $level = $parameters[1];
           $campus_id = $parameters[2];
+          $meeting_level = $parameters[3];
+
           $quarter = $value;
-          $existingMeeting = Meetings::where('year', $year)
+          $existingMeeting = $meeting_level::where('year', $year)
               ->where('quarter', $quarter)
               ->where('level', $level)
               ->where('campus_id', $campus_id)
-              ->where('status', '!=', 1) // Exclude specific statuses if necessary
+              ->where('status', '!=', 1) 
               ->first();
           return $existingMeeting === null;
       }, 'There is already a quarter set for this year.');

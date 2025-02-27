@@ -18,7 +18,7 @@
     <h5 class="mb-0">Call for Submission</h5>
     <small class="text-muted float-end">Please fill the details accordingly.</small>
 </div>
-<form method="POST" action="" id="meetingForm">
+<form method="POST" action="{{route( getUserRole().'.meetings.create')}}" id="meetingForm">
 @csrf
     <div class="row">
         <div class="col mb-4">

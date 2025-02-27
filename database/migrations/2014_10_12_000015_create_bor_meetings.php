@@ -23,6 +23,7 @@ return new class extends Migration
             $table->text('link');
             $table->text('description');
             $table->unsignedInteger('venue');
+            $table->tinyInteger('status')->default(0);
             $table->foreign('venue')->references('id')->on('venues');
             $table->foreignId('creator_id')->constrained('employees')->onDelete('cascade');
             $table->timestamps();

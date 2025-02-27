@@ -36,12 +36,14 @@
         </ul>
     </div>
     <div class="">
-        <div>
-            <a href="" class="btn btn-primary d-flex gap-2">
-                <i class='bx bxs-megaphone'></i>
-                <span class="text-nowrap"> Call for Submission</span>
-            </a>
-        </div>
+        @if(in_array(session('user_role'), [3,4,5]))
+            <div>
+                <a href="{{ route(getUserRole().'.view_create_meeting') }}" class="btn btn-primary d-flex gap-2">
+                    <i class='bx bxs-megaphone'></i>
+                    <span class="text-nowrap"> Call for Submission</span>
+                </a>
+            </div>
+        @endif
     </div>
 </div>
 <div class="card">
