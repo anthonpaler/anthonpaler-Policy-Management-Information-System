@@ -6,27 +6,35 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Facades\Auth;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    /** @use HasFactory<\Database\Factories\UserFactory> */
+    use HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
      *
-     * @var array<int, string>
+     * @var list<string>
      */
     protected $fillable = [
+        'campus_id',
+        'employee_id',
         'name',
+        'image',
+        'google_id',
         'email',
+        'role',
         'password',
+        'verified_email',
     ];
+
 
     /**
      * The attributes that should be hidden for serialization.
      *
-     * @var array<int, string>
+     * @var list<string>
      */
     protected $hidden = [
         'password',
@@ -34,12 +42,66 @@ class User extends Authenticatable
     ];
 
     /**
-     * The attributes that should be cast.
+     * Get the attributes that should be cast.
      *
-     * @var array<string, string>
+     * @return array<string, string>
      */
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-        'password' => 'hashed',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+        ];
+    }
+
+    /**
+     * this will hold the forms to be validated
+     */
+    public function validate() : array {
+        return [
+            'campus_id' => 'required',
+            'employee_id' => 'required',
+            'name' => 'required',
+            'email' => 'required|email',
+            'role' => 'required',
+            'password' => 'required|min:8|confirmed',
+        ];
+    }
+
+    public static function fetchUserById($id) {
+        return self::where('id', $id)->first();
+    }
+
+    public static function isMyCouncilType($council_type, $role) {
+        $response = false;
+        if ($council_type == 1) {
+            //todo: allow proponents if council type is join council meeting
+            return true;
+        }
+        if ($role == 0 && in_array($council_type , [1,2])) {
+            $response = true;
+        } else if($role == 1 &&  in_array($council_type , [1,3])) {
+            $response = true;
+        } else if($role == 2 && in_array($council_type, [1, 2, 3])) {
+            $response = true;
+        }
+
+
+        return $response;
+    }
+
+    public static function isProponent() {
+        $user = Auth::user();
+        return in_array($user->role, [0, 1, 2, 6]);
+    }
+
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class, 'employee_id');
+    }
+
+    public function campus()
+{
+    return $this->hasOneThrough(Campus::class, Employee::class, 'id', 'id', 'employee_id', 'campus');
+}
 }

@@ -9,6 +9,18 @@ class Analytics extends Controller
 {
   public function index()
   {
+    $user = auth()->user(); 
+    $role = $user->role;  
+    $level = $role == 3 ? 0 : ($role == 4 ? 1 : ($role == 5 ? 2 : 0)); 
+
+
+    if(in_array($role, [0,1,2,6])){
+
+    }else if(in_array($role, [3, 4])){
+
+    }else if ($role == 5){
+
+    }
     return view('content.dashboard.dashboards-analytics');
   }
 }

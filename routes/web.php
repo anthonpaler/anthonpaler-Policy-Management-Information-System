@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\dashboard\Analytics;
 use App\Http\Controllers\layouts\WithoutMenu;
 use App\Http\Controllers\layouts\WithoutNavbar;
 use App\Http\Controllers\layouts\Fluid;
@@ -45,10 +44,45 @@ use App\Http\Controllers\form_layouts\HorizontalForm;
 use App\Http\Controllers\tables\Basic as TablesBasic;
 
 use App\Http\Controllers\MeetingController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\dashboard\Analytics;
+
 
 
 // Main Page Route
-Route::get('/', [Analytics::class, 'index'])->name('dashboard-analytics');
+// Route::get('/', [Analytics::class, 'index'])->name('dashboard-analytics');
+
+Route::get('/', function () {
+    return view('content.auth.auth-login');
+  });
+
+Route::get('/login', [LoginController::class, 'index'])->name('login');
+Route::post('/auth/google-login', [LoginController::class, 'handleGoogleLogin'])->name('auth.google.login');
+Route::post('/logout', [LoginController::class, 'destroy'])->name('auth.logout');
+
+
+
+Route::middleware(['auth', 'local_secretary'])->prefix('local-campus-secretary')->group(function() {
+    Route::get('/dashboard', [Analytics::class, 'index'])->name('local_sec.dashboard');
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

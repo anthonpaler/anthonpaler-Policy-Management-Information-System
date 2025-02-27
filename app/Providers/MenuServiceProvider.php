@@ -3,6 +3,9 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
+
 
 class MenuServiceProvider extends ServiceProvider
 {
@@ -19,7 +22,7 @@ class MenuServiceProvider extends ServiceProvider
    */
   public function boot(): void
   {
-    $role = 1;
+    $role = Session::get('user_role');
     
     if(in_array($role, [0,1,2])){
       $verticalMenuJson = file_get_contents(base_path('resources/menu/proponent.json'));
