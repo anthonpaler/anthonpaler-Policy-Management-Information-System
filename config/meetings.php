@@ -24,8 +24,8 @@ return [
         // 5 => 'Special Meeting',
     ],
     'status' => [
-        0 => 'Active',
-        1 => 'Closed',
+        0 => 'Open',
+        1 => 'Close',
     ],
     'level' => [
         'Local',

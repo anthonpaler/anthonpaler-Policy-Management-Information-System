@@ -24,7 +24,7 @@ class MenuServiceProvider extends ServiceProvider
   {
     
 
-  $role = 7;
+  $role = 3;
     
     if(in_array($role, [0,1,2])){
       $verticalMenuJson = file_get_contents(base_path('resources/menu/proponent.json'));

@@ -33,9 +33,21 @@
                         </span>
                         <select class="form-control @error('type') is-invalid @enderror" name="council_type" required>
                                 <option value="">Select Meeting Type</option>
-                                @foreach (config('meetings.council_types.board_level') as $index => $item)
-                                    <option value="{{ $index }}" {{ old('type') == $index ? 'selected' : '' }}>{{ $item }}</option>
-                                @endforeach
+                                @if (auth()->user()->role == 3)
+                                    @foreach (config('meetings.council_types.local_level') as $index => $item)
+                                        <option value="{{ $index }}" {{ old('type') == $index ? 'selected' : '' }}>{{ $item }}</option>
+                                    @endforeach
+                                @endif
+                                @if (auth()->user()->role == 4)
+                                    @foreach (config('meetings.council_types.university_level') as $index => $item)
+                                        <option value="{{ $index }}" {{ old('type') == $index ? 'selected' : '' }}>{{ $item }}</option>
+                                    @endforeach
+                                @endif
+                                @if (auth()->user()->role == 5)
+                                    @foreach (config('meetings.council_types.board_level') as $index => $item)
+                                        <option value="{{ $index }}" {{ old('type') == $index ? 'selected' : '' }}>{{ $item }}</option>
+                                    @endforeach
+                                @endif
                         </select>
                         @error('type')
                             <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
@@ -270,7 +282,11 @@
                                     name="venue"
                                 >
                                     <option value="">Select Venue</option>
-                                
+                                    @foreach ($venues as $venue)
+                                    <option value="{{ $venue->id }}">
+                                        {{ $venue->name }}
+                                    </option>
+                                    @endforeach
                                 </select>
                                 @error('venue')
                                     <div class="invalid-feedback" style="display:block;">{{ $message }}</div>

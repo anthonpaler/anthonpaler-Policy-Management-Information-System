@@ -1,6 +1,6 @@
 @extends('layouts/contentNavbarLayout')
 
-@section('title', 'Create Meeting')
+@section('title', 'Meeting Information')
 
 @section('content')
 
@@ -26,7 +26,7 @@
           </div>
           <div class="meeting-head-text">
             <div class="d-flex justify-content-between gap-2">
-              <h4 class="">{{ config('meetings.quaterly_meetings.'.$meeting->quarter) }} {{ config("meetings.council_types." . ['local_level', 'university_level', 'board_level'][$meeting->level] . ".{$meeting->council_type}") }}
+              <h4 class="">{{ config('meetings.quaterly_meetings.'.$meeting->quarter) }} {{ config("meetings.council_types." . ['local_level', 'university_level', 'board_level'][$meeting->getMeetingCouncilType()] . ".{$meeting->council_type}") }}
               {{$meeting->year}}</h4>
               <div class="">
                   <span class="btn btn-sm btn-{{$meeting->status == 0 ? 'success' : "danger" }} me-1">{{$meeting->status == 0 ? 'Active' : "Closed" }}</span>
@@ -64,15 +64,7 @@
               <i class='bx bx-box'></i>
               <strong class="text-nowrap">Council Type : </strong>
               <span class="text-nowrap">
-                @if ($meeting->level === 0)
-                      {{ config("meetings.council_types.local_level.{$meeting->council_type}") }}
-                  @endif
-                  @if ($meeting->level === 1)
-                      {{ config("meetings.council_types.university_level.{$meeting->council_type}") }}
-                  @endif
-                  @if ($meeting->level === 2)
-                      {{ config("meetings.council_types.board_level.{$meeting->council_type}") }}
-                  @endif
+                {{ config("meetings.council_types." . ['local_level', 'university_level', 'board_level'][$meeting->getMeetingCouncilType()] . ".{$meeting->council_type}") }}
               </span>
             </div>
             <div class="d-flex flex-nowrap gap-3 align-items-center">

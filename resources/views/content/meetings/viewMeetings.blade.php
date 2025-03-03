@@ -80,7 +80,10 @@
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>Level</th>
+                            @if(in_array(session('user_role'), [3,4,5]))
+                                <th>Level</th>
+                            @endif
+                            <!-- <th>Level</th> -->
                             <th>Quarter</th>
                             <th>Year</th>
                             <th>Status</th>
@@ -88,59 +91,113 @@
                             <th>Council Type</th>
                             <th>Submission</th>
                             <th>Meeting Date</th>
-                            <th>My Proposals</th>
+                            @if(in_array(session('user_role'), [0,1,2,6]))
+                                <th>My Proposals</th>
+                            @endif
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="meetingsTableBody" class="table-border-bottom-0">
-                        <tr>
-                            <td  class="p-4">1</td>
-                            <td>
-                                {{ config('meetings.level.1') }}
-                            </td>
-                            <td>{{ config('meetings.quaterly_meetings.1') }}</td>
-                            <td>2025</td>
-                            <td>
-                                <span class="badge bg-label-success me-1" style="text-transform: none;">
-                                    {{ config('meetings.status.0') }}
-                                </span>
-                            </td>
-                            <td>
-                                
-                                <span class="badge bg-label-success me-1" style="text-transform: none;">
-                                    No
-                                </span>
-                            </td>
-                            <td>
-                                <div style="min-width: 200px">
-                                    <small class="mb-0 align-items-center d-flex w-100 text-wrap gap-2">
-                                        <i class='bx bx-radio-circle-marked text-primary'></i>
-                                        {{ config('meetings.council_types.local_level.1') }}
-                                    </small>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="d-flex flex-column gap-1">
-                                    
-                                </div>
-                            </td>
-                            <td>
-                                
-                            </td>
-                                <td>
-                                    <a href="" class="text-primary">
-                                        <small>
-                                            <i class='bx bx-file-blank' ></i>
-                                            0 Proposals
-                                        </small>
-                                    </a>
+                        @if ($meetings->isEmpty())
+                            <tr>
+                                <td colspan="10">
+                                    <div class="alert alert-warning mt-3" role="alert">
+                                        <i class="bx bx-info-circle"></i> There is no meetings at the moment.
+                                    </div>
                                 </td>
-                            <td>
-                                <a class="btn btn-sm btn-danger d-flex gap-2 disabled">
-                                    <i class='bx bx-lock'></i> Submission Closed
-                                </a>
-                            </td>
-                        </tr>
+                            </tr>
+                        @else
+                            @foreach($meetings as $index => $meeting)
+                                <tr>
+                                    <td  class="p-4">{{ $loop->iteration }}</td>
+                                    @if(in_array(session('user_role'), [3,4,5]))
+                                        <td>
+                                            {{ config('meetings.level.0') }}
+                                        </td>
+                                    @endif
+                                    <td>{{ config('meetings.quaterly_meetings.'.$meeting->quarter) }}</td>
+                                    <td>{{ $meeting->year }}</td>
+                                    <td>
+                                        <!-- <span class="badge bg-label-{{$meeting->status == 0? 'success' : 'danger'}} me-1" style="text-transform: none;">
+                                            {{ config('meetings.status.'.$meeting->status) }}
+                                        </span> -->
+                                        <div class="d-flex align-items-center gap-1 text-{{$meeting->status == 0 ? 'primary' : 'danger'}}">
+                                            {!! $meeting->status == 0 ? "<i class='bx bx-lock-open'></i>" : "<i class='bx bx-lock'></i>" !!}
+                                            {{ config('meetings.status.'.$meeting->status) }}
+                                        </div>
+
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-1 text-{{$meeting->has_order_of_business  ? 'primary' : 'danger'}}">
+                                            {!! $meeting->has_order_of_business  ?  "<i class='bx bx-like' ></i> Yes"  : "<i class='bx bx-dislike' ></i> No" !!}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div style="min-width: 200px">
+                                            <span class="mb-0 align-items-center d-flex w-100 text-wrap gap-2">
+                                                <i class='bx bx-radio-circle-marked text-{{ $actionColors[$meeting->council_type] ?? 'primary' }}'></i>
+                                                {{ config('meetings.council_types.local_level.1') }}
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex flex-column gap-1">
+                                            <span class=""><span class="text-primary">Start: </span>{{ \Carbon\Carbon::parse($meeting->submission_start)->format('F d, Y') }}</span>
+                                            <span class=""><span class="text-danger">End: </span> {{ \Carbon\Carbon::parse($meeting->submission_end)->format('F d, Y') }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span>
+                                            {{ $meeting->meeting_date_time ? \Carbon\Carbon::parse($meeting->meeting_date_time)->format('F d, Y, h:i A') : 'Not yet set' }}
+                                        </span>  
+                                    </td>
+                                    @if(in_array(session('user_role'), [0,1,2,6]))
+                                        <td>
+                                            <a href="" class="text-primary">
+                                                <span>
+                                                    <i class='bx bx-file-blank' ></i>
+                                                    0 Proposals
+                                                </span>
+                                            </a>
+                                        </td>
+                                    @endif
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <a  href="{{ route(getUserRole().'.meetings.details', ['level' => $meeting->getMeetingLevel(), 'meeting_id'=> encrypt($meeting->id)]) }}" class="btn btn-icon p-0" data-bs-toggle="tooltip" data-bs-offset="0,8" data-bs-placement="top" data-bs-original-title="View Meeting">
+                                                <i class="fa-regular fa-eye" style="font-size: 1.1em; margin-right: -10px;"></i>
+                                            </a>
+                                            <a href="{{ route(getUserRole().'.meeting.edit_meeting', ['level' => $meeting->getMeetingLevel(), 'meeting_id' => Crypt::encrypt($meeting->id)])}}" class="btn btn-icon p-0" data-bs-toggle="tooltip" data-bs-offset="0,8" data-bs-placement="top" data-bs-original-title="Edit Meeting">
+                                                <i class='bx bx-edit'></i> 
+                                            </a>
+                                            @if ($meeting->status == 1)
+                                                <a class="btn btn-sm btn-danger d-flex gap-2 disabled">
+                                                    <i class='bx bx-lock'></i> Meeting Closed
+                                                </a>
+                                            @else
+                                                <div class="dropdown">
+                                                    <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                                        <i class="bx bx-dots-vertical-rounded"></i>
+                                                    </button>
+                                                    <div class="dropdown-menu">
+
+                                                    @if(!$meeting->has_order_of_business)
+                                                        @if($meeting->meeting_date_time) 
+                                                            <a class="dropdown-item" href="{{ route(getUserRole().'.order_of_business.view-generate', ['level' => $meeting->getMeetingLevel(), 'meeting_id'=> encrypt($meeting->id)]) }}">
+                                                                <i class='bx bx-up-arrow-circle me-1'></i> Generate OOB
+                                                            </a>
+                                                        @else
+                                                            <a class="dropdown-item text-danger" href="#" onclick="showToastrWarning()">
+                                                                <i class='bx bx-up-arrow-circle me-1'></i> Generate OOB
+                                                            </a>
+                                                        @endif
+                                                    @endif
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        @endif
                     </tbody>
                 </table>
             </div>

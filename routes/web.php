@@ -44,6 +44,7 @@ use App\Http\Controllers\form_layouts\HorizontalForm;
 use App\Http\Controllers\tables\Basic as TablesBasic;
 
 use App\Http\Controllers\MeetingController;
+use App\Http\Controllers\OrderOfBusinessController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\dashboard\Analytics;
 
@@ -74,7 +75,15 @@ Route::middleware(['auth', 'local_secretary'])->prefix('local-campus-secretary')
     Route::get('/meetings/create-meeting', [MeetingController::class, 'viewCreateMeeting'])->name('local_sec.view_create_meeting');
     Route::post('/meetings/create', [MeetingController::class, 'createMeeting'])->name('local_sec.meetings.create');
 
-    Route::get('/meetings/edit-meeting', [MeetingController::class, 'viewEditMeeting'])->name('local_sec.edit_meeting');
+
+    Route::get('/meetings/generate-order-of-business/{level}/{meeting_id}', [OrderOfBusinessController::class, 'viewGenerateOOB'])->name('local_sec.order_of_business.view-generate');
+   
+    Route::get('/meetings/meeting-details/{level}/{meeting_id}', [MeetingController::class, 'viewMeetingDetails']
+    )->name('local_sec.meetings.details');
+
+    Route::get('/meetings/edit/{level}/{meeting_id}', [MeetingController::class, 'viewEditMeeting'])->name('local_sec.meeting.edit_meeting');
+
+    Route::post('/meetings/save-edit/{level}/{meeting_id}', [MeetingController::class, 'EditMeeting'])->name('local_sec.meetings.save-edit');
 });
 
 
