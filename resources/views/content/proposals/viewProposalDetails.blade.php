@@ -167,35 +167,35 @@
                             @enderror
                         </div>
                         <div class="mb-3">
-                            <label class="form-label" for="sub_type">PROPOSAL FILE/S</label>
-                            <div class="table-responsive text-nowrap">
-                                <input type="file" id="file-upload" style="display: none;" accept="application/pdf">
-                                <table class="table table-bordered">
-                                    <thead>
-                                        <tr>
-                                            <th style="width: 350px;">File Name</th>
-                                            <th style="width: 150px;">Status</th>
-                                            <th style="width: 150px;">Version</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($proposal->files as $file)
-                                            @if ($file->is_active == 1)
-                                                <tr>
-                                                    <td>
-                                                        <div style="width: 350px;">
-                                                            <small class="text-wrap text-primary"  data-bs-toggle="modal" 
-                                                            data-bs-target="#fileModal"
-                                                            data-file-url="/storage/proposals/{{$file->file}}">{{ $file->file }} </small>
-                                                        </div>
-                                                    </td>
-                                                    <td>{{ config('proposals.proposal_file_status.'.$file->file_status ) }}</td>
-                                                    <td>Version {{ $file->version }}</td>
-                                                </tr>
-                                            @endif
-                                        @endforeach
-                                    </tbody>
-                                </table>
+                            <label class="form-label" for="">PROPOSAL FILE/S</label>
+                            <div class="proposal-file-con mb-2">
+                                @php
+                                    $countLatestVersion = 0;
+                                @endphp
+                                @foreach ($proposal->files as $file)
+                                    @if ($file->is_active == 1)
+                                        @php
+                                            $countLatestVersion++;
+                                        @endphp
+                                        <div class="proposal-file-card">
+                                            <div class="proposal-file-card-header">
+                                                <span class="custom-badge version">Version {{ $file->version }}</span>
+                                                <span class="custom-badge file-status">{{ config('proposals.proposal_file_status.'.$file->file_status ) }}</span>
+                                            </div>
+                                            <div class="proposal-file-card-body" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#fileModal"
+                                                data-file-url="/storage/proposals/{{$file->file}}">
+                                                <div class="proposal-file-img">
+                                                    <img src="{{ asset('assets/img/icons/document/folder_2.png') }}" alt="">
+                                                </div>
+                                                <small data-bs-toggle="tooltip" data-bs-placement="top" title="{{ pathinfo($file->file, PATHINFO_FILENAME) . '.' . pathinfo($file->file, PATHINFO_EXTENSION) }}">
+                                                    {{ Str::limit(pathinfo($file->file, PATHINFO_FILENAME), 15, '...') . '.' . pathinfo($file->file, PATHINFO_EXTENSION) }}
+                                                </small>
+                                            </div>
+                                        </div>
+                                    @endif
+                                @endforeach
                             </div>
                         </div>
                 </div>

@@ -241,9 +241,15 @@
                                 </div>
                             </div>
                             <div class="col">
+                                @php
+                                    $minMeetingDate = isset($meeting) && $meeting->submission_end 
+                                        ? (new DateTime($meeting->submission_end, new DateTimeZone('Asia/Manila')))->modify('+1 day')->format('Y-m-d\TH:i') 
+                                        : date('Y-m-d\TH:i');
+                                @endphp
+
                                 <div class="mb-3">
                                     <label class="form-label" for="meeting_date_time">Meeting Date & Time</label>
-                                    <div class="input-group ">
+                                    <div class="input-group">
                                         <span id="basic-icon-default-submission-start" class="input-group-text">
                                             <i class="bx bx-calendar"></i>
                                         </span>
@@ -253,13 +259,14 @@
                                             name="meeting_date_time"
                                             class="form-control @error('meeting_date_time') is-invalid @enderror"
                                             value="{{ isset($meeting) && $meeting->meeting_date_time ? (new DateTime($meeting->meeting_date_time, new DateTimeZone('Asia/Manila')))->format('Y-m-d\TH:i') : '' }}"
-                                            min="{{ date('Y-m-d') }}"
+                                            min="{{ $minMeetingDate }}"
                                         />
                                         @error('meeting_date_time')
                                             <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
                                         @enderror
                                     </div>
                                 </div>
+
                             </div>
                         </div>
                         <div class="row  {{ $meeting->modality == 2 ||   $meeting->modality == 3 ? '': 'd-none'}}" id="onlineModeInfo">

@@ -1,0 +1,67 @@
+/* CUSTOM ACTION BUTTON */
+.action-btn{
+    height: 32px;
+    border-radius: 5px;
+    border: 0;
+    padding: 0 10px;
+    color: var(--bs-secondary);
+    position: relative; 
+    background-color: var(--bs-secondary-bg-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.action-btn i{
+    font-size: 1em;
+}
+
+.action-btn.primary:hover{
+    background-color: var(--bs-primary-bg-subtle);
+    color: var(--bs-primary);
+    transition: .3s;
+}
+.action-btn.danger:hover{
+    background-color: var(--bs-danger-bg-subtle);
+    color: var(--bs-danger);
+    transition: .3s;
+}
+.action-btn.success:hover{
+    background-color: var(--bs-success-bg-subtle);
+    color: var(--bs-success);
+    transition: .3s;
+}
+
+.action-btn .tooltiptext{
+    visibility: hidden;
+    width: auto;
+    background-color: var(--bs-secondary-bg-subtle); 
+    color: var(--bs-dark); 
+    text-align: center;
+    border-radius: 5px;
+    padding: 5px 10px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%; 
+    left: 50%;
+    transform: translateX(-50%); 
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: .9em;
+    font-weight: 500;
+}
+
+.action-btn .tooltiptext::after {
+    content: '';
+    position: absolute;
+    top: 100%; 
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 5px;
+    border-style: solid;
+    border-color: var(--bs-secondary-bg-subtle) transparent transparent transparent;
+}
+
+.action-btn:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}

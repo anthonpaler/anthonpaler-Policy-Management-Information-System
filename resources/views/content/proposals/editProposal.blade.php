@@ -184,7 +184,7 @@
                             @enderror
                         </div>
                         <div class="mb-3">
-                            <label class="form-label" for="sub_type">PROPOSAL FILE/S</label>
+                            <label class="form-label" for="">PROPOSAL FILE/S</label>
                             <input type="file" id="file-upload" style="display: none;" accept=".pdf, .xls, .xlsx, .csv"
                             >
                             <div class="proposal-file-con mb-2">

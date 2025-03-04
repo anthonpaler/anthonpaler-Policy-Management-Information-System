@@ -75,5 +75,17 @@ class LocalCouncilMeeting extends Model
     {
         return $this->belongsTo(Venues::class, 'venue_id');
     }
-    
+
+    // GET PROPOSAL DETAILS
+    public function proposals()
+    {
+        return $this->hasManyThrough(
+            Proposal::class, 
+            LocalMeetingAgenda::class, 
+            'local_council_meeting_id', 
+            'id', 
+            'id', 
+            'local_proposal_id'
+        );
+    }
 }

@@ -37,12 +37,21 @@ class LoginController extends Controller
 
         $employee = DB::table('employees')->find($user->employee_id);
 
+        // SESSIONS
         session(['user_role' => $user->role]);
         session(['name' => $user->name]);
         session(['profile_photo' => $user->image]);
         session(['employee_id' => $user->employee_id]);
         session(['campus_id' => $employee->campus]);
+
+        $isProponent = in_array($user->role, [0,1,2,6]);
+        $isSecretary = in_array($user->role, [3,4,5]);
+
+        session(['isProponent' => $isProponent]);
+        session(['isSecretary' => $isSecretary]);
+
         
+
 
         Auth::login($user);
         return response()->json([

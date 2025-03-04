@@ -26,6 +26,7 @@ return [
         1 => 'Endorsement for UACAD',
         2 => 'Endorsement for UADCO',
         3 => 'Endorsement for BOR',
+        
     ],
     'proposal_file_status' => [
         1 => 'Pending',

@@ -30,21 +30,23 @@ class MeetingController extends Controller
             }
             $meetings = LocalCouncilMeeting::where('campus_id', $campus_id)
             ->whereIn('council_type', $allowedCouncilTypes)
-            // ->withCount(['proposals' => function ($query) use ($employeeId) {
-            //     $query->where('proponent_id', $employeeId); 
-            // }])
+            ->withCount(['proposals' => function ($query) use ($employeeId) {
+                $query->where('employee_id', $employeeId); 
+            }])
             ->get();
+
+            // dd($meetings->toArray()); 
         }
-        if($level == 0){
+        if($role == 3 && $level == 0){
             $meetings = LocalCouncilMeeting::where('campus_id', $campus_id)
             ->get();
         }
        
-        if($level == 1){
+        if($role == 4 && $level == 1){
             $meetings = UniversityCouncilMeeting::get();
         }
 
-        if($level == 2){
+        if($role == 5 && $level == 2){
             $meetings = BorMeeting::get();
         }
        

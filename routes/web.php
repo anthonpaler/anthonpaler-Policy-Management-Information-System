@@ -45,6 +45,7 @@ use App\Http\Controllers\tables\Basic as TablesBasic;
 
 use App\Http\Controllers\MeetingController;
 use App\Http\Controllers\OrderOfBusinessController;
+use App\Http\Controllers\ProposalController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\dashboard\Analytics;
 
@@ -68,22 +69,41 @@ Route::middleware(['auth', 'super_admin'])->prefix('super-admin')->group(functio
 });
 
 
+// PROPONENT
+Route::middleware(['auth', 'proponents'])->prefix('proponents')->group(function() {
+  Route::get('/dashboard', [Analytics::class, 'index'])->name('proponent.dashboard');
+  Route::get('/meetings', [MeetingController::class, 'viewMeetings'])->name('proponent.meetings');
+  Route::get('/meetings/meeting-details/{level}/{meeting_id}', [MeetingController::class, 'viewMeetingDetails']
+    )->name('proponent.meetings.details');
+  Route::get('/meetings/submit-proposal/{level}/{meeting_id}', [ProposalController::class, 'viewSubmitProposal'])->name('proponent.meetings.submit-proposal');
+  Route::post('/proposals/store/{meeting_id}', [ProposalController::class, 'submitProposal'])->name('proponent.proposals.store');
+  Route::post('/projects/media', [ProposalController::class, 'storeMedia'])->name('proponent.projects.storeMedia');
+  Route::post('/projects/media/delete', [ProposalController::class, 'deleteMedia'])->name('proponent.media.delete');
+  Route::get('/search-users', [ProposalController::class, 'searchUsers'])->name('proponent.search-users');
+  Route::get('/my-proposals', [ProposalController::class, 'viewMyProposals'])->name('proponent.proposals');
+  Route::get('/my-proposal/edit-proposal/{proposal_id}', [ProposalController::class, 'viewEditProposal'])->name('proponent.proposal.edit');
+  Route::get('/my-proposals', [ProposalController::class, 'viewMyProposals'])->name('proponent.proposals');
+  Route::get('/proposals/details/{proposal_id}', [ProposalController::class, 'viewProposalDetails'])->name('proponent.proposal.details');
+  Route::post('/proposals/edit/{proposal_id}', [ProposalController::class, 'editProposal'])->name('proponent.proposal.edit.save');
+});
 
+
+// LOCAL SECRETARY
 Route::middleware(['auth', 'local_secretary'])->prefix('local-campus-secretary')->group(function() {
     Route::get('/dashboard', [Analytics::class, 'index'])->name('local_sec.dashboard');
     Route::get('/meetings', [MeetingController::class, 'viewMeetings'])->name('local_sec.meetings');
     Route::get('/meetings/create-meeting', [MeetingController::class, 'viewCreateMeeting'])->name('local_sec.view_create_meeting');
     Route::post('/meetings/create', [MeetingController::class, 'createMeeting'])->name('local_sec.meetings.create');
-
-
-    Route::get('/meetings/generate-order-of-business/{level}/{meeting_id}', [OrderOfBusinessController::class, 'viewGenerateOOB'])->name('local_sec.order_of_business.view-generate');
-   
     Route::get('/meetings/meeting-details/{level}/{meeting_id}', [MeetingController::class, 'viewMeetingDetails']
     )->name('local_sec.meetings.details');
 
     Route::get('/meetings/edit/{level}/{meeting_id}', [MeetingController::class, 'viewEditMeeting'])->name('local_sec.meeting.edit_meeting');
 
     Route::post('/meetings/save-edit/{level}/{meeting_id}', [MeetingController::class, 'EditMeeting'])->name('local_sec.meetings.save-edit');
+
+    
+    Route::get('/meetings/generate-order-of-business/{level}/{meeting_id}', [OrderOfBusinessController::class, 'viewGenerateOOB'])->name('local_sec.order_of_business.view-generate');
+   
 });
 
 
