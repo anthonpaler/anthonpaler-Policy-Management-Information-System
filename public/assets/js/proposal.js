@@ -237,4 +237,105 @@ $(document).ready(function() {
             }
         });
     });
+
+
+    // SHOW PROPOSAL FILE
+    $(document).on('click', '.view-files', function (e) {
+        e.preventDefault();
+        var files = $(this).data("files"); // Array of objects
+        var title = $(this).data("title");
+    
+        console.log(files); // Debugging: Check what files array contains
+    
+        if (!files || files.length === 0) {
+            $("#modalFiles").html('<p class="text-danger">No files available.</p>');
+        } else {
+            let fileListHtml = `
+                <div class="">
+                    <div class="d-flex flex-column">
+                        <span class="form-label">Title:</span>
+                        <h6 id="modal-title">${title || 'No Title Available'}</h6>
+                    </div>
+                    <div class="">
+                        <span class="form-label">Files:</span>
+                        <div class="d-flex flex-column gap-2 mt-2">
+            `;
+    
+            $.each(files, function (index, fileObj) {
+                if(fileObj.is_active == true){
+                    fileListHtml += `
+                    <a href="#" class="badge bg-label-primary d-flex align-items-center gap-2" style="text-transform: none;"
+                    data-bs-toggle="modal" 
+                    data-bs-target="#fileModal"
+                    data-file-url="/storage/proposals/${fileObj.file}" >
+                        <i class='bx bx-file-blank'></i><span>${fileObj.file}</span>
+                    </a>`;
+                }
+            });
+    
+            fileListHtml += `</div></div></div>`;
+            $("#modalFiles").html(fileListHtml);
+        }
+    
+        var myModal = new bootstrap.Modal(document.getElementById('proposalFIleModal'));
+        myModal.show();
+    });
+    
+    
+    $('#fileModal').on('show.bs.modal', function (event) {
+        const button = $(event.relatedTarget); 
+        const fileUrl = button.data('file-url'); 
+
+        $('#fileIframe').attr('src', fileUrl); 
+    });
+
+    // DELETE PROPOSAL
+    $(".delete-proposal").on('click', function(e){
+        e.preventDefault();
+        var proposal_id = $(this).data("id");
+        var is_delete_disabled = $(this).data("deletable");
+        var button = $(this); 
+
+        if(is_delete_disabled){
+            showAlert("danger", "Can't Delete!", "You can no longer delete this proposal.");
+            return;
+        }
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You won't be able to revert this!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, delete it!"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '/proponents/proposal/delete',
+                    type: "POST",
+                    data: { proposal_id: proposal_id },
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function (response) {
+                        if(response.type == 'success'){
+                            Swal.fire({
+                                title: "Deleted!",
+                                text: "Your file has been deleted.",
+                                icon: "success"
+                            });
+                            button.closest("tr").remove(); 
+                        }else{
+                            showAlert("danger", response.title, response.message);
+                        }
+                    },            
+                    error: function (xhr, status, error) {
+                        console.log(xhr.responseText);
+                        let response = JSON.parse(xhr.responseText);
+                        showAlert("danger", response.title, response.message);
+                    }
+                });
+            }
+        });
+    });
 })

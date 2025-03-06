@@ -105,10 +105,10 @@
                                         <i class='bx bxs-edit' ></i>
                                         <span class="tooltiptext">Edit</span>
                                     </a>
-                                    <a class="action-btn danger delete-proposal ">
+                                    <button class="action-btn danger delete-proposal" data-id="{{ encrypt($proposal->id) }}">
                                         <i class='bx bx-trash-alt' ></i>
                                         <span class="tooltiptext">Delete</span>
-                                    </a>
+                                    </button>
                                     <a class="action-btn primary" href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->id)])}}">
                                         <i class='bx bx-right-top-arrow-circle' ></i>
                                         <span class="tooltiptext">View</span>

@@ -65,10 +65,10 @@
                         <div class="mb-3" id="subTypeContainer" style="">
                             <label class="form-label" for="proponents">Proponent/s <span class="ms-1 text-danger">*</span></label>
                             <div class="form-control proponent-con" style="">
-                                <input type="text" class="form-control mb-3" value="{{$proposal->proponent_id}}" id="proponents" name="proponents" hidden>
+                                <input type="text" class="form-control mb-3" value="{{$proposal->employee_id}}" id="proponents" name="proponents" hidden>
                                 <ul class="" id="proponentListCon">
                                     @foreach ($proposal->proponentsList as $proponent)
-                                        <li data-id="{{$proponent->id}}" data-name="{{$proponent->name}}" data-email="{{$proponent->email}}" data-image="{{$proponent->image}}" id="primaryProponent">
+                                        <li data-id="{{$proponent->employee_id}}" data-name="{{$proponent->name}}" data-email="{{$proponent->email}}" data-image="{{$proponent->image}}" id="primaryProponent">
                                             <div class="d-flex justify-content-between align-items-center ms-2 me-2">
                                                 <div class="d-flex justify-content-start align-items-center ">
                                                     <div class="avatar-wrapper">
@@ -83,7 +83,7 @@
                                                         <small>{{$proponent->email}}</small>
                                                     </div>
                                                 </div>
-                                                @if($proponent->id === auth()->user()->id)
+                                                @if($proponent->employee_id === session('employee_id'))
                                                     <div class="">
                                                         <small class="badge bg-label-secondary d-flex align-items-center gap-2">
                                                             <i class='bx bx-user-check'></i>Submitter
@@ -91,7 +91,7 @@
                                                     </div>
                                                 @else
                                                     <div class="">
-                                                        <small class="badge bg-label-danger d-flex align-items-center gap-2 remove" data-id="{{$proponent->id}}"><i class='bx bx-trash'></i>Remove</small>
+                                                        <small class="badge bg-label-danger d-flex align-items-center gap-2 remove" data-id="{{$proponent->employee_id}}"><i class='bx bx-trash'></i>Remove</small>
                                                     </div> 
                                                 @endif
                                             </div>
@@ -101,7 +101,7 @@
                                     @php
                                         $selectedProponents = $proposal->proponentsList->map(function ($proponent) {
                                             return [
-                                                'id' => $proponent->id,
+                                                'id' => $proponent->employee_id,
                                                 'name' => $proponent->name,
                                                 'email' => $proponent->email,
                                                 'image' => $proponent->image,

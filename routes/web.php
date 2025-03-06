@@ -85,6 +85,7 @@ Route::middleware(['auth', 'proponents'])->prefix('proponents')->group(function(
   Route::get('/my-proposals', [ProposalController::class, 'viewMyProposals'])->name('proponent.proposals');
   Route::get('/proposals/details/{proposal_id}', [ProposalController::class, 'viewProposalDetails'])->name('proponent.proposal.details');
   Route::post('/proposals/edit/{proposal_id}', [ProposalController::class, 'editProposal'])->name('proponent.proposal.edit.save');
+  Route::post('/proposal/delete', [ProposalController::class, 'deleteProposal'])->name('proponent.proposal.delete');
 });
 
 
