@@ -22,13 +22,13 @@
 @endphp 
 <!-- Basic Bootstrap Table -->
 <div class="card">
-    <div class="d-flex gap-3 justify-content-between align-items-center p-4">
+    <div class="d-flex gap-3 justify-content-between align-items-center p-4 flex-wrap">
         <h5 class="m-0">
-            {{ config('meetings.quaterly_meetings.'.$meeting->quarter) }} @if ($meeting->level == 0)
+            {{ config('meetings.quaterly_meetings.'.$meeting->quarter) }} @if ($meeting->getMeetingCouncilType() == 0)
                 {{ config('meetings.council_types.local_level.'.$meeting->council_type) }}
-            @elseif ($meeting->level == 1)
+            @elseif ($meeting->getMeetingCouncilType() == 1)
                 {{ config('meetings.council_types.university_level.'.$meeting->council_type) }}
-            @else
+                @elseif ($meeting->getMeetingCouncilType() == 2)
                 {{ config('meetings.council_types.board_level.'.$meeting->council_type) }}
             @endif 
             {{ $meeting->year }}
@@ -42,77 +42,80 @@
     </div>
     <div class="d-flex justify-content-between w-100 ps-4 pe-4">
         <div class="w-100 ">
-            <div class="d-flex justify-content-between w-100 gap-3 border-bottom pb-3">
+            <div class="d-flex justify-content-between w-100 gap-3 border-bottom pb-3 flex-wrap">
                 <h6 class="text-muted p-0">LIST OF MEETING'S PROPOSAL</h6>
 
-                @if (!in_array(auth()->user()->role, [0,1,2,6]))
+                @if (session('isSecretary'))
                     <div class="d-flex justify-content-between gap-3">
-                        <div class="d-flex gap-3 w-100">
-                            <div class="btn-group">
-                                <button type="button" class="btn btn-primary text-nowrap">Proposal Action</button>
-                                <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
-                                <span class="visually-hidden">Toggle Dropdown</span>
-                                </button>
+                        <div class="d-flex gap-3 w-100 flex-wrap">
+                            <div>
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-primary text-nowrap">Proposal Action</button>
+                                    <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <span class="visually-hidden">Toggle Dropdown</span>
+                                    </button>
 
-                                @php
-                                    $currentDateTime = now();
-                                    $meetingDateTime = \Carbon\Carbon::parse($meeting->meeting_date_time);
-                                @endphp
+                                    @php
+                                        $currentDateTime = now();
+                                        $meetingDateTime = \Carbon\Carbon::parse($meeting->meeting_date_time);
+                                    @endphp
 
-                                <ul class="dropdown-menu">
-                                    @foreach (array_slice(config('proposals.proposal_action'), 0, 7, true) as $index => $item)
-                                        @php
-                                            // Skip indices 2, 4, 5, and 6
-                                            if (in_array($index, [1, 4, 5, 6])) {
-                                                continue;
-                                            }
-
-                                            if(auth()->user()->role == 5 ){
-                                                if (in_array($index, [3])) {
+                                    <ul class="dropdown-menu">
+                                        @foreach (array_slice(config('proposals.proposal_action'), 0, 7, true) as $index => $item)
+                                            @php
+                                                // Skip indices 2, 4, 5, and 6
+                                                if (in_array($index, [1, 4, 5, 6])) {
                                                     continue;
                                                 }
-                                            }
 
-                                            $isDisabled = true; 
+                                                if(auth()->user()->role == 5 ){
+                                                    if (in_array($index, [3])) {
+                                                        continue;
+                                                    }
+                                                }
+
+                                                $isDisabled = true; 
+                                                
+                                                if ($meetingDateTime) {
+                                                    if ($currentDateTime->greaterThan($meetingDateTime)) {
+                                                        $isDisabled = in_array($index, [0, 1]); // Enable 0 & 1 if current date is before meeting date
+                                                    }
+                                                    else {
+                                                        $isDisabled = in_array($index, [2, 3, 4, 5, 6]); // Enable 2-6 if current date is after or equal to meeting date
+                                                    }
+                                                }
+                                            @endphp
                                             
-                                            if ($meetingDateTime) {
-                                                if ($currentDateTime->greaterThan($meetingDateTime)) {
-                                                    $isDisabled = in_array($index, [0, 1]); // Enable 0 & 1 if current date is before meeting date
-                                                }
-                                                 else {
-                                                    $isDisabled = in_array($index, [2, 3, 4, 5, 6]); // Enable 2-6 if current date is after or equal to meeting date
-                                                }
-                                            }
-                                        @endphp
-                                        
-                                        <li>
-                                            <span class="dropdown-item proposal-action {{ $index === 6 ? 'text-danger' : '' }} {{ $isDisabled ? 'disabled' : '' }}" 
-                                                data-id="{{ $index }}" 
-                                                data-label="{{ $item }}">
-                                                {{ $item }}
-                                            </span>
-                                        </li>
+                                            <li>
+                                                <span class="dropdown-item proposal-action {{ $index === 6 ? 'text-danger' : '' }} {{ $isDisabled ? 'disabled' : '' }}" 
+                                                    data-id="{{ $index }}" 
+                                                    data-label="{{ $item }}">
+                                                    {{ $item }}
+                                                </span>
+                                            </li>
 
-                                        @if (in_array($index, [1, 5])) 
-                                            <li><hr class="dropdown-divider"></li>
-                                        @endif
-                                    @endforeach
-                                </ul>
-
+                                            @if (in_array($index, [1, 5])) 
+                                                <li><hr class="dropdown-divider"></li>
+                                            @endif
+                                        @endforeach
+                                    </ul>
+                                </div>
                             </div>
-                            <div class=" flex-grow-1">
-                                <input type="text" class="form-control flex-grow-1" data-id="" value="Select Action" id="proposalStatusInput"  disabled>
+                            <div class="d-flex gap-2">
+                                <div class=" flex-grow-1">
+                                    <input type="text" class="form-control flex-grow-1" data-id="" value="Select Action" id="proposalStatusInput"  disabled>
+                                </div>
+                                @if ($meeting->status == 1)
+                                    <button type="button" class="btn btn-danger d-flex gap-2" disabled>
+                                        <i class='bx bxs-lock-alt' ></i>
+                                    </button>
+                                @else
+                                    <button type="button" id="okActionButton" class="btn btn-success d-flex gap-2" {{ $meeting->status == 1 ? 'disabled': '' }}>
+                                        <i class="fa-regular fa-circle-check"></i>
+                                    </button>
+                                @endif
                             </div>
                         </div>
-                        @if ($meeting->status == 1)
-                            <button type="button" class="btn btn-danger d-flex gap-2" disabled>
-                                <i class='bx bxs-lock-alt' ></i>
-                            </button>
-                        @else
-                            <button type="button" id="okButton" class="btn btn-success d-flex gap-2" {{ $meeting->status == 1 ? 'disabled': '' }}>
-                                <i class="fa-regular fa-circle-check"></i>
-                            </button>
-                        @endif
                     </div>
                 @endif
             </div>
@@ -124,7 +127,7 @@
                 <table id="proposalTable" class="datatables-basic table table-striped w-100">
                     <thead>
                         <tr>
-                            @if (!in_array(auth()->user()->role, [0,1,2,6]))
+                            @if (session('isSecretary'))
                                 <td>
                                     <!-- <input type="checkbox" class="form-check-input"> -->
                                 </td>
@@ -143,7 +146,7 @@
                     <tbody class="">
                         @foreach($proposals as $proposal)
                         <tr data-proponent="{{ $proposal->proponent }}" data-title="{{ $proposal->title }}">
-                            @if (!in_array(auth()->user()->role, [0,1,2,6]))
+                            @if (session('isSecretary'))
                                 @if ($meeting->status == 1)
                                     <td>
                                         <span class="text-danger"><i class='bx bxs-lock-alt' ></i></span>       
@@ -168,7 +171,7 @@
                             @endif
                             <td>{{ $loop->iteration }}</td>
                             <td>
-                            <div class="d-flex align-items-center">
+                                <div class="d-flex align-items-center">
                                     <div class="d-flex flex-column gap-3">
                                         @foreach ($proposal->proponentsList as $proponent)
                                             <div class="d-flex gap-3 align-items-center">
@@ -183,16 +186,16 @@
                             </td>
                             <td>
                                 <div style="min-width: 300px; max-width: 500px; white-space: wrap; ">
-                                    <a href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->id)]) }}" >{{ $proposal->title }}</a>
+                                    <a href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->id)]) }}" >{{ $proposal->proposal->title }}</a>
                                 </div>
                             </td>
                             <td>
                                 <span class="badge bg-label-{{ $actionColors[$proposal->type] ?? 'primary' }}" style="text-transform: none;">
-                                    {{ config('proposals.matters.'.$proposal->type) }}
+                                    {{ config('proposals.matters.'.$proposal->proposal->type) }}
                                 </span>
                             </td>
-                            <td> {{ config('proposals.requested_action.'.$proposal->action) }}</td>
-                            <td>{{config('meetings.level.'.$proposal->level)}}</td>
+                            <td> {{ config('proposals.requested_action.'.$proposal->proposal->action) }}</td>
+                            <td>{{config('meetings.level.'.$proposal->proposal->getCurrentLevelAttribute())}}</td>
                             <td>
                                 <div style="width: 230px; white-space: nowrap; ">
                                     <small class="mb-0 align-items-center d-flex w-px-100">
@@ -288,17 +291,21 @@
 <div class="modal fade" id="fileModal" tabindex="-1" aria-labelledby="fileModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
-        <div class="modal-header">
-            <h5 class="modal-title" id="fileModalLabel">File Preview</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-            <iframe id="fileIframe" src="" width="100%" height="600px" frameborder="0"></iframe>
-        </div>
+            <div class="modal-header">
+                <div class="d-flex align-items-center gap-3">
+                    <h5 class="modal-title" id="fileModalLabel">File Preview</h5>
+                    <div class="d-flex align-items-center gap-3">
+                        <i class="bx bx-fullscreen full-screen-file-preview" id="toggleIframeFullscreen"></i>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <iframe id="fileIframe" src="" width="100%" height="600px" frameborder="0"></iframe>
+            </div>
         </div>
     </div>
 </div>
-
 
 <script>
     var proposalStatus = @json(config('proposals.status'));

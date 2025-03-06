@@ -16,8 +16,6 @@
   <!-- SLSU LOGO -->
   <link rel="icon" type="" href="{{ asset('assets/img/icons/brands/slsu_logo.png') }}" />
 
-  
-
   <!-- Include Styles -->
   @include('layouts/sections/styles')
 

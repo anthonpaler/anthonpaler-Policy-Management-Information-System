@@ -46,7 +46,7 @@
                         <div class="mb-3" id="subTypeContainer" style="">
                             <label class="form-label" for="proponents">Proponent/s</label>
                             <div class="form-control proponent-con" style="">
-                                <input type="text" class="form-control mb-3" value="{{$proposal->proponent_id}}" id="proponents" name="proponents" hidden>
+                                <input type="text" class="form-control mb-3" value="{{$proposal->employee_id}}" id="proponents" name="proponents" hidden>
                                 <ul class="" id="proponentListCon">
                                     @foreach ($proposal->proponentsList as $proponent)
                                         <li data-id="{{$proponent->employee_id}}" data-name="{{$proponent->name}}" data-email="{{$proponent->email}}" data-image="{{$proponent->image}}" id="primaryProponent">

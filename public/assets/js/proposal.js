@@ -338,4 +338,225 @@ $(document).ready(function() {
             }
         });
     });
+
+    // SELECT MULTIPLE PROPOSALS IN SECRETARY VIEW MEETING PROPOSAL
+    let selectedProposals = new Set();
+
+    $('.select-proposal').on('change', function() {
+        let proposalId = $(this).data('id');
+        if ($(this).is(':checked')) {
+            selectedProposals.add(proposalId);
+        } else {
+            selectedProposals.delete(proposalId);
+        }
+        console.log("Updated selected proposals:", Array.from(selectedProposals)); 
+    });
+
+    console.log(proposalStatus);
+    // UPDATE SELECTED PROPOSAL STATUS USING PROPOSAL ACTION
+    $('#okActionButton').on('click', function() {
+        var proposalStatusInput = $("#proposalStatusInput");
+        var action = proposalStatusInput.data('id'); 
+        var status_label = proposalStatus[action+1];
+        console.log(action)
+
+        if (action === undefined || action === "") {
+            showAlert('warning', 'No Selected Action!', 'Select First.');
+            return;
+        }
+        // console.log(action);
+        if (selectedProposals.size === 0) {
+            showAlert('warning', 'Warning!', 'No selected Proposal');
+            return;
+        }
+
+        $.ajax({
+            url: "/proposals/update-selected-proposal-status",
+            type: "POST",
+            data: {
+                _token: $('meta[name="csrf-token"]').attr('content'),
+                proposals: [...selectedProposals], 
+                action: action, 
+            },
+            beforeSend: function() {
+                $('#okButton').html(`<i class='bx bx-loader-alt bx-spin bx-rotate-90' ></i>`).prop('disabled', true);
+            },
+            success: function(response) {
+                console.log("Success Response:", response);
+
+                $('#okButton').html(`<i class="fa-regular fa-circle-check"></i>`).prop('disabled', false);
+            
+                if (response.type === 'success') {
+                    selectedProposals.forEach(id => {
+                        let row = $(`input[data-id="${id}"]`).closest('tr');
+                        
+                        row.find('td:eq(7) small')
+                        .html(`<i class='bx bx-radio-circle-marked'></i>${status_label}`)
+                        .removeClass()
+                        .addClass('mb-0 align-items-center d-flex w-px-100');
+                        
+                        // Disable checkbox
+                        row.find('input.select-proposal').prop('disabled', true).prop('checked', false);
+                    });
+            
+                    // Clear selection
+                    selectedProposals.clear();
+                    $('.select-proposal').prop('checked', false);
+            
+                    showAlert(response.type, response.title, response.message);
+                }else{
+                    showAlert(response.type, response.title, response.message);
+                }
+            },                
+            error: function(xhr, status, error) {
+                console.error({
+                    status: status,
+                    error: error,
+                    responseText: xhr.responseText
+                });
+                
+                $('#okButton').html(`<i class="fa-regular fa-circle-check"></i>`).prop('disabled', false);
+
+                showAlert('danger', 'Error!', 'Something Went Wrong!');
+            }
+        });
+    });
+
+    // ASSIGN PROPOSAL ACTION VALUE TO INPUT
+    $(".proposal-action").on('click', function(e) {
+        e.preventDefault();
+        
+        var action_id = $(this).data('id');
+        var action_label = $(this).data('label');
+    
+        var proposalStatusInput = $("#proposalStatusInput");
+    
+        proposalStatusInput.val(action_label);
+        proposalStatusInput.data('id', action_id); 
+        // alert(action_id + ' ' + action_label);
+        console.log(proposalStatusInput.data('id'));
+
+        if ([1, 4, 5, 6].includes(action_id)) {
+            $("#comment").prop('disabled', false);
+        } else {
+            $("#comment").prop('disabled', true);
+        }
+    });
+
+    // SELECT SPECIFIC FILES
+    let selectedProposalFiles = new Set();
+
+    $('.select-proposal-file').on('change', function() {
+        let proposalFileId = $(this).data('id');
+        let label = $(this).siblings("small");
+    
+        if ($(this).is(':checked')) {
+            selectedProposalFiles.add(proposalFileId);
+            label.html("SELECTED");
+        } else {
+            selectedProposalFiles.delete(proposalFileId);
+            label.html("SELECT"); 
+        }
+    
+        console.log("Updated selected proposal files: ", Array.from(selectedProposalFiles));
+    });
+
+    // UPDATE SPECIFIC PROPOSAL - SECRETARY POV
+    $("#updateProposalStatus").on('click', function(){
+        var proposalStatusInput = $("#proposalStatusInput");
+        var action = proposalStatusInput.data('id'); 
+        var status_label = proposalStatus[action+1];
+        var proposal_id = $("#updateProposalStatus").data('id');
+        var comment = $('#comment').val();
+
+        console.log("Selected Action: "+action);
+
+        if (action === undefined || action === "") {
+            showAlert('warning', 'No Selected Action!', 'Select First.');
+            return;
+        }
+
+        if ([1, 4, 5].includes(action)) {
+            if (selectedProposalFiles.size === 0) {
+                showAlert('warning', 'Warning!', 'Please select a file that needs revision');
+                return;
+            }
+
+            if(comment == ""){
+                showAlert('warning', 'Warning!', 'Please add a comments or suggestions');
+                return;
+            }
+        }
+
+        var formData = new FormData();
+        formData.append('_token', $('meta[name="csrf-token"]').attr('content'));
+        formData.append('proposal_id', proposal_id);
+        formData.append('action', action);
+        formData.append('comment', comment);
+
+        // Append selected proposal files
+        [...selectedProposalFiles].forEach((fileId, index) => {
+            formData.append(`proposal_files[${index}]`, fileId);
+        });
+
+        $.ajax({
+            url: "/proposals/update-proposal-status",
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            beforeSend: function() {
+                $("#updateProposalStatus").html(`<i class='bx bx-loader-alt bx-spin bx-rotate-90' ></i> Updating Proposal Status...`).prop('disabled', true);
+            },
+            success: function(response) {
+                console.log("Success Response:", response);
+                $("#updateProposalStatus").html(`<i class='bx bxs-send' ></i> Update Proposal Status`).prop('disabled', false);
+                showAlert(response.type, response.title, response.message);
+                location.reload(); 
+            },                
+            error: function(xhr, status, error) {
+                console.error({
+                    status: status,
+                    error: error,
+                    responseText: xhr.responseText
+                });
+                $("#updateProposalStatus").html(`<i class='bx bxs-send' ></i> Update Proposal Status`).prop('disabled', false);
+                showAlert('danger', 'Error!', 'Something Went Wrong!');
+            }
+        });
+
+    });
+
+    // UPDATE PROPOSAL DETAILS - SECRETARY POV
+    $("#updateProposalSec").on('click', function (e) {
+        e.preventDefault();
+        // alert("Clicked");
+        var proposalFrm = $("#editProposalFrm");
+        var actionUrl = proposalFrm.attr('action');
+    
+        $.ajax({
+            method: "POST",
+            url: actionUrl,
+            data: proposalFrm.serialize(),
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            beforeSend: function () {
+                $("#updateProposalSec").html(`<i class='bx bx-loader-alt bx-spin' ></i>
+                    <span>Saving Changes...</span> `).prop('disabled', true);
+            },
+            success: function (response) {
+                $("#updateProposalSec").html(`<i class='bx bx-save'></i>
+                    <span>Save Changes</span> `).prop('disabled', false);
+                showAlert(response.type, response.title, response.message);
+            },            
+            error: function (xhr, status, error) {
+                $("#updateProposalSec").html(`<i class='bx bx-save'></i>
+                    <span>Save Changes</span> `).prop('disabled', false);
+                console.log(xhr.responseText);
+                let response = JSON.parse(xhr.responseText);
+                showAlert("warning", response.title, response.message);
+            }
+        });
+    });
 })

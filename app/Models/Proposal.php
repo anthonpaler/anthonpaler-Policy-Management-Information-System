@@ -22,16 +22,19 @@ class Proposal extends Model
         'sub_type',
     ];
 
+    // GET PROPOSAL FILES
     public function files()
     {
         return $this->hasMany(ProposalFile::class, 'proposal_id');
     }
 
+    // GET EMPLOYEE DETAILS FROM THE PROPOSAL
     public function proponents()
     {
         return $this->belongsTo(Employee::class, 'employee_id');
     }
 
+    // GET CURRENT LEVEL OF THE PROPOSAL
     public function localAgendas()
     {
         return $this->hasMany(LocalMeetingAgenda::class, 'local_proposal_id');
@@ -53,16 +56,64 @@ class Proposal extends Model
         $inUniversity = $this->universityAgendas()->exists();
         $inBoard = $this->boardAgendas()->exists();
 
-        if ($inLocal && !$inUniversity) {
-            return 0;
-        } elseif ($inLocal && $inUniversity) {
-            return 1;
-        }
-        elseif ($inLocal && $inUniversity && $inBoard) {
+        if ($inBoard) {
             return 2;
+        } elseif ($inUniversity) {
+            return 1;
+        } elseif ($inLocal) {
+            return 0;
         }
 
         return 'Not Assigned';
+    }
+
+    // GETTING MEETING INFO
+    public function localMeeting()
+    {
+        return $this->hasOneThrough(
+            LocalCouncilMeeting::class,
+            LocalMeetingAgenda::class,
+            'local_proposal_id', // Foreign key on LocalMeetingAgenda
+            'id', // Primary key on LocalCouncilMeeting
+            'id', // Primary key on Proposal
+            'local_council_meeting_id' // Foreign key on LocalCouncilMeeting
+        );
+    }
+
+    public function universityMeeting()
+    {
+        return $this->hasOneThrough(
+            UniversityCouncilMeeting::class,
+            UniversityMeetingAgenda::class,
+            'university_proposal_id',
+            'id',
+            'id',
+            'university_meeting_id'
+        );
+    }
+
+    public function boardMeeting()
+    {
+        return $this->hasOneThrough(
+            BorMeeting::class,
+            BoardMeetingAgenda::class,
+            'board_proposal_id',
+            'id',
+            'id',
+            'bor_meeting_id'
+        );
+    }
+
+    public function getMeetingAttribute()
+    {
+        if ($this->getCurrentLevelAttribute() == 0) {
+            return $this->localMeeting;
+        } elseif ($this->getCurrentLevelAttribute() == 1) {
+            return $this->universityMeeting;
+        } elseif ($this->getCurrentLevelAttribute() == 2) {
+            return $this->boardMeeting;
+        }
+        return null;
     }
 
 

@@ -50,6 +50,12 @@ class LoginController extends Controller
         session(['isProponent' => $isProponent]);
         session(['isSecretary' => $isSecretary]);
 
+        $secretary_level = $user->role == 3 ? 0 : ($user->role == 4 ? 1 : ($user->role == 5 ? 2 : 0));
+
+        session(['secretary_level' => $secretary_level]);
+        
+        
+
         
 
 

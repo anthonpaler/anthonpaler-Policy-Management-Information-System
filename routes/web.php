@@ -68,7 +68,6 @@ Route::middleware(['auth', 'super_admin'])->prefix('super-admin')->group(functio
   Route::get('/dashboard', [Analytics::class, 'index'])->name('super_admin.dashboard');
 });
 
-
 // PROPONENT
 Route::middleware(['auth', 'proponents'])->prefix('proponents')->group(function() {
   Route::get('/dashboard', [Analytics::class, 'index'])->name('proponent.dashboard');
@@ -88,23 +87,25 @@ Route::middleware(['auth', 'proponents'])->prefix('proponents')->group(function(
   Route::post('/proposal/delete', [ProposalController::class, 'deleteProposal'])->name('proponent.proposal.delete');
 });
 
-
 // LOCAL SECRETARY
 Route::middleware(['auth', 'local_secretary'])->prefix('local-campus-secretary')->group(function() {
-    Route::get('/dashboard', [Analytics::class, 'index'])->name('local_sec.dashboard');
-    Route::get('/meetings', [MeetingController::class, 'viewMeetings'])->name('local_sec.meetings');
-    Route::get('/meetings/create-meeting', [MeetingController::class, 'viewCreateMeeting'])->name('local_sec.view_create_meeting');
-    Route::post('/meetings/create', [MeetingController::class, 'createMeeting'])->name('local_sec.meetings.create');
-    Route::get('/meetings/meeting-details/{level}/{meeting_id}', [MeetingController::class, 'viewMeetingDetails']
-    )->name('local_sec.meetings.details');
+  Route::get('/dashboard', [Analytics::class, 'index'])->name('local_sec.dashboard');
+  Route::get('/meetings', [MeetingController::class, 'viewMeetings'])->name('local_sec.meetings');
+  Route::get('/meetings/create-meeting', [MeetingController::class, 'viewCreateMeeting'])->name('local_sec.view_create_meeting');
+  Route::post('/meetings/create', [MeetingController::class, 'createMeeting'])->name('local_sec.meetings.create');
+  Route::get('/meetings/meeting-details/{level}/{meeting_id}', [MeetingController::class, 'viewMeetingDetails']
+  )->name('local_sec.meetings.details');
 
-    Route::get('/meetings/edit/{level}/{meeting_id}', [MeetingController::class, 'viewEditMeeting'])->name('local_sec.meeting.edit_meeting');
+  Route::get('/meetings/edit/{level}/{meeting_id}', [MeetingController::class, 'viewEditMeeting'])->name('local_sec.meeting.edit_meeting');
 
-    Route::post('/meetings/save-edit/{level}/{meeting_id}', [MeetingController::class, 'EditMeeting'])->name('local_sec.meetings.save-edit');
+  Route::post('/meetings/save-edit/{level}/{meeting_id}', [MeetingController::class, 'EditMeeting'])->name('local_sec.meetings.save-edit');
+  Route::get('/proposals', [ProposalController::class, 'viewMeetingsWithProposalCount'])->name('local_sec.proposals');
 
-    
-    Route::get('/meetings/generate-order-of-business/{level}/{meeting_id}', [OrderOfBusinessController::class, 'viewGenerateOOB'])->name('local_sec.order_of_business.view-generate');
-   
+  Route::get('/meetings/generate-order-of-business/{level}/{meeting_id}', [OrderOfBusinessController::class, 'viewGenerateOOB'])->name('local_sec.order_of_business.view-generate');
+
+  Route::get('/meetings/proposals/{level}/{meeting_id}', [ProposalController::class, 'viewMeetingProposals'])->name('local_sec.meetings.proposals');
+  Route::get('/proposals/details/{proposal_id}', [ProposalController::class, 'viewProposalDetails_Secretary'])->name('local_sec.proposal.details');
+  Route::post('/proposal/edit/{proposal_id}', [ProposalController::class, 'editProposalSecretary'])->name('local_sec.proposal.edit');
 });
 
 
@@ -112,12 +113,10 @@ Route::get('/sample', function () {
   return view('content.sample');
 });
 
+// TO BE ARANGED ROUTES
+Route::post('/proposals/update-selected-proposal-status', [ProposalController::class, 'updateSelectedProposalStatus'])->name('proposals.update_selected_proposal_status');
 
-// MEETING ROUTES
-
-
-
-
+Route::post('/proposals/update-proposal-status', [ProposalController::class, 'updateProposalStatus'])->name('proposals.update_proposal_status');
 
 
 

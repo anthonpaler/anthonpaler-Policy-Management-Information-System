@@ -252,8 +252,8 @@
                             @foreach($proposal_logs as $log)
                                 @if (in_array($log->action, [1,4,5,6]))
                                     @php $noLogsFound = false; @endphp
-                                    <div class="com-wrapper d-flex {{ $log->user_id == auth()->id() ? 'justify-content-end' : 'justify-content-start' }}">
-                                        <div class="{{ $log->user_id == auth()->id() ? 'sender' : 'receiver' }}">
+                                    <div class="com-wrapper d-flex {{ $log->employee_id == auth()->id() ? 'justify-content-end' : 'justify-content-start' }}">
+                                        <div class="{{ $log->employee_id == auth()->id() ? 'sender' : 'receiver' }}">
                                             <div class="d-flex gap-4 justify-content-between">
                                                 <div class="d-flex gap-2">
                                                     <div class="flex-shrink-0 me-3">
@@ -311,7 +311,7 @@
 
                                     @php
                                         $currentDateTime = now();
-                                        $meetingDateTime = \Carbon\Carbon::parse($meeting->meeting_date_time);
+                                        $meetingDateTime = \Carbon\Carbon::parse($proposal->meeting->meeting_date_time);
                                     @endphp
 
                                     <ul class="dropdown-menu">
@@ -363,12 +363,12 @@
                                 </div>
                             </div>
                             <div class="d-flex gap-2">
-                                <button class="btn btn-{{ $meeting->status == 1 ? 'danger': 'primary' }} d-flex gap-2 text-nowrap" 
+                                <button class="btn btn-{{ $proposal->meeting->status == 1 ? 'danger': 'primary' }} d-flex gap-2 text-nowrap" 
                                         id="updateProposalStatus" 
                                         data-id="{{ encrypt($proposal->id) }}" 
-                                        {{ $meeting->status == 1 ? 'disabled' : '' }}>
+                                        {{ $proposal->meeting->status == 1 ? 'disabled' : '' }}>
                                     
-                                    {!! $meeting->status == 1 ? "<i class='bx bxs-lock-alt'></i>" : "<i class='bx bxs-send'></i>" !!}
+                                    {!! $proposal->meeting->status == 1 ? "<i class='bx bxs-lock-alt'></i>" : "<i class='bx bxs-send'></i>" !!}
                                     Update Proposal Status
                                 </button>
                             </div>

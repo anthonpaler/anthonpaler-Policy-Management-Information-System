@@ -143,13 +143,18 @@
     <div class="modal fade" id="fileModal" tabindex="-1" aria-labelledby="fileModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="fileModalLabel">File Preview</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <iframe id="fileIframe" src="" width="100%" height="600px" frameborder="0"></iframe>
-            </div>
+                <div class="modal-header">
+                    <div class="d-flex align-items-center gap-3">
+                        <h5 class="modal-title" id="fileModalLabel">File Preview</h5>
+                        <div class="d-flex align-items-center gap-3">
+                            <i class="bx bx-fullscreen full-screen-file-preview" id="toggleIframeFullscreen"></i>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <iframe id="fileIframe" src="" width="100%" height="600px" frameborder="0"></iframe>
+                </div>
             </div>
         </div>
     </div>

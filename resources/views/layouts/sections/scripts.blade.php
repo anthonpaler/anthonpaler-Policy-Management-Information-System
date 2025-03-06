@@ -24,6 +24,8 @@
 <!-- Alert -->
 <script src="{{asset('assets/js/alerts.js')}}"></script>
 
+<!-- FULL SCREEN -->
+<script src="{{asset('assets/js/fullScreen.js')}}"></script>
 
 <!-- END: Theme JS-->
 <!-- Pricing Modal JS-->
