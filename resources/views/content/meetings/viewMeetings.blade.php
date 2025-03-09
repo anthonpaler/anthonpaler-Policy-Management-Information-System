@@ -109,7 +109,7 @@
                         @else
                             @foreach($meetings as $index => $meeting)
                                 <tr>
-                                    <td  class="p-4">{{ $loop->iteration }}</td>
+                                    <td  class="">{{ $loop->iteration }}</td>
                                     @if(session('isSecretary'))
                                         <td>
                                             {{ config('meetings.level.0') }}
@@ -133,7 +133,13 @@
                                         <div style="min-width: 200px">
                                             <span class="mb-0 align-items-center d-flex w-100 text-wrap gap-2">
                                                 <i class='bx bx-radio-circle-marked text-{{ $actionColors[$meeting->council_type] ?? 'primary' }}'></i>
-                                                {{ config('meetings.council_types.local_level.1') }}
+                                                    @if ($meeting->getMeetingCouncilType() == 0)
+                                                        {{ config('meetings.council_types.local_level.'.$meeting->council_type) }}
+                                                    @elseif ($meeting->getMeetingCouncilType() == 1)
+                                                        {{ config('meetings.council_types.university_level.'.$meeting->council_type) }}
+                                                    @elseif ($meeting->getMeetingCouncilType() == 2)
+                                                        {{ config('meetings.council_types.board_level.'.$meeting->council_type) }}
+                                                    @endif 
                                             </span>
                                         </div>
                                     </td>

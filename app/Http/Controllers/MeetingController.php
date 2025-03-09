@@ -33,21 +33,23 @@ class MeetingController extends Controller
             ->withCount(['proposals' => function ($query) use ($employeeId) {
                 $query->where('employee_id', $employeeId); 
             }])
+            ->orderBy('created_at', 'desc')
             ->get();
 
             // dd($meetings->toArray()); 
         }
         if($role == 3 && $level == 0){
             $meetings = LocalCouncilMeeting::where('campus_id', $campus_id)
+            ->orderBy('created_at', 'desc')
             ->get();
         }
        
         if($role == 4 && $level == 1){
-            $meetings = UniversityCouncilMeeting::get();
+            $meetings = UniversityCouncilMeeting::orderBy('created_at', 'desc')->get();
         }
 
         if($role == 5 && $level == 2){
-            $meetings = BorMeeting::get();
+            $meetings = BorMeeting::orderBy('created_at', 'desc')->get();
         }
        
 
@@ -75,7 +77,7 @@ class MeetingController extends Controller
 
         $request->validate([
             'description' => 'nullable|string',
-            'quarter' => 'required|integer|unique_meeting_per_quarter:' . $request->input('year'). ',' . $level.','.$campus_id,
+            'quarter' => 'required|integer|unique_meeting_per_quarter:' . $request->input('year'). ',' . $level.','.$campus_id.','.$request->input('council_type'),
             'year' => 'required|integer',
             'modality' => 'nullable|integer',
             'venue' => 'nullable|string',

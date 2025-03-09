@@ -190,7 +190,9 @@
                                 </div>
                             </td>
                             <td>
-                                <span class="badge bg-label-{{ $actionColors[$proposal->type] ?? 'primary' }}" style="text-transform: none;">
+                                <span class="align-items-center d-flex gap-2"> 
+                                    {!! $proposal->proposal->type == 1 ? "<i class='bx bx-book-content text-primary'></i> " : "<i class='bx bxs-book-content text-danger' ></i>" !!}
+
                                     {{ config('proposals.matters.'.$proposal->proposal->type) }}
                                 </span>
                             </td>

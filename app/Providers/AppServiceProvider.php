@@ -25,16 +25,17 @@ class AppServiceProvider extends ServiceProvider
   {
       // Custom validation rule to check if there is already a meeting set for the same year and quarter
       Validator::extend('unique_meeting_per_quarter', function ($attribute, $value, $parameters, $validator) {
-
           $year = $parameters[0];
           $level = $parameters[1];
           $campus_id = $parameters[2];
+          $council_type = $parameters[3];
           $quarter = $value;
 
           if($level == 0){
             $existingMeeting = LocalCouncilMeeting::where('year', $year)
             ->where('quarter', $quarter)
             ->where('campus_id', $campus_id)
+            ->where('council_type', $council_type)
             ->first();
             return $existingMeeting === null;
           } 
@@ -42,6 +43,7 @@ class AppServiceProvider extends ServiceProvider
           if($level == 1){
             $existingMeeting = UniversityCouncilMeeting::where('year', $year)
             ->where('quarter', $quarter)
+            ->where('council_type', $council_type)
             ->first();
             return $existingMeeting === null;
           } 
@@ -49,11 +51,12 @@ class AppServiceProvider extends ServiceProvider
           if($level == 2){
             $existingMeeting = BorMeeting::where('year', $year)
             ->where('quarter', $quarter)
+            ->where('council_type', $council_type)
             ->first();
             return $existingMeeting === null;
           } 
          
-      }, 'There is already a quarter set for this year.');
+      }, 'There is already a quarter with the same council type set for this year.');
 
       // Custom validation rule to check if a date is beyond or equal to meeting submission end date
 

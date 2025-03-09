@@ -409,15 +409,20 @@ class ProposalController extends Controller
     if($role == 3 && $level == 0){
         $meetings = LocalCouncilMeeting::where('campus_id', $campus_id)
         ->withCount('proposals')
+        ->orderBy('created_at', 'desc')
         ->get();
     }
    
     if($role == 4 && $level == 1){
-        $meetings = UniversityCouncilMeeting::withCount('proposals')->get();
+        $meetings = UniversityCouncilMeeting::withCount('proposals')
+        ->orderBy('created_at', 'desc')
+        ->get();
     }
 
     if($role == 5 && $level == 2){
-        $meetings = BorMeeting::withCount('proposals')->get();
+        $meetings = BorMeeting::withCount('proposals')
+        ->orderBy('created_at', 'desc')
+        ->get();
     }
 
     return view('content.proposals.viewProposals', compact('meetings'));

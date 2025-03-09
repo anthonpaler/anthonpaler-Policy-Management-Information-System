@@ -17,6 +17,7 @@ class UniversityMeetingAgenda extends Model
         'university_proposal_id',
         'university_meeting_id',
         'status',
+        'university_oob_id'
     ];
 
     public function proposal()
@@ -27,5 +28,11 @@ class UniversityMeetingAgenda extends Model
     public function meeting()
     {
         return $this->belongsTo(UniversityCouncilMeeting::class, 'university_meeting_id');
+    }
+
+    
+    public function orderOfBusiness()
+    {
+        return $this->belongsTo(UniversityOob::class, 'university_oob_id');
     }
 }

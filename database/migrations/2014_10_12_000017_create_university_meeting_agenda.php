@@ -15,11 +15,14 @@ return new class extends Migration
             $table->unsignedInteger('id')->autoIncrement();
             $table->unsignedInteger('university_proposal_id');
             $table->unsignedInteger('university_meeting_id');
-            $table->foreign('university_proposal_id')->references('id')->on('proposals')->onDelete('cascade');
-            $table->foreign('university_meeting_id')->references('id')->on('university_council_meetings')->onDelete('cascade');
+            $table->unsignedInteger('university_oob_id');
             $table->tinyInteger('status');
             $table->timestamps();
             $table->softdeletes();
+
+            $table->foreign('university_proposal_id')->references('id')->on('proposals')->onDelete('cascade');
+            $table->foreign('university_meeting_id')->references('id')->on('university_council_meetings')->onDelete('cascade');
+            $table->foreign('university_oob_id')->nullable()->references('id')->on('university_oob')->onDelete('cascade');
         });
     }
 

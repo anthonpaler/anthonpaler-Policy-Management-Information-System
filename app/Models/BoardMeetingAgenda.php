@@ -16,6 +16,7 @@ class BoardMeetingAgenda extends Model
         'board_proposal_id',
         'bor_meeting_id',
         'status',
+        'board_oob_id',
     ];
 
     public function proposal()
@@ -26,5 +27,10 @@ class BoardMeetingAgenda extends Model
     public function meeting()
     {
         return $this->belongsTo(BorMeeting::class, 'bor_meeting_id');
+    }
+
+    public function orderOfBusiness()
+    {
+        return $this->belongsTo(BoardOob::class, 'board_oob_id');
     }
 }

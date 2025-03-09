@@ -17,6 +17,7 @@ class LocalMeetingAgenda extends Model
         'local_council_meeting_id',
         'local_proposal_id',
         'status',
+        'local_oob_id',
     ];
 
     public function proposal()
@@ -27,5 +28,9 @@ class LocalMeetingAgenda extends Model
     public function meeting()
     {
         return $this->belongsTo(LocalCouncilMeeting::class, 'local_council_meeting_id');
+    }
+    public function orderOfBusiness()
+    {
+        return $this->belongsTo(LocalOob::class, 'local_oob_id');
     }
 }

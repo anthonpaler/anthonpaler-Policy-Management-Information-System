@@ -17,4 +17,9 @@ class LocalOob extends Model
         'status',
         'preliminaries',
     ];
+
+    public function meeting()
+    {
+        return $this->belongsTo(LocalCouncilMeeting::class, 'local_council_meeting_id');
+    }
 }
