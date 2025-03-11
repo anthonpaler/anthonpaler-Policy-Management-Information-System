@@ -246,7 +246,6 @@
                             
                             </div>
                             <span class="text-muted">Accepted formats: .pdf .xls, .xlsx and .csv only</span>
-                        
                         </div>
                     </div>
                 </div>

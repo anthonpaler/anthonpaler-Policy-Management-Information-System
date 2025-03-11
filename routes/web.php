@@ -113,7 +113,7 @@ Route::middleware(['auth', 'local_secretary'])->prefix('local-campus-secretary')
   Route::get('/meetings/view-order-of-business/{level}/{oob_id}', [OrderOfBusinessController::class, 'viewOOB'])->name('local_sec.order_of_business.view-oob');
 
   Route::post('/order-of-business/save/{oob_id}', [OrderOfBusinessController::class, 'saveOOB'])->name('local_sec.order_of_business.save');
-  Route::post('/order-of-business/disseminate/{oob_id}', [OrderOfBusinessController::class, 'disseminateOOB'])->name('local_sec.dissemenate.order_of_business');
+  Route::post('/order-of-business/disseminate/{level}/{oob_id}', [OrderOfBusinessController::class, 'disseminateOOB'])->name('local_sec.dissemenate.order_of_business');
 });
 
 
@@ -127,6 +127,10 @@ Route::post('/proposals/update-selected-proposal-status', [ProposalController::c
 Route::post('/proposals/update-proposal-status', [ProposalController::class, 'updateProposalStatus'])->name('proposals.update_proposal_status');
 
 Route::get('/order-of-business/pdf/{oob_id}', [OrderOfBusinessController::class, 'generatePDF'])->name('order_of_business.pdf');
+
+Route::post('/delete-proposal-file', [ProposalController::class, 'deleteFile']);
+
+Route::post('/rename-proposal-file', [ProposalController::class, 'renameFile'])->name('rename.proposal.file');
 
 
 

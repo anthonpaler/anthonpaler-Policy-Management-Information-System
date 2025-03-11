@@ -339,6 +339,59 @@ $(document).ready(function() {
         });
     });
 
+    // DELETE PROPOSAL FILE - SECRETARY POV
+    $(".delete-proposal").on('click', function(e){
+        e.preventDefault();
+        var file_id = $(this).data("file-id");
+    
+      
+        var file_id = $(this).data('id');
+
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You won't be able to revert this!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, delete it!"
+        }).then((result) => {
+            if (result.isConfirmed) {
+            
+                var formData = new FormData();
+                formData.append("file_id", file_id);
+            
+                $.ajax({
+                    url: "/delete-proposal-file",
+                    type: "POST",
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    headers: {
+                        "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content") 
+                    },
+                    success: function (response) {
+                        if(response.type == 'success'){
+                            Swal.fire({
+                                title: "Deleted!",
+                                text: "Your file has been deleted.",
+                                icon: "success"
+                            });
+                            location.reload(); 
+                        }else{
+                            showAlert('danger', 'Error', 'Your file has not been deleted!');
+                        }
+                        console.log(response);
+                    },
+                    error: function (xhr) {
+                        console.log("Error: " + xhr.responseText);
+                        showAlert('danger', 'Error', 'Somthing went wrong!');
+                    }
+                });
+            }
+        });
+    });
+
     // SELECT MULTIPLE PROPOSALS IN SECRETARY VIEW MEETING PROPOSAL
     let selectedProposals = new Set();
 
@@ -559,4 +612,56 @@ $(document).ready(function() {
             }
         });
     });
+
+
+    // RENAME FILE
+    $(document).on("click", ".rename-file-btn", function () {
+        let fileId = $(this).data("id");
+        $("#renameFileModal").attr("data-file-id", fileId);
+        let currentFileName = $(this).data("filename");
+    
+        $("#renameFileModal").data("file-id", fileId);
+        $("#currentFileName").val(currentFileName);
+    });
+    
+    $("#renameFileBtn").on("click", function (e) {
+        e.preventDefault();
+        
+        let fileId = $("#renameFileModal").data("file-id");
+        let newFileName = $("#newFileName").val().trim();
+    
+        if (newFileName === "") {
+            alert("Please enter a new file name.");
+            return;
+        }
+    
+        $.ajax({
+            url: "/rename-proposal-file",
+            type: "POST",
+            data: {
+                _token: $('meta[name="csrf-token"]').attr('content'),
+                file_id: fileId,         
+                new_file_name: newFileName 
+            },
+            beforeSend:function(){                
+                $("#renameFileBtn").text("Renaming...").prop('disabled', true);
+            },
+            success: function (response) {
+                $("#renameFileBtn").text("Rename").prop('disabled', false);
+                if(response.type == 'success'){
+                    showAlert(response.type, response.title, response.message);
+                    location.reload();
+                }else{
+                    showAlert("danger", "Error!", response.message);
+                }
+            },
+            error: function (xhr) {
+                console.error(xhr.responseText);
+                let response = JSON.parse(xhr.responseText); 
+                showAlert('danger', 'Error!', response.message);
+                $("#renameFileBtn").text("Rename").prop('disabled', false);
+                
+            }
+        });
+    });     
 })

@@ -96,7 +96,16 @@
 }
 
 /* PROPOSAL CSSS */
-.proposal-file-con{
+.proposal-file-img{
+  height: 40px;
+  width: 40px;
+}
+.proposal-file-img img{
+  height: 100%;
+  /* width: 100%; */
+  object-fit: cover;
+}
+/* .proposal-file-con{
   border: 1px dashed var(--bs-secondary-border-subtle);
   border-radius: 5px;
   padding: 20px;
@@ -148,7 +157,6 @@
 .proposal-file-img{
   height: 125px;
   width: 125px;
-  /* border: 1px dashed red; */
 }
 .proposal-file-img img{
   height: 100%;
@@ -165,7 +173,7 @@
 }
 .proposal-file-footer button i{
   font-size: 1em;
-}
+} */
 
 
 /* COMMENT SECTION */

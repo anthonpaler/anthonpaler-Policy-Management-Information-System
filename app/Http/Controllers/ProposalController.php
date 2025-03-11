@@ -187,6 +187,40 @@ class ProposalController extends Controller
     }
 
 
+    // RENAME FILE
+    public function renameFile(Request $request)
+    {
+        $request->validate([
+            'file_id' => 'required|exists:proposal_files,id',  // expects 'file_id'
+            'new_file_name' => 'required|string|max:255'       // expects 'new_file_name'
+        ]);
+        
+
+        $file = ProposalFile::findOrFail($request->file_id);
+        $oldPath = "proposals/{$file->file}";
+
+        // Extract extension
+        $extension = pathinfo($file->file, PATHINFO_EXTENSION);
+        $newFileName = "{$request->new_file_name}.{$extension}";
+        $newPath = "proposals/{$newFileName}";
+
+        // Check if the new file name already exists
+        if (Storage::disk('public')->exists($newPath)) {
+            return response()->json(['message' => 'File name already exists!'], 400);
+        }
+
+        // Rename file in storage
+        if (Storage::disk('public')->exists($oldPath)) {
+            Storage::disk('public')->move($oldPath, $newPath);
+        }
+
+        // Update the database record
+        $file->file = $newFileName;
+        $file->save();
+
+        return response()->json(['type'=>'success','title'=>'Success!','message' => 'File renamed successfully!']);
+    }
+
     // VIEW PROPOSALS
     public function viewMyProposals(Request $request){
       $proposals = Proposal::where('employee_id', session('employee_id'))
@@ -397,7 +431,24 @@ class ProposalController extends Controller
       return response()->json(['type' => 'danger', 'message' => $th->getMessage(), 'title'=> "Something went wrong!"]);
     }
   }
-  
+    
+    // DELETE PROPOSAL FILE 
+
+    public function deleteFile(Request $request)
+    {
+        try{
+            $request->validate([
+                'file_id' => 'required|exists:proposal_files,id'
+            ]);
+
+            $proposalFile = ProposalFile::find($request->file_id);
+            $proposalFile->delete();
+
+            return response()->json(['type' => 'success', 'message' => 'File deleted successfully.']);
+        } catch (\Throwable $th) {
+            return response()->json(['type' => 'danger', 'message' => $th->getMessage(), 'title'=> "Something went wrong!"]);
+        }
+    }   
 
   // VIEW MEETINGS WITH NUMBER FOR PROPOSALS
   public function viewMeetingsWithProposalCount(Request $request){

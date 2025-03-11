@@ -277,6 +277,62 @@ class OrderOfBusinessController extends Controller
         }
     }
 
+    public function disseminateOOB(Request $request, String $level,String $oob_id){
+        try{
+            $oobID = decrypt($oob_id);
+
+            if ($level == 'Local') {
+                $orderOfBusiness = LocalOob::with('meeting')->findOrFail($oobID);
+            } elseif ($level == 'University') {
+                $orderOfBusiness = UniversityOob::with('meeting')->findOrFail($oobID);
+            } elseif ($level == 'BOR') {
+                $orderOfBusiness = BoardOob::with('meeting')->findOrFail($oobID);
+            } else {
+                throw new \Exception("Invalid council level provided.");
+            }
+            if(!$orderOfBusiness->meeting->meeting_date_time || !$orderOfBusiness->meeting->modality){
+                return response()->json([
+                    'type' => 'warning',
+                    'message' => 'Make sure that there  is aleady a meeting date and modality!',
+                    'title' => "Warning!"
+                ]);
+            }
+            $request->validate([
+                'endorsedProposalIds' => 'required|array|min:1'
+            ]);
+
+            $endorsedProposalIds = $request->input('endorsedProposalIds');
+
+            foreach ($endorsedProposalIds as $proposal_id) {
+                if ($level == 'Local') {
+                    LocalMeetingAgenda::where('local_proposal_id', $proposal_id)
+                       ->update(['local_oob_id' => $oobID]);
+                } elseif ($level == 'University') {
+                    UniversityMeetingAgenda::where('university_proposal_id', $proposal_id)
+                       ->update(['university_oob_id' => $oobID]);
+                } elseif ($level == 'BOR') {
+                    BoardMeetingAgenda::where('board_proposal_id', $proposal_id)
+                    ->update(['board_oob_id' => $oobID]);
+                }
+            }
+
+            $orderOfBusiness->update([
+                'status' => 1,
+            ]);
+
+            return response()->json([
+                'type' => 'success',
+                'message' => 'Meeting disseminated successfully!',
+                'title' => "Success!"
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json(['type' => 'danger', 'message' => $th->getMessage(), 'title'=> "Something went wrong!"]);
+        }
+    }
+
+
+
+
 
     /**
      * Get the correct foreign key column based on the level.

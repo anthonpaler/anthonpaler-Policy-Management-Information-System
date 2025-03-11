@@ -27,7 +27,7 @@
     
     <form action="{{ route(getUserRole().'.order_of_business.save', ['level' => $meeting->getMeetingLevel(), 'oob_id' => encrypt($orderOfBusiness->id)]) }}" method="post" id="oobFrm" meeting-id="{{encrypt($orderOfBusiness->meeting->id)}}">
         <div class="d-flex flex-column justify-content-center align-items-center">
-            <h4 class="card-header p-0 mb-2">
+            <h4 class="card-header p-0 mb-2 text-center">
                 {{ config('meetings.quaterly_meetings.'.$meeting->quarter) }} 
                 @if ($meeting->getMeetingCouncilType() == 0)
                     {{ config('meetings.council_types.local_level.'.$meeting->council_type) }}
@@ -91,7 +91,6 @@
                 </div>
             </div>
         </div>
-        <!-- New Business Section -->
         <!-- New Business Section -->
         <div class="mb-3">
             <label class="form-label">2. New Business</label>
@@ -188,19 +187,15 @@
         </div>
         
         @if(!in_array(auth()->user()->role, [0,1,2]))
-        <div class="d-flex gap-3 align-items-center">
-            <div class="mt-3">
-    <button type="submit" class="btn btn-primary d-flex gap-2" id="saveOOBBtn" {{$orderOfBusiness->status == 1 ? 'disabled' : ''}}>
-                    <i class='bx bx-save' ></i>
-                    <span>Save Changes</span>
-                </button> 
-            </div>
-            <div class="mt-3">
-                <button type="buttton" class="btn btn-success d-flex gap-2" id="disseminateOOBBtn" data-id="{{encrypt($orderOfBusiness->id)}}" data-action = "{{ route(getUserRole().'.dissemenate.order_of_business', ['oob_id' => encrypt($orderOfBusiness->id)]) }}" {{$orderOfBusiness->status == 1 ? 'disabled' : ''}}>
-                    <i class='bx bx-send'></i>
-                    <span>Disseminate OOB</span>
-                </button> 
-            </div>
+        <div class="d-flex gap-3 align-items-center flex-wrap">
+            <button type="submit" class="btn btn-primary d-flex gap-2" id="saveOOBBtn" {{$orderOfBusiness->status == 1 ? 'disabled' : ''}}>
+                <i class='bx bx-save' ></i>
+                <span class="text-nowrap">Save Changes</span>
+            </button> 
+            <button type="buttton" class="btn btn-success d-flex gap-2" id="disseminateOOBBtn" data-id="{{encrypt($orderOfBusiness->id)}}" data-action = "{{ route(getUserRole().'.dissemenate.order_of_business', ['level' => $meeting->getMeetingLevel(), 'oob_id' => encrypt($orderOfBusiness->id)]) }}" {{$orderOfBusiness->status == 1 ? 'disabled' : ''}}>
+                <i class='bx bx-send'></i>
+                <span class="text-nowrap">Disseminate OOB</span>
+            </button> 
         </div>
         @endif
     </form>
