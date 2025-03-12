@@ -16,19 +16,19 @@
     <div class="nav-align-top mb-6">
         <ul class="nav nav-pills mb-4 nav-fill" role="tablist">
             <li class="nav-item mb-1 mb-sm-0">
-                <button type="button" class="nav-link active meeting-tab" role="tab" data-bs-toggle="tab" data-bs-target="#local-meetings" aria-controls="local-meetings" aria-selected="true" data-level = "0"><span class="d-flex align-items-center gap-2">
+                <button type="button" class="nav-link {{ session('isProponent') || session('secretary_level') == 0 ? 'active' : '' }} meeting-tab" role="tab" data-bs-toggle="tab" data-bs-target="#local-meetings" aria-controls="local-meetings" aria-selected="true" data-level = "0"><span class="d-flex align-items-center gap-2">
                     <i class='bx bx-book-content'></i>
                     <span class="d-none d-sm-block">Local Meetings</span> 
                 </button>
             </li>
             <li class="nav-item mb-1 mb-sm-0">
-                <button type="button" class="nav-link  meeting-tab" role="tab" data-bs-toggle="tab" data-bs-target="#university-meeting" aria-controls="university-meeting" aria-selected="false"  data-level = "1"><span class="d-flex align-items-center gap-2">
+                <button type="button" class="nav-link  {{ session('secretary_level') == 1 ? 'active' : '' }}  meeting-tab" role="tab" data-bs-toggle="tab" data-bs-target="#university-meeting" aria-controls="university-meeting" aria-selected="false"  data-level = "1"><span class="d-flex align-items-center gap-2">
                     <i class='bx bx-book-content'></i>
                     <span class="d-none d-sm-block">University Meetings</span>
                 </button>
             </li>            
             <li class="nav-item mb-1 mb-sm-0">
-                <button type="button" class="nav-link meeting-tab" role="tab" data-bs-toggle="tab" data-bs-target="#board-meeting" aria-controls="board-meeting" aria-selected="false"  data-level = "2"><span class="d-flex align-items-center gap-2">
+                <button type="button" class="nav-link meeting-tab  {{ session('secretary_level') == 2 ? 'active' : '' }} " role="tab" data-bs-toggle="tab" data-bs-target="#board-meeting" aria-controls="board-meeting" aria-selected="false"  data-level = "2"><span class="d-flex align-items-center gap-2">
                     <i class='bx bx-book-content'></i>
                     <span class="d-none d-sm-block">Board Meetings</span>
                 </button>
@@ -52,28 +52,21 @@
 @endphp 
     <div class="card-body">
         <h5>List of Meetings</h5>
-        <!-- <span class="text-muted">FILTER</span>
-        <form method="POST" action="" class="d-flex gap-3" id="filterFrm">
+        <!-- <span class="text-muted">FILTER</span> -->
+        <form method="POST" action="{{ route(getUserRole().'.meetings.filter') }}" class="d-flex gap-3" id="filterFrm">
             @csrf
             <div class="">
                 <div class="d-flex gap-3 align-items-center">
-                    
-                    <div class="col-md-3 col-lg-auto" style="width: 120px">
-                        <select name="year" class="form-select" id="yearSelect" aria-label="Select Year">
-                            <option value="2025">2025</option>
-                        </select>
-                    </div>
-
-                    <div class="col-md-2 col-lg-auto">
+                    <input type="text" name="level" id="level" class="form-control" value="{{session('user_role') == 3 ? 0 : (session('user_role') == 4 ? 1 : (session('user_role') == 5 ? 2 : 0))}}" hidden>  
+                    <!-- <div class="col-md-2 col-lg-auto">
                         <button type="submit" id="filterButton" style="min-width: 100px;" class="btn btn-success w-100 d-md-inline-flex align-items-center gap-2">
                             <i class='bx bx-filter-alt'></i>
                             <span>Filter</span>
                         </button>
-                    </div>
+                    </div> -->
                 </div>
             </div>
         </form>
-        <hr> -->
         <div class="card-datatable pt-0">
             <div class="table-responsive text-nowrap">
                 <table id="meetingTable" class="datatables-basic table table-striped ">

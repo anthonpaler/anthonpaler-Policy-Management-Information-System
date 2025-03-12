@@ -120,6 +120,55 @@ $(document).ready(function() {
             }
         });
     });
+
+
+    // FILTER MEETINGS
+    // Filter Meeting
+    var filterFrm = $("#filterFrm");
+    var filterBtn = $("#filterButton");
+    filterBtn.on('click', function(event){
+        filter_meeting();
+    });
+    $(".meeting-tab").on('click', function(event){
+        var level = $(this).data('level');
+        // alert(level);
+        $("#level").val(level);
+        filter_meeting();
+    });
+
+    function filter_meeting(){
+        event.preventDefault();
+        //  alert('Clicked');
+        var actionUrl = filterFrm.attr('action');
+        $.ajax({
+            method: "POST",
+            url: actionUrl,
+            data: filterFrm.serialize(),
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            beforeSend: function () {
+                $("#customFilterLoader").removeClass('d-none');
+            },
+            success: function (response) {
+                $("#customFilterLoader").addClass('d-none');
+
+                if(response.type == 'success'){
+                    $('#meetingsTableBody').html(response.html);
+                //  showAlert("success", "Filtered", "Meeting filtered successfully!");
+                }else{
+                    showAlert("danger", "Can't Filter", "Something went wrong!");
+                }
+            },            
+            error: function (xhr, status, error) {
+                $("#customFilterLoader").addClass('d-none');
+                
+                console.log(xhr.responseText);
+                let response = JSON.parse(xhr.responseText);
+                showAlert("danger", response.title, response.message);
+            }
+        });
+    }
 });
 
 $(document).ready(function () {

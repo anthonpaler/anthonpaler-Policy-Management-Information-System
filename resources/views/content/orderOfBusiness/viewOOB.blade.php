@@ -128,7 +128,7 @@
                                         <td>2.{{ $counter }}</td>
                                         <td>
                                             <div style="min-width: 300px; max-width: 700px; white-space: wrap; ">
-                                                <a href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->id)]) }}" >{{ $proposal->proposal->title }}</a>
+                                                <a href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->proposal->id)]) }}" >{{ $proposal->proposal->title }}</a>
                                             </div>
                                         </td>
                                         <td>
@@ -182,7 +182,7 @@
                 @endif
             @endforeach
             <script>
-                var endorsedProposalIds = @json($allProposalIds);
+                var postedToAgendaProposalIDS = @json($allProposalIds);
             </script>
         </div>
         

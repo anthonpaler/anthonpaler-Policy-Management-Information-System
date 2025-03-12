@@ -25,8 +25,9 @@ class Proposal extends Model
     // GET PROPOSAL FILES
     public function files()
     {
-        return $this->hasMany(ProposalFile::class, 'proposal_id');
+        return $this->hasMany(ProposalFile::class, 'proposal_id')->orderBy('order_no');
     }
+
 
     // GET EMPLOYEE DETAILS FROM THE PROPOSAL
     public function proponents()

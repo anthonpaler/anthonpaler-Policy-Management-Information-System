@@ -298,12 +298,12 @@ class OrderOfBusinessController extends Controller
                 ]);
             }
             $request->validate([
-                'endorsedProposalIds' => 'required|array|min:1'
+                'postedToAgendaProposalIDS' => 'required|array|min:1'
             ]);
 
-            $endorsedProposalIds = $request->input('endorsedProposalIds');
+            $postedToAgendaProposalIDS = $request->input('postedToAgendaProposalIDS');
 
-            foreach ($endorsedProposalIds as $proposal_id) {
+            foreach ($postedToAgendaProposalIDS as $proposal_id) {
                 if ($level == 'Local') {
                     LocalMeetingAgenda::where('local_proposal_id', $proposal_id)
                        ->update(['local_oob_id' => $oobID]);

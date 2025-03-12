@@ -19,7 +19,7 @@ return new class extends Migration
             $table->tinyInteger('is_active');
             $table->tinyInteger('file_reference_id')->nullable();
             $table->unsignedInteger('proposal_id');
-
+            $table->tinyInteger('order_no');
             $table->timestamps();
             $table->softdeletes();
 

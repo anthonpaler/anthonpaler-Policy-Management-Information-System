@@ -19,7 +19,7 @@ class MeetingController extends Controller
         $campus_id = session('campus_id');
         $level = $role == 3 ? 0 : ($role == 4 ? 1 : ($role == 5 ? 2 : 0));
         
-        if (in_array($role, [0, 1, 2, 6])) {
+        if (session('isProponent')) {
             $allowedCouncilTypes = [1];
             if ($role == 0) {
                 $allowedCouncilTypes = [1, 2];
@@ -147,9 +147,11 @@ class MeetingController extends Controller
         if($level == 'BOR'){
             $meeting = BorMeeting::find($meetingID);
         }
+
+        // dd($venues);
         return view ('content.meetings.editMeeting', compact('meeting', 'venues'));
     }
-
+    
     // EDIT MEETING
     public function EditMeeting(Request $request, String $level, String $meeting_id)
     {
@@ -217,6 +219,64 @@ class MeetingController extends Controller
         // dd( $meeting);
 
         return view('content.meetings.viewMeetingDetails', compact('meeting'));
+    }
+
+    // FILTER MEETINGS
+    public function filterMeetings(Request $request){
+        $role = session('user_role');
+        $employeeId = session('employee_id');
+        $campus_id = session('campus_id');
+        // $level = $role == 3 ? 0 : ($role == 4 ? 1 : ($role == 5 ? 2 : 0));
+        
+        
+
+        $request->validate([
+            // 'year' => 'required|string',
+            'level' => 'required|integer',
+        ]);
+
+        $meetingLevel = $request->input('level');
+
+        if (session('isProponent')) {
+            $allowedCouncilTypes = [1];
+            if ($role == 0) {
+                $allowedCouncilTypes = [1, 2];
+            } elseif ($role == 1) {
+                $allowedCouncilTypes = [1, 3];
+            } elseif ($role == 2) {
+                $allowedCouncilTypes = [1, 2, 3];
+            }
+            $meetings = LocalCouncilMeeting::where('campus_id', $campus_id)
+            ->whereIn('council_type', $allowedCouncilTypes)
+            ->withCount(['proposals' => function ($query) use ($employeeId) {
+                $query->where('employee_id', $employeeId); 
+            }])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+            // dd($meetings->toArray()); 
+        }else{
+            if($meetingLevel == 0){
+                $meetings = LocalCouncilMeeting::where('campus_id', $campus_id)
+                ->orderBy('created_at', 'desc')
+                ->get();
+            }
+           
+            if($meetingLevel == 1){
+                $meetings = UniversityCouncilMeeting::orderBy('created_at', 'desc')->get();
+            }
+    
+            if($meetingLevel == 2){
+                $meetings = BorMeeting::orderBy('created_at', 'desc')->get();
+            }
+        }
+       
+
+        // dd($meetings);
+        return response()->json([
+            'type' => 'success',
+            'html' => view('content.meetings.partials.meetings_table', compact('meetings'))->render()
+        ]);
     }
 }
 

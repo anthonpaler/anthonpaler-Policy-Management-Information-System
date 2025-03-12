@@ -154,10 +154,10 @@
                             @endphp
                             <h6 class="text-primary">PROPOSAL FILES</h6>
                             <div class="table-responsive text-nowrap">
-                                <table class="table table-bordered">
+                                <table id="proposalFilesTable" class="table table-bordered sortable">
                                     <thead>
                                         <tr>
-                                            <th style="width: 50px;"></th>
+                                            <th style="width: 40px;"></th>
                                             <th style="">File</th>
                                             <th style="width: 100px;">Action</th>
                                         </tr>
@@ -170,7 +170,12 @@
                                                 @endphp
                                                 <tr>
                                                     <td>
-                                                        <input type="checkbox" class="form-check-input select-proposal-file" data-id="{{ $file->id }}" > 
+                                                        <div class="d-flex gap-3">
+                                                            <input type="checkbox" class="form-check-input select-proposal-file" data-id="{{ $file->id }}" > 
+                                                            <span class="text-muted file_order_no">
+                                                                {{  $file->order_no }}
+                                                            </span>
+                                                        </div>
                                                     </td>
                                                     <td>
                                                         <div class="d-flex gap-3">

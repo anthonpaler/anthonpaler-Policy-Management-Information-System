@@ -200,21 +200,23 @@
                             <td>{{config('meetings.level.'.$proposal->proposal->getCurrentLevelAttribute())}}</td>
                             <td>
                                 <div style="width: 230px; white-space: nowrap; ">
-                                    <small class="mb-0 align-items-center d-flex w-px-100">
+                                    <span class="mb-0 align-items-center d-flex w-px-100 gap-1">
                                         <i class='bx bx-radio-circle-marked text-{{ $actionColors[$proposal->status] ?? 'primary' }}'></i>
                                         {{ config('proposals.status.'.$proposal->status) }}
-                                    </small>
+                                    </span>
                                 </div>
                             </td>
                             <td>
                                 @if($proposal->files->count() > 0)
                                     <button class="btn btn-sm btn-success d-flex gap-2 view-files"
-                                            data-files="{{ json_encode($proposal->files) }}" 
+                                            data-files="{{ json_encode(value: $proposal->files) }}" 
                                             data-title="{{ $proposal->title }}">
                                         <i class='bx bx-file'></i> View Files
                                     </button>
                                 @else
-                                    <span class="text-muted">No Files</span>
+                                    <button class="btn btn-sm btn-danger d-flex gap-2">
+                                        <i class='bx bx-file'></i> No Files
+                                    </button>
                                 @endif
                             </td>
 

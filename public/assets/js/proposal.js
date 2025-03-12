@@ -264,12 +264,24 @@ $(document).ready(function() {
             $.each(files, function (index, fileObj) {
                 if(fileObj.is_active == true){
                     fileListHtml += `
-                    <a href="#" class="badge bg-label-primary d-flex align-items-center gap-2" style="text-transform: none;"
+                    <a href="#" class="form-control d-flex align-items-center gap-2" style="text-transform: none;"
                     data-bs-toggle="modal" 
                     data-bs-target="#fileModal"
                     data-file-url="/storage/proposals/${fileObj.file}" >
                         <i class='bx bx-file-blank'></i><span>${fileObj.file}</span>
                     </a>`;
+
+                    // fileListHtml += `  <div class="mb-3">
+                    //     <label class="form-label" for="">Current File Name</label>
+                    //     <div class="input-group input-group-merge">
+                    //         <span id="" class="input-group-text">
+                    //             <i class='bx bx-file' ></i>
+                    //         </span>
+                    //         <a type="text" class="form-control" data-bs-toggle="modal" 
+                    //         data-bs-target="#fileModal"
+                    //         data-file-url="/storage/proposals/${fileObj.file}" value="${fileObj.file}" disabled>
+                    //     </div>
+                    // </div>`;
                 }
             });
     
@@ -615,7 +627,8 @@ $(document).ready(function() {
 
 
     // RENAME FILE
-    $(document).on("click", ".rename-file-btn", function () {
+    $(document).on("click", ".rename-file-btn", function (e) {
+        e.preventDefault();
         let fileId = $(this).data("id");
         $("#renameFileModal").attr("data-file-id", fileId);
         let currentFileName = $(this).data("filename");
@@ -663,5 +676,100 @@ $(document).ready(function() {
                 
             }
         });
-    });     
+    });        
 })
+document.addEventListener("DOMContentLoaded", function () {
+    // SUBMIT PROPOSAL SECRETARY 
+    var endorsedProposals = endorsedProposalIds;
+    console.log("Endorsed Proposals: "+ endorsedProposals);
+
+    $('#submitSecBtn').on('click', function(event) {
+        event.preventDefault();
+        // alert('Cliked');
+        var secProposalFrm = $("#submitProposalFrm");
+        var actionUrl = secProposalFrm.attr('action');
+        if (endorsedProposals) { 
+            $.ajax({
+                url: actionUrl,
+                type: "POST",
+                data: {
+                    _token: $('meta[name="csrf-token"]').attr('content'),
+                    endorsedProposals: endorsedProposals
+                },
+                beforeSend: function() {
+                    $('#submitSecBtn').html(`<i class='bx bx-loader-alt bx-spin bx-rotate-90'></i> Submitting`).prop('disabled', true);
+                },
+                success: function(response) {
+                    console.log("Success Response:", response);
+                
+                    if (response.type === 'success') {
+                        $('#submitSecBtn').prop('disabled', true);
+                        showAlert(response.type, response.title, response.message);
+                        
+                        window.location.href= response.redirect;
+                    }else{
+                        showAlert(response.type, response.title, response.message);
+                        location.reload(); 
+                    }
+                },                
+                error: function(xhr, status, error) {
+                    console.error({
+                        status: status,
+                        error: error,
+                        responseText: xhr.responseText
+                    });
+
+                    $('#submitSecBtn').html(`<i class='bx bx-send'></i> Submit to Universiry`).prop('disabled', false);
+                    
+                    showAlert('danger', 'Error!', 'Somthing went wrong');
+                }
+            });
+        }else{
+            showAlert('danger', 'Error!', 'No Proposals');
+        }
+    }); 
+
+
+    const proposalTable = document.querySelector("#proposalFilesTable tbody");
+
+    new Sortable(proposalTable, {
+        animation: 150,
+        handle: "td",
+        ghostClass: "sortable-ghost",
+        onEnd: function (evt) {
+            console.log("Row moved from index", evt.oldIndex, "to", evt.newIndex);
+            updateOrderNumbers();
+        }
+    });
+
+    function updateOrderNumbers() {
+        let updatedFiles = [];
+        document.querySelectorAll("#proposalFilesTable tbody tr").forEach((row, index) => {
+            let fileId = row.querySelector(".select-proposal-file").dataset.id;
+            let orderNoElement = row.querySelector(".file_order_no");
+        
+            orderNoElement.textContent = index + 1;
+            updatedFiles.push({
+                id: fileId,
+                order_no: index + 1
+            });
+            console.log(fileId);
+        });
+
+        fetch("/update-proposal-order", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+            },
+            body: JSON.stringify({ files: updatedFiles })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Order updated successfully", data);
+        })
+        .catch(error => {
+            console.error("Error updating order", error);
+        });
+    }
+});

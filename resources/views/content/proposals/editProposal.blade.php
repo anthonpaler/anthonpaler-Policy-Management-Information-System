@@ -187,7 +187,92 @@
                             <label class="form-label" for="">PROPOSAL FILE/S</label>
                             <input type="file" id="file-upload" style="display: none;" accept=".pdf, .xls, .xlsx, .csv"
                             >
-                            <div class="proposal-file-con mb-2">
+                            @php
+                                $countLatestVersion = 0;
+                            @endphp
+                            <div class="table-responsive text-nowrap">
+                                <table id="proposalFilesTable" class="table table-bordered sortable">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 40px;"></th>
+                                            <th style="">File</th>
+                                            <th style="width: 100px;">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($proposal->files as $file)
+                                            @if ($file->is_active == 1)
+                                                @php
+                                                    $countLatestVersion++;
+                                                @endphp
+                                                <tr>
+                                                    <td>
+                                                        <div class="d-flex gap-3">
+                                                            <!-- <input type="checkbox" class="form-check-input select-proposal-file" data-id="{{ $file->id }}" >  -->
+                                                            <span class="text-muted file_order_no">
+                                                                {{  $file->order_no }}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div class="d-flex gap-3">
+                                                            <div class="proposal-file-img">
+                                                                <img src="{{ asset('assets/img/icons/document/folder_3.png') }}" alt="">
+                                                            </div>
+                                                            <div class="d-flex flex-column gap-2">
+                                                                <span class="text-wrap"  data-bs-toggle="modal" 
+                                                                data-bs-target="#fileModal"
+                                                                data-file-url="/storage/proposals/{{$file->file}}">{{ $file->file }} </span>
+                                                                <div class="d-flex gap-2">
+                                                                    <span class="badge bg-label-primary">{{ config(key: 'proposals.proposal_file_status.'.$file->file_status) }}</span>
+                                                                    <span class="badge bg-label-success">Version {{ $file->version }}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div class="d-flex align-items-center gap-2">
+                                                            <!-- <button class="btn btn-primary btn-sm rename-file-btn" 
+                                                                data-bs-toggle="modal" 
+                                                                data-bs-target="#renameFileModal"
+                                                                data-id="{{ $file->id }}"
+                                                                data-filename="{{ $file->file }}">
+                                                                <i class='bx bx-rename'></i>
+                                                            </button> -->
+
+                                                            <button class="btn btn-sm btn-success resubmit-proposal"
+                                                            
+                                                            data-bs-toggle="tooltip" data-bs-offset="0,8" data-bs-placement="top" data-bs-custom-class="tooltip-primary" data-bs-original-title="Resubmit File "
+
+                                                            data-id="{{ $file->id }}" {{ (!in_array($proposal->status, [2,5,6]) && $proposal->is_edit_disabled && $file->file_status) ? 'disabled' : '' }}>
+                                                                <i class='bx bx-upload' ></i>
+                                                            </button>
+
+                                                            <button type="button" class="btn btn-sm  btn-danger delete-proposal-file" data-bs-toggle="tooltip" data-bs-offset="0,8" data-bs-placement="top" data-bs-custom-class="tooltip-primary" data-bs-original-title="Delete File "
+                                                            data-id="{{ $file->id }}" {{ (!in_array($proposal->status, [2,5,6]) && $proposal->is_edit_disabled  && $file->file_status) ? 'disabled' : '' }}
+                                                            > 
+                                                                <i class='bx bxs-trash'></i>
+                                                            </button>
+                                                            
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            @endif
+                                        @endforeach
+                                        @if ($countLatestVersion == 0)
+                                            <td colspan="3">
+                                                <div
+                                                    class="alert alert-info"
+                                                    role="alert"
+                                                >
+                                                    <p>No latest version files</p>
+                                                </div>
+                                            </td>
+                                        @endif
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!-- <div class="proposal-file-con mb-2">
                                 @php
                                     $countLatestVersion = 0;
                                 @endphp
@@ -220,7 +305,7 @@
                                         </div>
                                     @endif
                                 @endforeach
-                            </div>
+                            </div> -->
                             <small class="text-muted text-wrap d-flex gap-2"><strong>Note:</strong><em>Please be cautious when reuploading and deleting a proposal file.</em></small>
                         </div>
                         <div class="">
@@ -333,6 +418,45 @@
             </div>
             <div class="modal-body">
                 <iframe id="fileIframe" src="" width="100%" height="600px" frameborder="0"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Renaming File -->
+<div class="modal fade" id="renameFileModal" tabindex="-1" aria-labelledby="renameFileModallLabel" 
+     aria-hidden="true" data-file-id="">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="renameFileModallLabel">Rename File</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="">
+                    @csrf
+                    <div class="mb-3">
+                        <label class="form-label" for="">Current File Name</label>
+                        <div class="input-group input-group-merge">
+                            <span id="" class="input-group-text">
+                                <i class='bx bx-file' ></i>
+                            </span>
+                            <input type="text" class="form-control" id="currentFileName" value="" disabled>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="">New File Name</label>
+                        <div class="input-group input-group-merge">
+                            <span id="" class="input-group-text">
+                                <i class='bx bx-rename' ></i>
+                            </span>
+                            <input type="text" class="form-control" id="newFileName" placeholder="Enter new file name">
+                            <button class="btn btn-primary d-flex gap-2" id="renameFileBtn">
+                                Rename
+                            </button>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -510,5 +634,5 @@
     });
 
 </script>
-<!-- <script src="{{asset('assets/js/proposal.js')}}"></script> -->
+<script src="{{asset('assets/js/proposal.js')}}"></script>
 @endsection

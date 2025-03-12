@@ -330,7 +330,7 @@
                                     <option value="">Select Venue</option>
                                     @foreach ($venues as $venue)
                                         <option value="{{ $venue->id }}"
-                                            {{ (isset($meeting) && $meeting->venue == $venue->id) ? 'selected' : (old('venue') == $venue->id ? 'selected' : "") }}>
+                                            {{ (isset($meeting) && $meeting->venue_id == $venue->id) ? 'selected' : (old('venue') == $venue->id ? 'selected' : "") }}>
                                             {{ $venue->name }}
                                         </option>
                                     @endforeach

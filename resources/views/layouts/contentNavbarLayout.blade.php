@@ -19,12 +19,23 @@ $container = ($container ?? 'container-xxl');
 
 @section('layoutContent')
 <div class="layout-wrapper layout-content-navbar {{ $isMenu ? '' : 'layout-without-menu' }}">
-  <div class="layout-container">
+  <!-- FILTER LOADING -->
+  <div class="custom-filter-con d-none" id="customFilterLoader">
+    <div class="custom-filter-content">
+        <div class="three-body">
+          <div class="three-body__dot"></div>
+          <div class="three-body__dot"></div>
+          <div class="three-body__dot"></div>
+        </div>
+        <span class="loading-text">Filtering...</span>
+    </div>
+  </div>
 
+  <div class="layout-container">
     @if ($isMenu)
     @include('layouts/sections/menu/verticalMenu')
     @endif
-
+    
 
     <!-- Layout page -->
     <div class="layout-page">

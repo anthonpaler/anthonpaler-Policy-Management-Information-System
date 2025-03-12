@@ -17,7 +17,7 @@ return new class extends Migration
             $table->text('comments')->nullable();
             $table->tinyInteger('level');
             $table->tinyInteger('action')->nullable();
-            $table->string('file_id', 255);
+            $table->string('file_id', 255)->nullable();
             $table->unsignedInteger('proposal_id');
 
 

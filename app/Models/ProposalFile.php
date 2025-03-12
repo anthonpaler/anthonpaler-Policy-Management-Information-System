@@ -22,6 +22,7 @@ class ProposalFile extends Model
         'file_status',
         'file_reference_id',
         'is_active',
+        'order_no'
     ];
     
     public function proposal()
