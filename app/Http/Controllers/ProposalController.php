@@ -719,6 +719,7 @@ class ProposalController extends Controller
         try{
         $proposal_id = decrypt($proposal_id);
         $request->validate([
+            'title' => 'required|string|max:255',
             'matter' => 'required|integer',
             'action' => 'required|integer'
         ]);
@@ -735,6 +736,7 @@ class ProposalController extends Controller
 
         $proposal = Proposal::where('id', $proposal_id)
         ->update([
+            'title' => $request->input('title'),
             'type' => $request->input('matter'),
             'action' => $request->input('action'),
             'sub_type' => $sub_type,

@@ -2,17 +2,9 @@
     $actionColors = [ 'secondary', 'primary', 'success', 'warning', 'info', 'danger']; 
 @endphp  
    @if ($meetings->isEmpty())
-        <tr>
-            @for ($i = 0; $i < 11; $i++)
-                <td>
-                    @if ($i == 6)
-                        <div class="alert alert-warning mt-3" role="alert">
-                            <i class="bx bx-info-circle"></i> There is no meetings at the moment.
-                        </div>
-                    @endif
-                </td>
-            @endfor
-        </tr>
+        <td valign="top" colspan="11" class="dataTables_empty">
+            No data available in table
+        </td>
     @else
         @foreach($meetings as $index => $meeting)
             <tr>
@@ -51,8 +43,8 @@
                 </td>
                 <td>
                     <div class="d-flex flex-column gap-1">
-                        <span class=""><span class="text-primary">Start: </span>{{ \Carbon\Carbon::parse($meeting->submission_start)->format('F d, Y') }}</span>
-                        <span class=""><span class="text-danger">End: </span> {{ \Carbon\Carbon::parse($meeting->submission_end)->format('F d, Y') }}</span>
+                        <span class="">Start: {{ \Carbon\Carbon::parse($meeting->submission_start)->format('F d, Y') }}</span>
+                        <span class="text-danger">End: {{ \Carbon\Carbon::parse($meeting->submission_end)->format('F d, Y') }}</span>
                     </div>
                 </td>
                 <td>

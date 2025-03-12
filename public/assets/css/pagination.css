@@ -43,17 +43,6 @@
     cursor: not-allowed !important;
     opacity: 0.6 !important;
 }
-.card .card-datatable .table-responsive table thead{
-    margin-top: 20px !important;
-}
-.card-datatable th{
-    font-weight: 500 !important;
-    padding: 20px 10px !important;
-}
-.card-datatable td{
-    font-weight: 500 !important;
-    padding: 20px 10px !important;
-}
 
 /* DATATABLE TOP CSS  */
 .table-responsive .bottom{

@@ -110,17 +110,9 @@
                     </thead>
                     <tbody id="meetingsTableBody" class="table-border-bottom-0">
                         @if ($meetings->isEmpty())
-                            <tr>
-                                @for ($i = 0; $i < 11; $i++)
-                                    <td>
-                                        @if ($i == 6)
-                                            <div class="alert alert-warning mt-3" role="alert">
-                                                <i class="bx bx-info-circle"></i> There is no meetings at the moment.
-                                            </div>
-                                        @endif
-                                    </td>
-                                @endfor
-                            </tr>
+                            <td valign="top" colspan="11" class="dataTables_empty">
+                                No data available in table
+                            </td>
                         @else
                             @foreach($meetings as $index => $meeting)
                                 <tr>

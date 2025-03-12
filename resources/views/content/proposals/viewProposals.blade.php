@@ -20,7 +20,7 @@
         <div class="d-flex justify-content-between flex-wrap">
             <div class="">
                 <h5 class="mb-0">List of Meetings</h5>
-                <small class="text-muted">Scheduled submissions and meetings.</small>
+                <small class="text-muted">Scheduled submissions and meetings with its proposals.</small>
             </div>
             <form method="POST" action="{{ route(getUserRole().'.meetings.filter') }}" class="d-flex gap-3" id="filterFrm">
                 @csrf
@@ -50,13 +50,14 @@
                 </div>
             </form>
         </div>
-        <div class="card-datatable pt-0">
-            <div class="table-responsive text-nowrap">
-                <table id="meetingTable" class="datatables-basic table table-striped ">
-                    <thead>
+        <div class="pt-4">
+            <div class="table-responsive text-nowrap border-top">
+                <table id="meetingTable" class="table table-striped">
+                    <thead class="custom-tbl-header">
                         <tr>
                             <th>#</th>
                             <th>Level</th>
+                            <th>Campus</th>
                             <th>Quarter</th>
                             <th>Year</th>
                             <th>Status</th>
@@ -82,8 +83,9 @@
                                 <tr>
                                     <td  class="p-4">{{ $loop->iteration }}</td>
                                     <td>
-                                        {{ config('meetings.level.0') }}
+                                        {{ config('meetings.level.'.$meeting->getMeetingCouncilType()) }}
                                     </td>
+                                    <td>{{ $meeting->getCampusName() }}</td></td>
                                     <td>{{ config('meetings.quaterly_meetings.'.$meeting->quarter) }}</td>
                                     <td>{{ $meeting->year }}</td>
                                     <td>
@@ -108,8 +110,8 @@
                                     </td>
                                     <td>
                                         <div class="d-flex flex-column gap-1">
-                                            <span class=""><span class="text-primary">Start: </span>{{ \Carbon\Carbon::parse($meeting->submission_start)->format('F d, Y') }}</span>
-                                            <span class=""><span class="text-danger">End: </span> {{ \Carbon\Carbon::parse($meeting->submission_end)->format('F d, Y') }}</span>
+                                            <span class="">Start: {{ \Carbon\Carbon::parse($meeting->submission_start)->format('F d, Y') }}</span>
+                                            <span class="text-danger">End: {{ \Carbon\Carbon::parse($meeting->submission_end)->format('F d, Y') }}</span>
                                         </div>
                                     </td>
                                     <td>

@@ -33,10 +33,21 @@
                             <span class="badge bg-label-primary">{{ config('proposals.status.'.$proposal->status) }}</span>
                         </div>
                         <div class="mb-3">
-                            <small class="text-light fw-medium">Proposal Title</small>
-                            <h6 class="mb-0">{{$proposal->title}}</h6>
+                            <label class="form-label" for="title">Proposal Title <span class="ms-1 text-danger">*</span></label>
+                            <textarea
+                                id="title"
+                                name="title"
+                                class="form-control"
+                                placeholder="Enter title"
+                                aria-label="Enter title"
+                                required
+                                rows="3"
+                            >{{ $proposal->title }}</textarea>
+                            @error('title')
+                                <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
+                            @enderror
                         </div>
-                        <small class="text-light fw-medium">Proponents</small>
+                        <label class="form-label" for="">Proponent <span class="ms-1 text-danger">*</span></label>
                         <div class="border rounded p-2 mb-3">
                             <div class="d-flex flex-wrap gap-2">
                                 @foreach ($proposal->proponentsList as $proponent)

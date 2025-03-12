@@ -2,6 +2,7 @@
     background-color: #f1f1f1;
     opacity: 0.7;
 }
+
 /* CUSTOM TAB */
 
 .custom_tab_list{
@@ -35,4 +36,11 @@
 
 .custom-tbl-header{
     background-color: var(--bs-secondary-bg-subtle);
+}
+
+/* TD AND TH CUSTOM CSS */
+
+.table-striped td{
+    font-weight: 500 !important;
+    padding: 15px 10px !important;
 }
