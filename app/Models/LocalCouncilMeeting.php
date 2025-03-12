@@ -37,10 +37,14 @@ class LocalCouncilMeeting extends Model
 
     protected $dates = ['submission_start', 'submission_end', 'meeting_date_time'];
 
-    // DETERMINE IF THE SUBMISSION IS CLOSED
     public function getIsSubmissionClosedAttribute()
     {
         $currentDate = Carbon::now();
+    
+        if (!$this->submission_end || !$this->submission_start || !$this->meeting_date_time) {
+            return false; 
+        }
+    
         return $currentDate->greaterThan($this->submission_end) || 
                $currentDate->lessThan($this->submission_start) ||  
                $currentDate->greaterThan($this->meeting_date_time);
@@ -87,5 +91,17 @@ class LocalCouncilMeeting extends Model
             'id', 
             'local_proposal_id'
         );
+    }
+
+    // Define relationship to Campus
+    public function campus()
+    {
+        return $this->belongsTo(Campus::class, 'campus_id');
+    }
+
+    // Function to get the campus name
+    public function getCampusName()
+    {
+        return $this->campus ? $this->campus->name : 'N/A';
     }
 }

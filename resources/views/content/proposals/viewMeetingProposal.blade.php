@@ -252,22 +252,6 @@
                         </tr>
                         @endforeach
                     </tbody>
-                    <!-- <tfoot class="">
-                        <tr>
-                            <th></th>
-                            <th>#</th>
-                            <th>Proponent/s</th>
-                            <th style="max-width: 500px; ">
-                                Proposal Title
-                            </th>
-                            <th>Type</th>
-                            <th>Requested Action</th>
-                            <th>Current Level</th>
-                            <th>Current Status</th>
-                            <th>File</th>
-                            <th>Actions</th>
-                        </tr>
-                    </tfoot> -->
                 </table>
             </div>
         </div>
@@ -315,6 +299,6 @@
     var proposalStatus = @json(config('proposals.status'));
 </script>
 <script src="{{asset('assets/js/proposal.js')}}"></script>
-<script src="{{asset('assets/js/pagination.js')}}"></script>
+<script src="{{asset('assets/js/dataTable.js')}}"></script>
 
 @endsection

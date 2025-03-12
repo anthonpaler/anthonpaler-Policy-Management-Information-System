@@ -143,6 +143,6 @@
     </div>
 </div>
 <script src="{{ asset('assets/js/orderOfBusiness.js') }}"></script>
-<script src="{{asset('assets/js/pagination.js')}}"></script>
+<script src="{{asset('assets/js/dataTable.js')}}"></script>
 
 @endsection

@@ -123,23 +123,24 @@ $(document).ready(function() {
 
 
     // FILTER MEETINGS
-    // Filter Meeting
     var filterFrm = $("#filterFrm");
     var filterBtn = $("#filterButton");
     filterBtn.on('click', function(event){
         filter_meeting();
     });
     $(".meeting-tab").on('click', function(event){
+        $(".meeting-tab").removeClass("active"); 
+        $(this).addClass("active"); 
+
         var level = $(this).data('level');
-        // alert(level);
         $("#level").val(level);
         filter_meeting();
     });
 
     function filter_meeting(){
         event.preventDefault();
-        //  alert('Clicked');
         var actionUrl = filterFrm.attr('action');
+        
         $.ajax({
             method: "POST",
             url: actionUrl,
@@ -152,23 +153,41 @@ $(document).ready(function() {
             },
             success: function (response) {
                 $("#customFilterLoader").addClass('d-none');
-
+    
                 if(response.type == 'success'){
+                    let table = $('#meetingTable').DataTable();
+                    table.destroy();
+                    
                     $('#meetingsTableBody').html(response.html);
-                //  showAlert("success", "Filtered", "Meeting filtered successfully!");
-                }else{
+                    
+                    // Reinitialize DataTable
+                    $('#meetingTable').DataTable({
+                        "paging": true,
+                        "searching": false,
+                        "ordering": true,
+                        "info": true,
+                        "pageLength": 10,
+                        "language": {
+                            "search": "Search: ",
+                            "paginate": {
+                                "previous": "<i class='bx bx-chevrons-left'></i> Previous",
+                                "next": "Next <i class='bx bx-chevrons-right'></i>"
+                            }
+                        },
+                        "dom": '<"top"f>rt<"bottom"ip><"clear">',
+                    });
+                } else {
                     showAlert("danger", "Can't Filter", "Something went wrong!");
                 }
             },            
             error: function (xhr, status, error) {
                 $("#customFilterLoader").addClass('d-none');
-                
                 console.log(xhr.responseText);
                 let response = JSON.parse(xhr.responseText);
                 showAlert("danger", response.title, response.message);
             }
         });
-    }
+    }    
 });
 
 $(document).ready(function () {

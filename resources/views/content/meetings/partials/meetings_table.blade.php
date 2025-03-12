@@ -3,21 +3,24 @@
 @endphp  
    @if ($meetings->isEmpty())
         <tr>
-            <td colspan="10">
-                <div class="alert alert-warning mt-3" role="alert">
-                    <i class="bx bx-info-circle"></i> There is no meetings at the moment.
-                </div>
-            </td>
+            @for ($i = 0; $i < 11; $i++)
+                <td>
+                    @if ($i == 6)
+                        <div class="alert alert-warning mt-3" role="alert">
+                            <i class="bx bx-info-circle"></i> There is no meetings at the moment.
+                        </div>
+                    @endif
+                </td>
+            @endfor
         </tr>
     @else
         @foreach($meetings as $index => $meeting)
             <tr>
                 <td  class="">{{ $loop->iteration }}</td>
-                @if(session('isSecretary'))
-                    <td>
-                        {{ config('meetings.level.0') }}
-                    </td>
-                @endif
+                <td>
+                    {{ config('meetings.level.'.$meeting->getMeetingCouncilType()) }}
+                </td>
+                <td>{{ $meeting->getCampusName() }}</td>
                 <td>{{ config('meetings.quaterly_meetings.'.$meeting->quarter) }}</td>
                 <td>{{ $meeting->year }}</td>
                 <td>

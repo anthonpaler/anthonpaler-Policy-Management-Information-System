@@ -160,5 +160,5 @@
     </div>
 </div>
 <script src="{{asset('assets/js/proposal.js')}}"></script>
-<script src="{{asset('assets/js/pagination.js')}}"></script>
+<script src="{{asset('assets/js/dataTable.js')}}"></script>
 @endsection

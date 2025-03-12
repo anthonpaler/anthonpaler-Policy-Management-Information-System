@@ -29,7 +29,10 @@
               <h4 class="">{{ config('meetings.quaterly_meetings.'.$meeting->quarter) }} {{ config("meetings.council_types." . ['local_level', 'university_level', 'board_level'][$meeting->getMeetingCouncilType()] . ".{$meeting->council_type}") }}
               {{$meeting->year}}</h4>
               <div class="">
-                  <span class="btn btn-sm btn-{{$meeting->status == 0 ? 'success' : "danger" }} me-1">{{$meeting->status == 0 ? 'Active' : "Closed" }}</span>
+                  <span class="btn btn-sm btn-{{$meeting->status == 0 ? 'primary' : "danger" }} d-flex gap-1">
+                    {!! $meeting->status == 0 ? "<i class='bx bxs-lock-open-alt' ></i>" : "<i class='bx bxs-lock-alt' ></i>" !!}
+                    {{ config('meetings.status.'.$meeting->status) }}
+                  </span>
               </div>
             </div>
             <p>

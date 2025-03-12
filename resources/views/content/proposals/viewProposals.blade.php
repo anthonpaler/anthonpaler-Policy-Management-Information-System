@@ -17,29 +17,39 @@
     $actionColors = [ 'secondary', 'primary', 'success', 'warning', 'info', 'danger']; 
 @endphp 
     <div class="card-body">
-        <h5>List of Meetings</h5>
-        <!-- <span class="text-muted">FILTER</span>
-        <form method="POST" action="" class="d-flex gap-3" id="filterFrm">
-            @csrf
+        <div class="d-flex justify-content-between flex-wrap">
             <div class="">
-                <div class="d-flex gap-3 align-items-center">
-                    
-                    <div class="col-md-3 col-lg-auto" style="width: 120px">
-                        <select name="year" class="form-select" id="yearSelect" aria-label="Select Year">
-                            <option value="2025">2025</option>
+                <h5 class="mb-0">List of Meetings</h5>
+                <small class="text-muted">Scheduled submissions and meetings.</small>
+            </div>
+            <form method="POST" action="{{ route(getUserRole().'.meetings.filter') }}" class="d-flex gap-3" id="filterFrm">
+                @csrf
+                <div class="d-flex align-items-center gap-2">
+                    <div class="input-group input-group-merge">
+                        <span  class="input-group-text">
+                            <i class='bx bx-search' ></i>
+                        </span>
+                        <input type="text" class="form-control" id="meetingSearch" placeholder="Search...">
+                    </div>
+                    <div class="input-group input-group-merge">
+                        <span  class="input-group-text">
+                            <i class='bx bx-calendar-alt'></i>
+                        </span>
+                        <select class="form-select @error('year') is-invalid @enderror" name="year" required>
+                            <option value="">All Year</option>
+                            @foreach ($meetings->pluck('year')->unique()->sort() as $year)
+                                <option value="{{ $year }}">{{ $year }}</option>
+                            @endforeach
                         </select>
                     </div>
-
-                    <div class="col-md-2 col-lg-auto">
-                        <button type="submit" id="filterButton" style="min-width: 100px;" class="btn btn-success w-100 d-md-inline-flex align-items-center gap-2">
-                            <i class='bx bx-filter-alt'></i>
-                            <span>Filter</span>
-                        </button>
-                    </div>
+                    <input type="text" name="level" id="level" class="form-control" value="{{session('user_role') == 3 ? 0 : (session('user_role') == 4 ? 1 : (session('user_role') == 5 ? 2 : 0))}}" hidden>  
+                    <!-- <button class="btn btn-success d-flex gap-2" type="submit" id="filterButton" >
+                        <i class='bx bx-filter-alt' ></i>
+                        <span>Filter</span>
+                    </button> -->
                 </div>
-            </div>
-        </form>
-        <hr> -->
+            </form>
+        </div>
         <div class="card-datatable pt-0">
             <div class="table-responsive text-nowrap">
                 <table id="meetingTable" class="datatables-basic table table-striped ">
@@ -128,7 +138,7 @@
     </div>
 </div>
 <script src="{{asset('assets/js/meetings.js')}}"></script>
-<script src="{{asset('assets/js/pagination.js')}}"></script>
+<script src="{{asset('assets/js/dataTable.js')}}"></script>
 
 <script>
     function showToastrWarning() {

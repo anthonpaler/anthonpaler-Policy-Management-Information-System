@@ -12,89 +12,70 @@
     <i class='bx bx-chevron-right' ></i>
     <a href="#">Meetings</a>
 </div>
-@php 
-    $actionColors = [ 'secondary', 'primary', 'success', 'warning', 'info', 'danger']; 
-@endphp 
-<div class="card mb-3">
-    <div class="d-flex justify-content-between align-items-center custom_tab_wrapper">
-        <div class="">
-            <ul class="custom_tab_list">
-                <li class="custom_tab_item meeting-tab {{ session('isProponent') || session('secretary_level') == 0 ? 'active' : '' }}" data-level = "0">
-                    <div class="">
-                        <i class='bx bx-book-open' ></i>
-                        <span>Local Meetings</span>
-                    </div>
-                </li>
-                <li class="custom_tab_item meeting-tab {{ session('secretary_level') == 1 ? 'active' : '' }} " data-level = "1">
-                    <div class="">
-                        <i class='bx bx-book-reader'></i>
-                        <span>University Meetings</span>
-                    </div>
-                </li>
-                <li class="custom_tab_item meeting-tab {{ session('secretary_level') == 2 ? 'active' : '' }}" data-level = "2">
-                    <div class="">
-                        <i class='bx bxs-book-reader' ></i>
-                        <span>Board Meetings</span>
-                    </div>
-                </li>
-            </ul>
-        </div>
-        <div class="me-4">
-            @if(in_array(session('user_role'), [3,4,5]))
-                <div>
-                    <a href="{{ route(getUserRole().'.view_create_meeting') }}" class="btn btn-primary d-flex gap-2">
-                        <i class='bx bxs-megaphone'></i>
-                        <span class="text-nowrap"> Call for Submission</span>
-                    </a>
-                </div>
-            @endif
-        </div>
+<div class="d-flex justify-content-between">
+    <div class="nav-align-top mb-6">
+        <ul class="nav nav-pills mb-4 nav-fill" role="tablist">
+            <li class="nav-item mb-1 mb-sm-0">
+                <button type="button" class="nav-link {{ session('isProponent') || session('secretary_level') == 0 ? 'active' : '' }} meeting-tab" role="tab" data-bs-toggle="tab" data-bs-target="#local-meetings" aria-controls="local-meetings" aria-selected="true" data-level = "0"><span class="d-flex align-items-center gap-2">
+                    <i class='bx bx-book-content'></i>
+                    <span class="d-none d-sm-block">Local Meetings</span> 
+                </button>
+            </li>
+            <li class="nav-item mb-1 mb-sm-0">
+                <button type="button" class="nav-link  {{ session('secretary_level') == 1 ? 'active' : '' }}  meeting-tab" role="tab" data-bs-toggle="tab" data-bs-target="#university-meeting" aria-controls="university-meeting" aria-selected="false"  data-level = "1"><span class="d-flex align-items-center gap-2">
+                    <i class='bx bx-book-content'></i>
+                    <span class="d-none d-sm-block">University Meetings</span>
+                </button>
+            </li>            
+            <li class="nav-item mb-1 mb-sm-0">
+                <button type="button" class="nav-link meeting-tab  {{ session('secretary_level') == 2 ? 'active' : '' }} " role="tab" data-bs-toggle="tab" data-bs-target="#board-meeting" aria-controls="board-meeting" aria-selected="false"  data-level = "2"><span class="d-flex align-items-center gap-2">
+                    <i class='bx bx-book-content'></i>
+                    <span class="d-none d-sm-block">Board Meetings</span>
+                </button>
+            </li>
+        </ul>
+    </div>
+    <div class="">
+        @if(in_array(session('user_role'), [3,4,5]))
+            <div>
+                <a href="{{ route(getUserRole().'.view_create_meeting') }}" class="btn btn-primary d-flex gap-2">
+                    <i class='bx bxs-megaphone'></i>
+                    <span class="text-nowrap"> Call for Submission</span>
+                </a>
+            </div>
+        @endif
     </div>
 </div>
 <div class="card">
+@php 
+    $actionColors = [ 'secondary', 'primary', 'success', 'warning', 'info', 'danger']; 
+@endphp 
     <div class="card-body">
-        <div class="d-flex justify-content-between flex-wrap">
+        <h5>List of Meetings</h5>
+        <!-- <span class="text-muted">FILTER</span> -->
+        <form method="POST" action="{{ route(getUserRole().'.meetings.filter') }}" class="d-flex gap-3" id="filterFrm">
+            @csrf
             <div class="">
-                <h5 class="mb-0">List of Meetings</h5>
-                <small class="text-muted">Scheduled submissions and meetings.</small>
-            </div>
-            <form method="POST" action="{{ route(getUserRole().'.meetings.filter') }}" class="d-flex gap-3" id="filterFrm">
-                @csrf
-                <div class="d-flex align-items-center gap-2">
-                    <div class="input-group input-group-merge">
-                        <span  class="input-group-text">
-                            <i class='bx bx-search' ></i>
-                        </span>
-                        <input type="text" class="form-control" id="meetingSearch" placeholder="Search...">
-                    </div>
-                    <div class="input-group input-group-merge">
-                        <span  class="input-group-text">
-                            <i class='bx bx-calendar-alt'></i>
-                        </span>
-                        <select class="form-select @error('year') is-invalid @enderror" name="year" required>
-                            <option value="">All Year</option>
-                            @foreach ($meetings->pluck('year')->unique()->sort() as $year)
-                                <option value="{{ $year }}">{{ $year }}</option>
-                            @endforeach
-                        </select>
-                    </div>
+                <div class="d-flex gap-3 align-items-center">
                     <input type="text" name="level" id="level" class="form-control" value="{{session('user_role') == 3 ? 0 : (session('user_role') == 4 ? 1 : (session('user_role') == 5 ? 2 : 0))}}" hidden>  
-                    <!-- <button class="btn btn-success d-flex gap-2" type="submit" id="filterButton" >
-                        <i class='bx bx-filter-alt' ></i>
-                        <span>Filter</span>
-                    </button> -->
+                    <!-- <div class="col-md-2 col-lg-auto">
+                        <button type="submit" id="filterButton" style="min-width: 100px;" class="btn btn-success w-100 d-md-inline-flex align-items-center gap-2">
+                            <i class='bx bx-filter-alt'></i>
+                            <span>Filter</span>
+                        </button>
+                    </div> -->
                 </div>
-            </form>
-        </div>
- 
-        <div class="pt-4">
-            <div class="table-responsive text-nowrap border-top">
-                <table id="meetingTable" class="table table-striped">
-                    <thead class="custom-tbl-header">
+            </div>
+        </form>
+        <div class="card-datatable pt-0">
+            <div class="table-responsive text-nowrap">
+                <table id="meetingTable" class="datatables-basic table table-striped ">
+                    <thead>
                         <tr>
                             <th>#</th>
-                            <th>Level</th>
-                            <th>Campus</th>
+                            @if(session('isSecretary'))
+                                <th>Level</th>
+                            @endif
                             <th>Quarter</th>
                             <th>Year</th>
                             <th>Status</th>
@@ -111,24 +92,21 @@
                     <tbody id="meetingsTableBody" class="table-border-bottom-0">
                         @if ($meetings->isEmpty())
                             <tr>
-                                @for ($i = 0; $i < 11; $i++)
-                                    <td>
-                                        @if ($i == 6)
-                                            <div class="alert alert-warning mt-3" role="alert">
-                                                <i class="bx bx-info-circle"></i> There is no meetings at the moment.
-                                            </div>
-                                        @endif
-                                    </td>
-                                @endfor
+                                <td colspan="10">
+                                    <div class="alert alert-warning mt-3" role="alert">
+                                        <i class="bx bx-info-circle"></i> There is no meetings at the moment.
+                                    </div>
+                                </td>
                             </tr>
                         @else
                             @foreach($meetings as $index => $meeting)
                                 <tr>
                                     <td  class="">{{ $loop->iteration }}</td>
-                                    <td>
-                                        {{ config('meetings.level.'.$meeting->getMeetingCouncilType()) }}
-                                    </td>
-                                    <td>{{ $meeting->getCampusName() }}</td>
+                                    @if(session('isSecretary'))
+                                        <td>
+                                            {{ config('meetings.level.'.$meeting->getMeetingCouncilType()) }}
+                                        </td>
+                                    @endif
                                     <td>{{ config('meetings.quaterly_meetings.'.$meeting->quarter) }}</td>
                                     <td>{{ $meeting->year }}</td>
                                     <td>
@@ -159,8 +137,8 @@
                                     </td>
                                     <td>
                                         <div class="d-flex flex-column gap-1">
-                                            <span class="">Start: {{ \Carbon\Carbon::parse($meeting->submission_start)->format('F d, Y') }}</span>
-                                            <span class="text-danger">End: {{ \Carbon\Carbon::parse($meeting->submission_end)->format('F d, Y') }}</span>
+                                            <span class=""><span class="text-primary">Start: </span>{{ \Carbon\Carbon::parse($meeting->submission_start)->format('F d, Y') }}</span>
+                                            <span class=""><span class="text-danger">End: </span> {{ \Carbon\Carbon::parse($meeting->submission_end)->format('F d, Y') }}</span>
                                         </div>
                                     </td>
                                     <td>
@@ -183,7 +161,7 @@
                                             @if(session('isProponent'))
                                                 @if ($meeting->getIsSubmissionClosedAttribute() || $meeting->status == 1)
                                                     <a class="btn btn-sm btn-danger d-flex gap-2 disabled">
-                                                        <i class='bx bx-lock'></i>CLOSED
+                                                        <i class='bx bx-lock'></i>Closed
                                                     </a>
                                                 @else
                                                     <a class="btn btn-sm btn-primary d-flex align-items-center gap-1"

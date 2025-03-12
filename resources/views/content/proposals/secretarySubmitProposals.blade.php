@@ -65,7 +65,6 @@
                     <i class="bx bx-info-circle"></i> No proposals for endorsement at the moment.
                 </div>
             @else
-
                 @foreach ($matters as $type => $title)
                     @if (isset($categorizedProposals[$type]) && $categorizedProposals[$type]->count() > 0)
                         <div class="table-responsive text-nowrap mb-4">

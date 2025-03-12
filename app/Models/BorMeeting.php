@@ -73,16 +73,22 @@ class BorMeeting extends Model
         return $this->belongsTo(Venues::class, 'venue_id');
     }
 
-     // GET PROPOSAL DETAILS
-     public function proposals()
-     {
-         return $this->hasManyThrough(
-             Proposal::class, 
-             BoardMeetingAgenda::class, 
-             'bor_meeting_id', 
-             'id', 
-             'id', 
-             'board_proposal_id'
-         );
-     }
+    // GET PROPOSAL DETAILS
+    public function proposals()
+    {
+        return $this->hasManyThrough(
+            Proposal::class, 
+            BoardMeetingAgenda::class, 
+            'bor_meeting_id', 
+            'id', 
+            'id', 
+            'board_proposal_id'
+        );
+    }
+
+    // Function to get the campus name
+    public function getCampusName()
+    {
+        return 'All Campuses';
+    }
 }

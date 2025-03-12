@@ -72,16 +72,22 @@ class UniversityCouncilMeeting extends Model
         return $this->belongsTo(Venues::class, 'venue_id');
     }
 
-     // GET PROPOSAL DETAILS
-     public function proposals()
-     {
-         return $this->hasManyThrough(
-             Proposal::class, 
-             UniversityMeetingAgenda::class, 
-             'university_meeting_id', 
-             'id', 
-             'id', 
-             'university_proposal_id'
-         );
-     }
+    // GET PROPOSAL DETAILS
+    public function proposals()
+    {
+        return $this->hasManyThrough(
+            Proposal::class, 
+            UniversityMeetingAgenda::class, 
+            'university_meeting_id', 
+            'id', 
+            'id', 
+            'university_proposal_id'
+        );
+    }
+    
+    // Function to get the campus name
+    public function getCampusName()
+    {
+        return 'All Campuses';
+    }
 }

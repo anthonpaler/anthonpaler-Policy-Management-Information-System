@@ -162,7 +162,8 @@ class MeetingController extends Controller
             'link' => 'nullable|url',
             'status' => 'required|integer',
             'mode_if_online' => 'nullable|string',
-            'council_type' => 'required|integer',
+            'council_type' => 'required|integer', 
+            'year' => 'required',
             'submission_start' => 'required|date',
             'submission_end' => 'required|date|after_or_equal:submission_start',
         ]);
@@ -190,6 +191,7 @@ class MeetingController extends Controller
             'submission_start' => $request->input('submission_start'),
             'submission_end' => $request->input('submission_end'),
             'link' => $request->input('link'),
+            'year' => $request->input('year'),
         ];
 
         $meeting->update($meetingData);
