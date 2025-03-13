@@ -46,6 +46,8 @@ use App\Http\Controllers\tables\Basic as TablesBasic;
 use App\Http\Controllers\MeetingController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\dashboard\Analytics;
+use App\Http\Controllers\Admin\AdminDashboard;
+
 
 
 
@@ -63,7 +65,7 @@ Route::post('/logout', [LoginController::class, 'destroy'])->name('auth.logout')
 
 
 Route::middleware(['auth', 'super_admin'])->prefix('super-admin')->group(function() {
-  Route::get('/dashboard', [Analytics::class, 'index'])->name('super_admin.dashboard');
+  Route::get('/admin-dashboard', [AdminDashboard::class, 'index'])->name('super_admin.dashboard');
 });
 
 

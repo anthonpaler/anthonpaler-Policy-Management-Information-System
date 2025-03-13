@@ -5,7 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
-
+use Illuminate\Support\Facades\View;
 
 class MenuServiceProvider extends ServiceProvider
 {
@@ -24,7 +24,7 @@ class MenuServiceProvider extends ServiceProvider
   {
     
 
-  $role = 7;
+    $role = session('user_role', null);
     
     if(in_array($role, [0,1,2])){
       $verticalMenuJson = file_get_contents(base_path('resources/menu/proponent.json'));
@@ -43,6 +43,6 @@ class MenuServiceProvider extends ServiceProvider
     $verticalMenuData = json_decode($verticalMenuJson);
 
     // Share all menuData to all the views
-    \View::share('menuData', [$verticalMenuData]);
+    View::share('menuData', $verticalMenuData);
   }
 }

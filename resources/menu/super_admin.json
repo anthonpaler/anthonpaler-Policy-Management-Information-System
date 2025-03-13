@@ -5,11 +5,21 @@
     },
 
     {
-        "url": "/",
-        "title": "Dashboard",
+        "url": "/admin-dashboard",
+       
         "name": "Dashboard",
         "icon": "menu-icon tf-icons bx bx-home-circle",
         "slug": "dashboard"
+    },
+    {
+        "url": "/",
+       
+        "name": "User List",
+        "icon": "menu-icon tf-icons bx bxs-user-detail",
+        "slug": "user-list"
     }
+
+
+
     ]
 }

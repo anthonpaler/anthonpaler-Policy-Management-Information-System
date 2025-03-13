@@ -23,6 +23,7 @@ class AppServiceProvider extends ServiceProvider
    */
   public function boot(): void
   {
+    
       // // Custom validation rule to check if there are already 4 meetings set for the year
       // Validator::extend('max_meetings_per_year', function ($attribute, $value, $parameters, $validator) {
       //     $year = $value;
@@ -80,5 +81,10 @@ class AppServiceProvider extends ServiceProvider
 
           return true;
       }, 'Each line in the :attribute must follow the format "1.1 Call to Order".');
+
+      
   }
+
+
+  
 }
