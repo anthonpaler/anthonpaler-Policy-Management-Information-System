@@ -37,12 +37,27 @@ class LoginController extends Controller
 
         $employee = DB::table('employees')->find($user->employee_id);
 
+        // SESSIONS
         session(['user_role' => $user->role]);
         session(['name' => $user->name]);
         session(['profile_photo' => $user->image]);
         session(['employee_id' => $user->employee_id]);
         session(['campus_id' => $employee->campus]);
+
+        $isProponent = in_array($user->role, [0,1,2,6]);
+        $isSecretary = in_array($user->role, [3,4,5]);
+
+        session(['isProponent' => $isProponent]);
+        session(['isSecretary' => $isSecretary]);
+
+        $secretary_level = $user->role == 3 ? 0 : ($user->role == 4 ? 1 : ($user->role == 5 ? 2 : 0));
+
+        session(['secretary_level' => $secretary_level]);
         
+        
+
+        
+
 
         Auth::login($user);
         return response()->json([

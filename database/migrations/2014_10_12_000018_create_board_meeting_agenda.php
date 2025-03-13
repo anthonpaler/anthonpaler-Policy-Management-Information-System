@@ -13,20 +13,16 @@ return new class extends Migration
     {
         Schema::create('board_meeting_agenda', function (Blueprint $table) {
             $table->unsignedInteger('id')->autoIncrement();
-
-            $table->unsignedInteger('local_meeting_agenda_id')->nullable();
-            $table->unsignedInteger('university_meeting_agenda_id')->nullable();
             $table->unsignedInteger('board_proposal_id');
             $table->unsignedInteger('bor_meeting_id');
-
-            $table->foreign('local_meeting_agenda_id')->nullable()->references('id')->on('local_meeting_agenda')->onDelete('cascade');
-            $table->foreign('university_meeting_agenda_id')->nullable()->references('id')->on('university_meeting_agenda')->onDelete('cascade');
-            $table->foreign('board_proposal_id')->references('id')->on('proposals')->onDelete('cascade');
-            $table->foreign('bor_meeting_id')->references('id')->on('bor_meetings')->onDelete('cascade');
+            $table->unsignedInteger('board_oob_id');
             $table->tinyInteger('status');
             $table->timestamps();
             $table->softdeletes();
 
+            $table->foreign('board_proposal_id')->references('id')->on('proposals')->onDelete('cascade');
+            $table->foreign('bor_meeting_id')->references('id')->on('bor_meetings')->onDelete('cascade');
+            $table->foreign('board_oob_id')->references('id')->on('board_oob')->onDelete('cascade');
         });
     }
 

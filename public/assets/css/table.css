@@ -1,0 +1,46 @@
+.sortable-ghost {
+    background-color: #f1f1f1;
+    opacity: 0.7;
+}
+
+/* CUSTOM TAB */
+
+.custom_tab_list{
+    display: flex;
+    align-items: center;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.custom_tab_item.active{
+    border-bottom: 5px solid var(--bs-primary);
+    color: var(--bs-primary);
+}
+.custom_tab_item:hover{
+    color: var(--bs-primary);
+    transition: .5s;
+}
+.custom_tab_item{
+    padding: 20px 25px; 
+    cursor: pointer;
+}
+.custom_tab_item div{
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: nowrap;
+}
+.custom_tab_item div span{
+    text-wrap: nowrap;
+}
+
+.custom-tbl-header{
+    background-color: var(--bs-secondary-bg-subtle);
+}
+
+/* TD AND TH CUSTOM CSS */
+
+.table-striped td{
+    font-weight: 500 !important;
+    padding: 15px 10px !important;
+}

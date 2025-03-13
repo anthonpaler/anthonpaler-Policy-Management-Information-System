@@ -11,7 +11,7 @@
         <i class='bx bx-home-alt' ></i>
     </a>
     <i class='bx bx-chevron-right' ></i>
-    <a href="">Meetings</a>
+    <a href="{{route(    getUserRole().'.meetings')}}">Meetings</a>
     <i class='bx bx-chevron-right' ></i>
     <a href="#">Submit Proposal</a>
 </div>
@@ -26,20 +26,20 @@
                     </div>
                     <div class="meeting-head-text">
                         <div class="d-flex justify-content-between gap-2 flex-wrap">
-                            <h4 class="">{{ config('meetings.quaterly_meetings.2') }} {{ config("meetings.council_types." . ['local_level', 'university_level', 'board_level'][1] . ".{1}") }}
-                            2025</h4>
+                            <h4 class="">{{ config('meetings.quaterly_meetings.'.$meeting->quarter) }} {{ config("meetings.council_types." . ['local_level', 'university_level', 'board_level'][$meeting->getMeetingCouncilType()] . ".{$meeting->council_type}") }}
+                            {{$meeting->year}}</h4>
                             <div class="">
-                                <span class="btn btn-sm btn-success me-1">Active</span>
+                                <span class="btn btn-sm btn-{{$meeting->status == 0 ? 'success' : "danger" }} me-1">{{$meeting->status == 0 ? 'Active' : "Closed" }}</span>
                             </div>
                         </div>
                         <div class="d-flex flex-wrap justify-content-between  meeting-sub-details">
                             <div class="d-flex flex-wrap gap-3 mb-1">
                                 <span class="form-label">Submission: </span>
-                                <h6>January - January</h6>
+                                <h6>{{ \Carbon\Carbon::parse($meeting->submission_start)->format('F d, Y, h:i A') }} - {{ \Carbon\Carbon::parse($meeting->submission_end)->format('F d, Y, h:i A') }}</h6>
                             </div>
                             <div class="d-flex flex-wrap gap-3 mb-1">
                                 <span class="form-label">Meeting Date: </span>
-                                <h6>Not yet set</h6>
+                                <h6>{{ $meeting->meeting_date_time ? \Carbon\Carbon::parse($meeting->meeting_date_time)->format('F d, Y, h:i A') : 'Not yet set' }}</h6>
                             </div>
                         </div>
                     </div>
@@ -51,14 +51,10 @@
         </div>
     </div>
     
-    <form method="POST" action="" enctype="multipart/form-data" id="proposalFrm">
+    <form method="POST" action="{{ route(getUserRole().'.proposals.store', ['meeting_id' => encrypt($meeting->id)]) }}" enctype="multipart/form-data" id="proposalFrm">
         <div class="">
             <div class="d-flex flex-wrap align-items-center justify-content-between w-100 mb-3">
                 <span class="text-muted m-0">Please fill all the required fields <em class="text-danger">*</em></span>
-                <button type="submit" class="mt-4 btn btn-primary d-flex gap-2" id="submitProposalBtn">
-                    <i class='bx bx-send' ></i>
-                    <span class="text-nowrap">Submit Proposal</span> 
-                </button>
             </div>
             <div class="row mb-4">
                 <!-- Proposal details -->
@@ -97,12 +93,20 @@
                                         required
                                     >
                                         <option value="" disabled>Select Type of Matter or Proposal</option>
-                                      
+                                        @switch(auth()->user()->role)
+                                            @case(0)
+                                                <option value="1" >{{ config('proposals.matters.1') }}</option>
+                                                @break
+                                            @case(1)
+                                                <option value="2" >{{ config('proposals.matters.2') }}</option>
+                                                @break
+                                            @default
                                             @foreach (config('proposals.matters') as $key => $value)
                                                 <option value="{{ $key }}" >
                                                     {{ $value }}
                                                 </option>
                                             @endforeach
+                                        @endswitch
                                     </select>
                                 </div>
                                 @error('matter')
@@ -110,7 +114,7 @@
                                 @enderror
                             </div>
                                 
-                            <div class="mb-3">
+                            <div class="mb-4">
                                 <label class="form-label" for="action">Requested Action <span class="ms-1 text-danger">*</span></label>
                                 <div class="input-group input-group-merge">
                                     <span id="action-icon" class="input-group-text"><i class="bx bx-task"></i></span>
@@ -121,19 +125,29 @@
                                         aria-label="Action to be taken"
                                         aria-describedby="action-icon"
                                     >
-                                       
-                                        @foreach (config('proposals.requested_action') as $key => $value)
-                                            <option value="{{ $key }}" >
-                                                {{ $value }}
-                                            </option>
-                                        @endforeach
+                                        @switch(auth()->user()->role)
+                                            @case(0)
+                                                <option value="1" >{{ config('proposals.requested_action.1') }}</option>
+                                                <option value="3" >{{ config('proposals.requested_action.3') }}</option>
+                                                @break
+                                            @case(1)
+                                                <option value="2" >{{ config('proposals.requested_action.2') }}</option>
+                                                <option value="3" >{{ config('proposals.requested_action.3') }}</option>
+                                                @break
+                                            @default
+                                            @foreach (config('proposals.requested_action') as $key => $value)
+                                                <option value="{{ $key }}" >
+                                                    {{ $value }}
+                                                </option>
+                                            @endforeach
+                                        @endswitch
                                     </select>
                                 </div>
                                 @error('action')
                                     <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
                                 @enderror
                             </div>
-                            <div class="mb-3" id="subTypeContainer" style="">
+                            <div class="mb-3" id="subTypeContainer" style="{{auth()->user()->role == 1 ? 'display: block;' : 'display: none;'}}">
                                 <label class="form-label" for="sub_type">Sub Type</label>
                                 <div class="input-group input-group-merge">
                                     <span id="sub-type-icon" class="input-group-text"><i class="bx bx-category-alt"></i></span>
@@ -192,19 +206,19 @@
                                 <div class="form-control proponent-con" style="">
                                     <input type="text" class="form-control" value="" id="proponents" name="proponents" hidden>
                                     <ul class="" id="proponentListCon">
-                                        <li data-id="" data-name="" data-email="" data-image="" id="primaryProponent">
+                                        <li data-id="{{auth()->user()->employee_id;}}" data-name="{{auth()->user()->name;}}" data-email="{{auth()->user()->email;}}" data-image="{{auth()->user()->image;}}" id="primaryProponent">
                                             <div class="d-flex justify-content-between align-items-center ms-2 me-2">
                                                 <div class="d-flex justify-content-start align-items-center ">
                                                     <div class="avatar-wrapper">
                                                         <div class="avatar avatar-sm me-3">
-                                                            <img src="" alt="Avatar" class="rounded-circle">
+                                                            <img src="{{auth()->user()->image;}}" alt="Avatar" class="rounded-circle">
                                                         </div>
                                                     </div>
                                                     <div class="d-flex flex-column">
                                                         <a href="" class="text-heading text-truncate m-0">
-                                                            <span class="fw-medium"> (You)</span>
+                                                            <span class="fw-medium">{{auth()->user()->name;}} (You)</span>
                                                         </a>
-                                                        <small></small>
+                                                        <small>{{auth()->user()->email;}}</small>
                                                     </div>
                                                 </div>
                                                 <div class="">
@@ -231,12 +245,16 @@
                             <div class="dropzone mb-2" id="fileDropzone">
                             
                             </div>
-                            <span class="text-muted">Accepted formats: .pdf only</span>
+                            <span class="text-muted">Accepted formats: .pdf .xls, .xlsx and .csv only</span>
                         
                         </div>
                     </div>
                 </div>
             </div>
+            <button type="submit" class="mt-4 btn btn-primary d-flex gap-2" id="submitProposalBtn">
+                <i class='bx bx-send' ></i>
+                <span class="text-nowrap">Submit Proposal</span> 
+            </button>
         </div>
     </form>
 </div>
@@ -245,7 +263,7 @@
     let proposalInput = $('#proposalInput');
 
     var myDropzone = new Dropzone("div#fileDropzone", {
-        url: "/jiodjfsjdf",
+        url: "{{route(getUserRole().'.projects.storeMedia')}}",
         paramName: "file",
         maxFilesize: 100,
         addRemoveLinks: true,
@@ -271,14 +289,14 @@
             var fileName = file.renamedFileName; 
 
             $.ajax({
-                url: "", 
+                url: "{{route(getUserRole().'.media.delete')}}", 
                 type: "POST",
                 data: { filename: fileName },
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 },
                 success: function (response) {
-                    console.log("File removed:", response);
+                    console.log("File removed:", respons1e);
                 },
                 error: function (xhr, status, error) {
                     console.error("Error removing file:", error);

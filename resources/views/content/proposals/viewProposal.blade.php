@@ -33,10 +33,21 @@
                             <span class="badge bg-label-primary">{{ config('proposals.status.'.$proposal->status) }}</span>
                         </div>
                         <div class="mb-3">
-                            <small class="text-light fw-medium">Proposal Title</small>
-                            <h6 class="mb-0">{{$proposal->title}}</h6>
+                            <label class="form-label" for="title">Proposal Title <span class="ms-1 text-danger">*</span></label>
+                            <textarea
+                                id="title"
+                                name="title"
+                                class="form-control"
+                                placeholder="Enter title"
+                                aria-label="Enter title"
+                                required
+                                rows="3"
+                            >{{ $proposal->title }}</textarea>
+                            @error('title')
+                                <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
+                            @enderror
                         </div>
-                        <small class="text-light fw-medium">Proponents</small>
+                        <label class="form-label" for="">Proponent <span class="ms-1 text-danger">*</span></label>
                         <div class="border rounded p-2 mb-3">
                             <div class="d-flex flex-wrap gap-2">
                                 @foreach ($proposal->proponentsList as $proponent)
@@ -149,98 +160,145 @@
                     </ul>
                     <div class="tab-content">
                         <div class="tab-pane fade show active" id="recent-files" role="tabpanel">
-                            <div class="proposal-file-con mb-2">
-                                @php
-                                    $countLatestVersion = 0;
-                                @endphp
-                                @foreach ($proposal->files as $file)
-                                    @if ($file->is_active == 1)
-                                        @php
-                                            $countLatestVersion++;
-                                        @endphp
-                                        <div class="proposal-file-card">
-                                            <div class="checkbox-wrapper">
-                                                <input type="checkbox" class="form-check-input select-proposal-file" data-id="{{ $file->id }}" > 
-                                                <small>SELECT</small>
-                                            </div>
-                                           
-                                            <div class="proposal-file-card-header">
-                                                <span class="custom-badge version">Version {{ $file->version }}</span>
-                                                <span class="custom-badge file-status">{{ config('proposals.proposal_file_status.'.$file->file_status ) }}</span>
-                                            </div>
-                                            <div class="proposal-file-card-body" 
-                                                data-bs-toggle="modal" 
-                                                data-bs-target="#fileModal"
-                                                data-file-url="/storage/proposals/{{$file->file}}">
-                                                <div class="proposal-file-img">
-                                                    <img src="{{ asset('assets/img/icons/document/folder_2.png') }}" alt="">
+                            @php
+                                $countLatestVersion = 0;
+                            @endphp
+                            <h6 class="text-primary">PROPOSAL FILES</h6>
+                            <div class="table-responsive text-nowrap">
+                                <table id="proposalFilesTable" class="table table-bordered sortable">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 40px;"></th>
+                                            <th style="">File</th>
+                                            <th style="width: 100px;">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($proposal->files as $file)
+                                            @if ($file->is_active == 1)
+                                                @php
+                                                    $countLatestVersion++;
+                                                @endphp
+                                                <tr>
+                                                    <td>
+                                                        <div class="d-flex gap-3">
+                                                            <input type="checkbox" class="form-check-input select-proposal-file" data-id="{{ $file->id }}" > 
+                                                            <span class="text-muted file_order_no">
+                                                                {{  $file->order_no }}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div class="d-flex gap-3">
+                                                            <div class="proposal-file-img">
+                                                                <img src="{{ asset('assets/img/icons/document/folder_3.png') }}" alt="">
+                                                            </div>
+                                                            <div class="d-flex flex-column gap-2">
+                                                                <span class="text-wrap"  data-bs-toggle="modal" 
+                                                                data-bs-target="#fileModal"
+                                                                data-file-url="/storage/proposals/{{$file->file}}">{{ $file->file }} </span>
+                                                                <div class="d-flex gap-2">
+                                                                    <span class="badge bg-label-primary">{{ config(key: 'proposals.proposal_file_status.'.$file->file_status) }}</span>
+                                                                    <span class="badge bg-label-success">Version {{ $file->version }}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div class="d-flex align-items-center gap-2">
+                                                            <button class="btn btn-primary btn-sm rename-file-btn" 
+                                                                data-bs-toggle="modal" 
+                                                                data-bs-target="#renameFileModal"
+                                                                data-id="{{ $file->id }}"
+                                                                data-filename="{{ $file->file }}">
+                                                                <i class='bx bx-rename'></i>
+                                                            </button>
+
+                                                            <button type="button" class="btn btn-sm  btn-danger delete-proposal" data-bs-toggle="tooltip" data-bs-offset="0,8" data-bs-placement="top" data-bs-custom-class="tooltip-primary" data-bs-original-title="Delete File "
+                                                            data-id="{{ $file->id }}" {{ (!in_array($proposal->status, [2,5,6]) && $proposal->is_edit_disabled  && $file->file_status) ? 'disabled' : '' }}
+                                                            > 
+                                                                <i class='bx bxs-trash'></i>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            @endif
+                                        @endforeach
+                                        @if ($countLatestVersion == 0)
+                                            <td colspan="3">
+                                                <div
+                                                    class="alert alert-info"
+                                                    role="alert"
+                                                >
+                                                    <p>No latest version files</p>
                                                 </div>
-                                                <small data-bs-toggle="tooltip" data-bs-placement="top" title="{{ pathinfo($file->file, PATHINFO_FILENAME) . '.' . pathinfo($file->file, PATHINFO_EXTENSION) }}">
-                                                    {{ Str::limit(pathinfo($file->file, PATHINFO_FILENAME), 15, '...') . '.' . pathinfo($file->file, PATHINFO_EXTENSION) }}
-                                                </small>
-                                            </div>
-                                        </div>
-                                    @endif
-                                @endforeach
-                                @if ($countLatestVersion == 0)
-                                    <td colspan="4">
-                                        <div
-                                            class="alert alert-info"
-                                            role="alert"
-                                        >
-                                            <p>No files submitted</p>
-                                        </div>
-                                        
-                                    </td>
-                                @endif
+                                            </td>
+                                        @endif
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                         <div class="tab-pane fade" id="archived-files" role="tabpanel">
-                            <div class="proposal-file-con mb-2">
-                                @php
-                                    $countOldVersion = 0;
-                                @endphp
-                                @foreach ($proposal->files as $file)
-                                    @if ($file->is_active == 0)
-                                        @php
-                                            $countOldVersion++;
-                                        @endphp
-                                        <div class="proposal-file-card">
-                                            <div class="proposal-file-card-header">
-                                                <span class="custom-badge version">Version {{ $file->version }}</span>
-                                                <span class="custom-badge file-status">{{ config('proposals.proposal_file_status.'.$file->file_status ) }}</span>
-                                            </div>
-                                            <div class="proposal-file-card-body" 
-                                                data-bs-toggle="modal" 
-                                                data-bs-target="#fileModal"
-                                                data-file-url="/storage/proposals/{{$file->file}}">
-                                                <div class="proposal-file-img">
-                                                    <img src="{{ asset('assets/img/icons/document/folder_2.png') }}" alt="">
+                            @php
+                                $countOldVersion = 0;
+                            @endphp
+                            <h6 class="text-primary">PROPOSAL FILES</h6>
+                            <div class="table-responsive text-nowrap">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 50px;"></th>
+                                            <th style="">File</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($proposal->files as $file)
+                                            @if ($file->is_active == 0)
+                                                @php
+                                                    $countOldVersion++;
+                                                @endphp
+                                                <tr>
+                                                    <td>
+                                                        <input type="checkbox" class="form-check-input select-proposal-file" data-id="{{ $file->id }}" > 
+                                                    </td>
+                                                    <td>
+                                                        <div class="d-flex gap-3">
+                                                            <div class="proposal-file-img">
+                                                                <img src="{{ asset('assets/img/icons/document/folder_3.png') }}" alt="">
+                                                            </div>
+                                                            <div class="d-flex flex-column gap-2">
+                                                                <span class="text-wrap"  data-bs-toggle="modal" 
+                                                                data-bs-target="#fileModal"
+                                                                data-file-url="/storage/proposals/{{$file->file}}">{{ $file->file }} </span>
+                                                                <div class="d-flex gap-2">
+                                                                    <span class="badge bg-label-primary">{{ config('proposals.proposal_file_status.'.$file->file_status) }}</span>
+                                                                    <span class="badge bg-label-success">Version {{ $file->version }}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            @endif
+                                        @endforeach
+                                        @if ($countOldVersion == 0)
+                                            <td colspan="2">
+                                                <div
+                                                    class="alert alert-info"
+                                                    role="alert"
+                                                >
+                                                    <p>No old version files</p>
                                                 </div>
-                                                <small data-bs-toggle="tooltip" data-bs-placement="top" title="{{ pathinfo($file->file, PATHINFO_FILENAME) . '.' . pathinfo($file->file, PATHINFO_EXTENSION) }}">
-                                                    {{ Str::limit(pathinfo($file->file, PATHINFO_FILENAME), 15, '...') . '.' . pathinfo($file->file, PATHINFO_EXTENSION) }}
-                                                </small>
-                                            </div>
-                                        </div>
-                                    @endif
-                                @endforeach
-                                @if ($countOldVersion == 0)
-                                    <td colspan="4">
-                                        <div
-                                            class="alert alert-info"
-                                            role="alert"
-                                        >
-                                            <p>No old version files</p>
-                                        </div>
-                                    </td>
-                                @endif
+                                            </td>
+                                        @endif
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div> 
-        <div class="col" >
+        <div class="col mb-4">
             <div class="card mb-4 proposal-action-wrapper">
                 <div class="card-header com-sec-header ">
                     <h6>PROPOSAL COMMENTS / SUGGESTIONS</h6>
@@ -252,8 +310,8 @@
                             @foreach($proposal_logs as $log)
                                 @if (in_array($log->action, [1,4,5,6]))
                                     @php $noLogsFound = false; @endphp
-                                    <div class="com-wrapper d-flex {{ $log->user_id == auth()->id() ? 'justify-content-end' : 'justify-content-start' }}">
-                                        <div class="{{ $log->user_id == auth()->id() ? 'sender' : 'receiver' }}">
+                                    <div class="com-wrapper d-flex {{ $log->employee_id == auth()->id() ? 'justify-content-end' : 'justify-content-start' }}">
+                                        <div class="{{ $log->employee_id == auth()->id() ? 'sender' : 'receiver' }}">
                                             <div class="d-flex gap-4 justify-content-between">
                                                 <div class="d-flex gap-2">
                                                     <div class="flex-shrink-0 me-3">
@@ -311,7 +369,7 @@
 
                                     @php
                                         $currentDateTime = now();
-                                        $meetingDateTime = \Carbon\Carbon::parse($meeting->meeting_date_time);
+                                        $meetingDateTime = \Carbon\Carbon::parse($proposal->meeting->meeting_date_time);
                                     @endphp
 
                                     <ul class="dropdown-menu">
@@ -363,12 +421,12 @@
                                 </div>
                             </div>
                             <div class="d-flex gap-2">
-                                <button class="btn btn-{{ $meeting->status == 1 ? 'danger': 'primary' }} d-flex gap-2 text-nowrap" 
+                                <button class="btn btn-{{ $proposal->meeting->status == 1 ? 'danger': 'primary' }} d-flex gap-2 text-nowrap" 
                                         id="updateProposalStatus" 
                                         data-id="{{ encrypt($proposal->id) }}" 
-                                        {{ $meeting->status == 1 ? 'disabled' : '' }}>
+                                        {{ $proposal->meeting->status == 1 ? 'disabled' : '' }}>
                                     
-                                    {!! $meeting->status == 1 ? "<i class='bx bxs-lock-alt'></i>" : "<i class='bx bxs-send'></i>" !!}
+                                    {!! $proposal->meeting->status == 1 ? "<i class='bx bxs-lock-alt'></i>" : "<i class='bx bxs-send'></i>" !!}
                                     Update Proposal Status
                                 </button>
                             </div>
@@ -390,6 +448,44 @@
         <div class="modal-body">
             <iframe id="fileIframe" src="" width="100%" height="600px" frameborder="0"></iframe>
         </div>
+        </div>
+    </div>
+</div>
+<!-- Modal for Renaming File -->
+<div class="modal fade" id="renameFileModal" tabindex="-1" aria-labelledby="renameFileModallLabel" 
+     aria-hidden="true" data-file-id="">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="renameFileModallLabel">Rename File</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="">
+                    @csrf
+                    <div class="mb-3">
+                        <label class="form-label" for="">Current File Name</label>
+                        <div class="input-group input-group-merge">
+                            <span id="" class="input-group-text">
+                                <i class='bx bx-file' ></i>
+                            </span>
+                            <input type="text" class="form-control" id="currentFileName" value="" disabled>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="">New File Name</label>
+                        <div class="input-group input-group-merge">
+                            <span id="" class="input-group-text">
+                                <i class='bx bx-rename' ></i>
+                            </span>
+                            <input type="text" class="form-control" id="newFileName" placeholder="Enter new file name">
+                            <button class="btn btn-primary d-flex gap-2" id="renameFileBtn">
+                                Rename
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </div>

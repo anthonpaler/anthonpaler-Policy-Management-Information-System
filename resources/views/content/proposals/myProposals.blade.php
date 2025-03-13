@@ -69,57 +69,50 @@
                                 </div>
                             </td>
                             <td>
-                                <span class="badge bg-label-{{ $actionColors[$proposal->type] ?? 'primary' }}" style="text-transform: none;">
+                                <!-- <span class="badge bg-label-{{ $actionColors[$proposal->type] ?? 'primary' }}" style="text-transform: none;">
+                                    {{ config('proposals.matters.'.$proposal->type) }}
+                                </span> -->
+                                <span class="align-items-center d-flex gap-2"> 
+                                    {!! $proposal->type == 1 ? "<i class='bx bx-book-content text-primary'></i> " : "<i class='bx bxs-book-content text-danger' ></i>" !!}
+
                                     {{ config('proposals.matters.'.$proposal->type) }}
                                 </span>
                             </td>
                             <td> {{ config('proposals.requested_action.'.$proposal->action) }}</td>
-                            <td>{{config('meetings.level.'.$proposal->level)}}</td>
+                            <td>{{config('meetings.level.'.$proposal->getCurrentLevelAttribute())}}</td>
                             <td>
-                                <div style="width: 230px; white-space: nowrap; ">
-                                    <small class="mb-0 align-items-center d-flex w-px-100">
+                                <div style="min-width: 200px; ">
+                                    <span class="mb-0 align-items-center d-flex w-100 text-wrap gap-2">
                                         <i class='bx bx-radio-circle-marked text-{{ $actionColors[$proposal->status] ?? 'primary' }}'></i>
                                         {{ config('proposals.status.'.$proposal->status) }}
-                                    </small>
+                                    </span>
                                 </div>
                             </td>
                             <td>
                                 @if($proposal->files->count() > 0)
-                                    <button class="btn btn-sm btn-success d-flex gap-2 view-files"
+                                    <span class="btn btn-primary btn-sm d-flex gap-2 view-files"
                                             data-files="{{ json_encode($proposal->files) }}" 
                                             data-title="{{ $proposal->title }}">
-                                        <i class='bx bx-file'></i> View Files
-                                    </button>
+                                        <i class='bx bx-file'></i> VIEW FILES
+                                    </span>
                                 @else
-                                    <span class="text-muted">No Files</span>
+                                    <span class="text-muted pe-auto">No Files</span>
                                 @endif
                             </td>
                             <td>
                                 <div class="d-flex align-items-center gap-2">
-                                    <button class="btn p-0 hide-arrow delete-proposal text-{{ $proposal->is_edit_disabled ? 'light' : 'secondary'}}" data-id="{{ encrypt($proposal->id) }}" data-deletable="{{ $proposal->is_edit_disabled }}">
-                                        <i class='bx bx-trash'></i>
+                                    <a class="action-btn success" href="{{ route(getUserRole().'.proposal.edit', ['proposal_id' => encrypt($proposal->id)]) }}">
+                                        <i class='bx bxs-edit' ></i>
+                                        <span class="tooltiptext">Edit</span>
+                                    </a>
+                                    <button class="action-btn danger delete-proposal" data-id="{{ encrypt($proposal->id) }}">
+                                        <i class='bx bx-trash-alt' ></i>
+                                        <span class="tooltiptext">Delete</span>
                                     </button>
-                                    <div class="dropdown">
-                                        <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                                            <i class="bx bx-dots-vertical-rounded"></i>
-                                        </button>
-                                        <div class="dropdown-menu">
-                                            <a class="dropdown-item" href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->id)]) }} ">
-                                                <i class="fa-regular fa-eye me-3"></i>View Details
-                                            </a>
-                                            
-                                            @if(in_array($proposal->status, [2,5,6]))
-                                                <a class="dropdown-item" href="{{ route(getUserRole().'.proposal.edit', ['proposal_id' => encrypt($proposal->id)]) }}">
-                                                    <i class='bx bx-right-arrow-circle me-3'></i>Resubmit Proposal
-                                                </a>
-                                            @endif
-                                            @if(!$proposal->is_edit_disabled)
-                                                <a class="dropdown-item" href="{{ route(getUserRole().'.proposal.edit', ['proposal_id' => encrypt($proposal->id)]) }}">
-                                                    <i class="bx bx-edit-alt me-3"></i>Edit Proposal
-                                                </a>
-                                            @endif
-                                        </div>
-                                    </div>
+                                    <a class="action-btn primary" href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->id)])}}">
+                                        <i class='bx bx-right-top-arrow-circle' ></i>
+                                        <span class="tooltiptext">View</span>
+                                    </a>
                                 </div>
                             </td>
                         </tr>
@@ -150,17 +143,22 @@
     <div class="modal fade" id="fileModal" tabindex="-1" aria-labelledby="fileModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="fileModalLabel">File Preview</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <iframe id="fileIframe" src="" width="100%" height="600px" frameborder="0"></iframe>
-            </div>
+                <div class="modal-header">
+                    <div class="d-flex align-items-center gap-3">
+                        <h5 class="modal-title" id="fileModalLabel">File Preview</h5>
+                        <div class="d-flex align-items-center gap-3">
+                            <i class="bx bx-fullscreen full-screen-file-preview" id="toggleIframeFullscreen"></i>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <iframe id="fileIframe" src="" width="100%" height="600px" frameborder="0"></iframe>
+                </div>
             </div>
         </div>
     </div>
 </div>
 <script src="{{asset('assets/js/proposal.js')}}"></script>
-<script src="{{asset('assets/js/pagination.js')}}"></script>
+<script src="{{asset('assets/js/dataTable.js')}}"></script>
 @endsection

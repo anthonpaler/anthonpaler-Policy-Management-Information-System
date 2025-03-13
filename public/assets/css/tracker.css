@@ -1,0 +1,142 @@
+/* NEW CUSTOM PROGRESS CSS */
+.c-progress-step{
+  display: flex;
+  gap: 30px;
+  border-left: 3px solid var(--bs-success);
+  height: 140px;
+  margin-left: 35px;
+  position: relative;
+  padding-left: 60px;
+  padding-top: 20px;
+}
+
+.c-progress-step .step-badge{
+  position: absolute;
+  top: 0;
+  left: -35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  height: 70px;
+  width: 70px;
+  border-radius: 50%;
+  border: 3px solid var(--bs-secondary);
+  background-color: #e3e3e3;
+  animation:  pulse-inactive 1500ms infinite;
+}
+.c-progress-step .step-badge small{
+  font-size: .7em;
+}
+.c-progress-step .step-badge.active{
+  border: 5px solid var(--bs-success);
+  background-color: var( --bs-success-bg-subtle);
+  animation:  pulse-active 1500ms infinite;
+}
+
+@keyframes pulse-active {
+  0%{
+    box-shadow: var(--bs-success) 0 0 0 0;
+  }
+  75%{
+    box-shadow: #ff69b400 0 0 0 30px;
+  }
+}
+@keyframes pulse-inactive {
+  0%{
+    box-shadow: var(--bs-secondary) 0 0 0 0;
+  }
+  75%{
+    box-shadow: #ff69b400 0 0 0 25px;
+  }
+}
+.step-badge.active small,
+.step-badge.active h4{
+  color: var(--bs-success) !important;
+}
+
+.c-progress-2{
+  margin-left: 35px;
+  /* border-top: 1px solid var(--bs-secondary-border-subtle); */
+  border-left: 3px solid   var(--bs-success);
+  padding: 00px 15px 15px 60px ;  
+  position: relative;
+}
+.c-progress-2::before {
+  content: "";
+  display: block;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: var(--bs-success-bg-subtle);
+
+  border: 3px solid var(--bs-success);
+  position: absolute;
+  top: 0;
+  left: -11px;
+}
+.c-progress-step.last{
+  border: 0;
+}
+.progress-wrapper-2{
+  min-width: 80% !important;
+}
+.progress-wrapper-3{
+  width: 100% !important;
+  padding-left: 40px;
+}
+
+/* PROPOSAL TRACKER OR TIMELINE CSS */
+.step-title{
+  padding: 15px 20px;
+  width: 100%;
+  border-radius: 5px;
+  background-color: var(--bs-secondary-bg-subtle);
+  height: 45px;
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+.step-title.active{
+  background-color: var(--bs-success);
+}
+.step-title.active i, 
+.step-title.active h6{
+  color: var(--bs-white);
+}
+.c-progress-2 .log-card{
+  background-color: var( --bs-success-bg-subtle);
+  color: var(--bs-success);
+  border-radius: 5px;
+}
+.c-progress-2 .log-card h6,
+.c-progress-2 .log-card small,
+.c-progress-2 .log-card p{
+  color: var(--bs-success);
+}
+
+.c-progress-2 .log-card.danger{
+  background-color: #FFE5E5;
+  color: #FF5B5C;
+  border-radius: 5px;
+}
+.c-progress-2 .log-card.danger h6,
+.c-progress-2 .log-card.danger  small,
+.c-progress-2 .log-card.danger  p{
+  color: #FF5B5C;
+}
+
+.c-progress-2 .log-card.warning{
+  background-color: #FFF2E1;
+  color: #FDAC41;
+  border-radius: 5px;
+}
+.c-progress-2 .log-card.warning h6,
+.c-progress-2 .log-card.warning  small,
+.c-progress-2 .log-card.warning  p{
+  color: #FDAC41;
+}
+
+.log-card hr{
+  margin: 7px 0;
+}

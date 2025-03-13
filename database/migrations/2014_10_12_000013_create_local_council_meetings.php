@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('local_council_meetings', function (Blueprint $table) {
             $table->unsignedInteger('id')->autoIncrement();            $table->dateTime('submission_start');
             $table->dateTime('submission_end');
-            $table->dateTime('meeting_date_time');
+            $table->dateTime('meeting_date_time')->nullable();
             $table->string('modality', 25)->nullable();
             $table->tinyInteger('quarter');
             $table->integer('year');

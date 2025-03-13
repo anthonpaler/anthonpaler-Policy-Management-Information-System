@@ -31,11 +31,23 @@
                         <span id="basic-icon-default-phone2" class="input-group-text">
                             <i class='bx bx-user-pin'></i>
                         </span>
-                        <select class="form-control @error('type') is-invalid @enderror" name="council_type" required>
+                        <select class="form-select @error('type') is-invalid @enderror" name="council_type" required>
                                 <option value="">Select Meeting Type</option>
-                                @foreach (config('meetings.council_types.board_level') as $index => $item)
-                                    <option value="{{ $index }}" {{ old('type') == $index ? 'selected' : '' }}>{{ $item }}</option>
-                                @endforeach
+                                @if (auth()->user()->role == 3)
+                                    @foreach (config('meetings.council_types.local_level') as $index => $item)
+                                        <option value="{{ $index }}" {{ old('type') == $index ? 'selected' : '' }}>{{ $item }}</option>
+                                    @endforeach
+                                @endif
+                                @if (auth()->user()->role == 4)
+                                    @foreach (config('meetings.council_types.university_level') as $index => $item)
+                                        <option value="{{ $index }}" {{ old('type') == $index ? 'selected' : '' }}>{{ $item }}</option>
+                                    @endforeach
+                                @endif
+                                @if (auth()->user()->role == 5)
+                                    @foreach (config('meetings.council_types.board_level') as $index => $item)
+                                        <option value="{{ $index }}" {{ old('type') == $index ? 'selected' : '' }}>{{ $item }}</option>
+                                    @endforeach
+                                @endif
                         </select>
                         @error('type')
                             <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
@@ -72,11 +84,11 @@
                     <div class="mb-3 mt-3">
                         <label class="form-label" for="title">Quarter <span class="ms-1 text-danger">*</span></label>
                         <div class="input-group input-group-merge">
-                            <span id="basic-icon-default-company2" class="input-group-text">
+                            <span  class="input-group-text">
                                 <i class='bx bx-border-all'></i>
                             </span>
 
-                            <select class="form-control @error('quarter') is-invalid @enderror" name="quarter" required>
+                            <select class="form-select @error('quarter') is-invalid @enderror" name="quarter" required>
                                 <option value="">Select Quarter</option>
                                 @foreach (config('meetings.quaterly_meetings') as $index => $item)
                                     <option value="{{ $index }}" {{ old('quarter') == $index ? 'selected' : '' }}>
@@ -92,10 +104,10 @@
                     <div class="mb-3">
                         <label class="form-label" for="title">Year <span class="ms-1 text-danger">*</span></label>
                         <div class="input-group input-group-merge">
-                            <span id="basic-icon-default-company2" class="input-group-text">
+                            <span  class="input-group-text">
                                 <i class='bx bx-calendar-alt'></i>
                             </span>
-                            <select class="form-control @error('year') is-invalid @enderror" name="year" required>
+                            <select class="form-select @error('year') is-invalid @enderror" name="year" required>
                                 <option value="">Select Year</option>
                                 @for ($year = date('Y'); $year <= date('Y') + 5; $year++)
                                     <option value="{{ $year }}">{{ $year }}</option>
@@ -117,7 +129,7 @@
                                     <input
                                         type="date"
                                         id="submission_start"
-                                        class="form-control basic-icon-default-company @error('submission_start') is-invalid @enderror"
+                                        class="form-control  @error('submission_start') is-invalid @enderror"
                                         name="submission_start"
                                         value="{{ old('submission_start', (new DateTime('now', new DateTimeZone('Asia/Manila')))->format('Y-m-d')) }}"
                                         required
@@ -138,7 +150,7 @@
                                     <input
                                         type="date"
                                         id="submission_end"
-                                        class="form-control basic-icon-default-company @error('submission_end') is-invalid @enderror"
+                                        class="form-control  @error('submission_end') is-invalid @enderror"
                                         name="submission_end"
                                         value="{{ old('submission_end', date('Y-m-d')) }}"
                                         min="{{ date('Y-m-d') }}"
@@ -171,12 +183,12 @@
                                 <div class="mb-3">
                                     <label class="form-label" for="status">Modality</label>
                                     <div class="input-group input-group-merge">
-                                        <span id="basic-icon-default-company2" class="input-group-text">
+                                        <span  class="input-group-text">
                                             <i class='bx bx-shape-square' ></i>
                                         </span>
                                         <select
                                         id="modality"
-                                        class="form-control @error('status') is-invalid @enderror"
+                                        class="form-select"
                                         name="modality"
                                         >
                                         <option value="">Select Modality</option>
@@ -219,12 +231,12 @@
                                 <div class="mb-3">
                                     <label class="form-label" for="platform">Platform</label>
                                     <div class="input-group input-group-merge">
-                                        <span id="basic-icon-default-company2" class="input-group-text">
+                                        <span  class="input-group-text">
                                             <i class="bx bx-buildings"></i>
                                         </span>
                                         <select
                                             id="mode_if_online"
-                                            class="form-control basic-icon-default-company  @error('venue') is-invalid @enderror"
+                                            class="form-select   @error('venue') is-invalid @enderror"
                                             name="mode_if_online"
 
                                         >
@@ -244,12 +256,12 @@
                                 <div class="mb-3">
                                     <label class="form-label" for="platform">Link</label>
                                     <div class="input-group input-group-merge">
-                                        <span id="basic-icon-default-company2" class="input-group-text">
+                                        <span  class="input-group-text">
                                             <i class='bx bx-link' ></i>
                                         </span>
                                         <input
                                             id="mode_if_online"
-                                            class="form-control basic-icon-default-company @error('venue') is-invalid @enderror"
+                                            class="form-control  @error('venue') is-invalid @enderror"
                                             name="link"
                                             placeholder="Enter link"
                                         >
@@ -259,18 +271,22 @@
                         </div>
 
                         <div class="mb-3 d-none" id="venueField">
-                            <label class="form-label" for="basic-icon-default-company">Venue</label>
+                            <label class="form-label" for="">Venue</label>
                             <div class="input-group input-group-merge">
-                                <span id="basic-icon-default-company2" class="input-group-text">
+                                <span  class="input-group-text">
                                     <i class="bx bx-buildings"></i>
                                 </span>
                                 <select
                                     id="venue"
-                                    class="form-control basic-icon-default-company @error('venue') is-invalid @enderror"
+                                    class="form-select  @error('venue') is-invalid @enderror"
                                     name="venue"
                                 >
                                     <option value="">Select Venue</option>
-                                
+                                    @foreach ($venues as $venue)
+                                    <option value="{{ $venue->id }}">
+                                        {{ $venue->name }}
+                                    </option>
+                                    @endforeach
                                 </select>
                                 @error('venue')
                                     <div class="invalid-feedback" style="display:block;">{{ $message }}</div>

@@ -13,6 +13,8 @@
 <!-- BEGIN: Theme JS-->
 <script src="{{ asset(mix('assets/js/main.js')) }}"></script>
 
+<!-- Sort JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
 <!-- Toasttr  -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <!-- Google -->
@@ -24,6 +26,8 @@
 <!-- Alert -->
 <script src="{{asset('assets/js/alerts.js')}}"></script>
 
+<!-- FULL SCREEN -->
+<script src="{{asset('assets/js/fullScreen.js')}}"></script>
 
 <!-- END: Theme JS-->
 <!-- Pricing Modal JS-->

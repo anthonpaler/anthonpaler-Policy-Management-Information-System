@@ -2,7 +2,9 @@
 return [
     'matters' => [
         1 => 'Academic Matters',
-        2 => 'Administrative Matters'
+        2 => 'Administrative Matters',
+        3 => 'Matters for Confirmation',
+        4 => 'Matters for Information',
     ],
     'proposal_subtypes' => [
         'Financial Matters',
@@ -21,11 +23,26 @@ return [
         7 => 'Deferred',
         8 => 'For Review',
         9 => 'Resubmitted',
+        10 => 'Confirmed',
     ],
     'requested_action' => [
+        // PROPONENT 
+        4 => 'Endorsement for Local ACAD',
+        5 => 'Endorsement for Local ADCO',
+
+        // LOCAL SECRETARY AND PROPONENT
         1 => 'Endorsement for UACAD',
         2 => 'Endorsement for UADCO',
+
+        // UNIVERSITY SECRETARY
         3 => 'Endorsement for BOR',
+        6 => 'Approval for UACAD',
+        7 => 'Approval for UADCO',
+
+        // BOARD SECRETARY
+        8 => 'BOR Approval',
+        9 => 'BOR Confirmation',
+        10 => 'BOR Information',
     ],
     'proposal_file_status' => [
         1 => 'Pending',
@@ -35,13 +52,17 @@ return [
     ],
     'proposal_action' => [
         // FOR SECRETARY PROPOSAL ACTIONS
+        // BEFORE MEETING
         0 => 'Post to Agenda',
         1 => 'Return',
+
+        // AFTER MEETING
         2 => 'Approve',
         3 => 'Endorse',
         4 => 'Approve with Coletilla',
         5 => 'Endorse with Coletilla',
         6 => 'Deffer',
+        9 => 'Confirm',
 
         // FOR PROPONENT PROPOSAL ACTIONS
         7 => 'Submit',

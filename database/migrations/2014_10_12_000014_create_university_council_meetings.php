@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('university_council_meetings', function (Blueprint $table) {
             $table->unsignedInteger('id')->autoIncrement();            $table->dateTime('submission_start');
             $table->dateTime('submission_end');
-            $table->dateTime('meeting_date_time');
+            $table->dateTime('meeting_date_time')->nullable();
             $table->string('modality', 25)->nullable();
             $table->tinyInteger('quarter');
             $table->integer('year');
@@ -22,8 +22,8 @@ return new class extends Migration
             $table->tinyInteger('mode_if_online')->nullable();
             $table->text('link')->nullable();
             $table->text('description')->nullable();
-            $table->unsignedInteger('venue')->nullable();
-            $table->foreign('venue')->references('id')->on('venues');
+            $table->unsignedInteger('venue_id')->nullable();
+            $table->foreign('venue_id')->references('id')->on('venues');
             $table->tinyInteger('status')->default(0);
             $table->foreignId('creator_id')->constrained('employees')->onDelete('cascade');
             $table->timestamps();

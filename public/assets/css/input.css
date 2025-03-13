@@ -44,3 +44,11 @@
     transform: translateX(100%);
     border-color: var(--bs-primary);
 }
+
+.form-select, .form-control{
+    min-width: 200px !important;
+}
+
+.input-group-merge{
+    min-width: 250px !important;
+}
