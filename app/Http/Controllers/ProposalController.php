@@ -84,19 +84,20 @@ class ProposalController extends Controller
         if ($meeting->getIsSubmissionClosedAttribute() || ($meeting->status == 1)){
           return response()->json(['type' => 'danger','message' => 'The submission or the meeting is already closed!', 'title'=> "Meeting Closed!"]);
         }
-        else{
-          $request->validate([
+        
+        $request->validate([
             'title' => 'required|string|max:255',
             'action' => 'required|string|max:255',
-            'proposalFiles' => 'required|string',
+            'proposal_files' => 'required|array',
+            'proposal_files.*' => 'file|mimes:pdf,xls,xlsx,csv|max:100000',
             'proponents' => 'required',
             'matter' => 'required|integer',
             'sub_type' => 'nullable|integer',
-          ]);
+        ]);
 
-          $campus_id = session('campus_id');
+        $campus_id = session('campus_id');
 
-          $proposal = Proposal::create([
+        $proposal = Proposal::create([
             'employee_id' => $request->input('proponents'),
             'campus_id' => $campus_id,
             'title' => $request->input('title'),
@@ -104,45 +105,65 @@ class ProposalController extends Controller
             'type' => $request->input('matter'),
             'sub_type' => $request->input('sub_type'),
             'status' => 0,
-          ]);
-          
-          LocalMeetingAgenda::create([
+        ]);
+        
+        LocalMeetingAgenda::create([
             'local_council_meeting_id' => $meetingID,
             'local_proposal_id' => $proposal?->id,
             'status' => 0,
-          ]);
-         
-          $files = explode('/', $request->input('proposalFiles'));
-  
-          $fileIds = []; 
-  
-          foreach ($files as $file) {
-              $proposalFile = ProposalFile::create([
-                  'proposal_id' => $proposal?->id,
-                  'file' => trim($file),
-                  'version' => 1,
-                  'file_status' => 1,
-                  'file_reference_id' => null,
-                  'is_active' => true,
-              ]);
-          
-              $fileIds[] = $proposalFile->id;
-          }
-          
-          $fileIdsString = implode(',', $fileIds);
-          
-          $proposal_logs = ProposalLog::create([
-              'proposal_id' => $proposal?->id,
-              'employee_id' => session('employee_id'),
-              'comments' => null,
-              'status' => 0,
-              'level' => 0,
-              'action' => 7,
-              'file_id' => $fileIdsString, 
-          ]);
-          
-          return response()->json(['type' => 'success','message' => 'Proposal submitted successfully!', 'title'=> "Success!"]);
+        ]);
+        
+      
+        $fileIds = [];
+
+        if ($request->hasFile('proposal_files')) {
+            foreach ($request->file('proposal_files') as $file) {
+                // Process file
+                $originalNameWithExt = $file->getClientOriginalName();
+                $extension = $file->getClientOriginalExtension();
+
+                // Extract filename without final extension
+                preg_match('/^(.*?)(\(\d+\))?(\.\w+)?$/', $originalNameWithExt, $matches);
+                $baseName = trim($matches[1]); 
+                $filename = "{$baseName}.{$extension}";
+
+                $i = 1;
+                while (Storage::disk('public')->exists("proposals/{$filename}")) {
+                    $filename = "{$baseName} ({$i}).{$extension}";
+                    $i++;
+                }
+
+                // Store the file
+                $filePath = $file->storeAs('proposals', $filename, 'public');
+
+                // Save file record in DB
+                $proposalFile = ProposalFile::create([
+                    'proposal_id' => $proposal->id,
+                    'file' => $filename,
+                    'version' => 1,
+                    'file_status' => 1,
+                    'file_reference_id' => null,
+                    'is_active' => true,
+                ]);
+
+                $fileIds[] = $proposalFile->id;
+            }
         }
+
+        // Save file IDs in proposal logs
+        $fileIdsString = implode(',', $fileIds);
+        
+        $proposal_logs = ProposalLog::create([
+            'proposal_id' => $proposal?->id,
+            'employee_id' => session('employee_id'),
+            'comments' => null,
+            'status' => 0,
+            'level' => 0,
+            'action' => 7,
+            'file_id' => $fileIdsString, 
+        ]);
+        
+        return response()->json(['type' => 'success','message' => 'Proposal submitted successfully!', 'title'=> "Success!"]);
       } catch (\Throwable $th) {
         return response()->json(['type' => 'danger', 'message' => $th->getMessage(), 'title'=> "Something went wrong!"]);
       }
@@ -304,7 +325,8 @@ class ProposalController extends Controller
                 'proponents' => 'required',
                 'matter' => 'required|integer',
                 'sub_type' => 'nullable|integer',
-                'proposalFiles' => 'nullable|string',
+                'proposal_files' => 'nullable|array',
+                'proposal_files.*' => 'file|mimes:pdf,xls,xlsx,csv|max:100000',
                 'reuploaded_files' => 'nullable|array',
                 'reuploaded_files.*' => 'file|mimes:pdf,xls,xlsx,csv|max:100000',
                 'deleted_files' => 'nullable|array',
@@ -332,83 +354,93 @@ class ProposalController extends Controller
             $fileIds = [];
 
             // Handle new attachments
-            $newFiles = explode('/', $request->input('proposalFiles'));
-            $newFileIds = [];
             $fileIdsString = "";
-            
-            if (!empty($newFiles) && $newFiles !== [""]) {
-                foreach ($newFiles as $file) {
-                    $trimmedFile = trim($file);
-                    
-                    if ($trimmedFile === "") {
-                        continue;              }
-            
+            if ($request->hasFile('proposal_files')) {
+                foreach ($request->file('proposal_files') as $file) {
+                    // Process file
+                    $originalNameWithExt = $file->getClientOriginalName();
+                    $extension = $file->getClientOriginalExtension();
+    
+                    // Extract filename without final extension
+                    preg_match('/^(.*?)(\(\d+\))?(\.\w+)?$/', $originalNameWithExt, $matches);
+                    $baseName = trim($matches[1]); 
+                    $filename = "{$baseName}.{$extension}";
+    
+                    $i = 1;
+                    while (Storage::disk('public')->exists("proposals/{$filename}")) {
+                        $filename = "{$baseName} ({$i}).{$extension}";
+                        $i++;
+                    }
+    
+                    // Store the file
+                    $filePath = $file->storeAs('proposals', $filename, 'public');
+    
+                    // Save file record in DB
                     $proposalFile = ProposalFile::create([
                         'proposal_id' => $proposal->id,
-                        'file' => $trimmedFile,
+                        'file' => $filename,
                         'version' => 1,
                         'file_status' => 1,
                         'file_reference_id' => null,
                         'is_active' => true,
                     ]);
-            
-                    $newFileIds[] = $proposalFile->id;
-                }
-            
-                if (!empty($newFileIds)) {
-                    $fileIdsString = implode(',', $newFileIds);
+    
+                    $fileIds[] = $proposalFile->id;
                 }
             }
+    
+            // Save file IDs in proposal logs
+            $fileIdsString = implode(',', $fileIds);
 
             // Handle reuploaded files
             if ($request->hasFile('reuploaded_files')) { 
-            foreach ($request->file('reuploaded_files') as $fileId => $file) {
-                $originalNameWithExt = $file->getClientOriginalName();
-                $extension = $file->getClientOriginalExtension();
-        
-                // Extract filename without versioning
-                preg_match('/^(.*?)(\(\d+\))?(\.\w+)?$/', $originalNameWithExt, $matches);
-                $baseName = trim($matches[1]); 
-                $filename = "{$baseName}.{$extension}";
-        
-                // Ensure unique filename
-                $i = 1;
-                while (Storage::disk('public')->exists("proposals/{$filename}")) {
-                    $filename = "{$baseName} ({$i}).{$extension}";
-                    $i++;
+                foreach ($request->file('reuploaded_files') as $fileId => $file) {
+                    $originalNameWithExt = $file->getClientOriginalName();
+                    $extension = $file->getClientOriginalExtension();
+            
+                    // Extract filename without versioning
+                    preg_match('/^(.*?)(\(\d+\))?(\.\w+)?$/', $originalNameWithExt, $matches);
+                    $baseName = trim($matches[1]); 
+                    $filename = "{$baseName}.{$extension}";
+            
+                    // Ensure unique filename
+                    $i = 1;
+                    while (Storage::disk('public')->exists("proposals/{$filename}")) {
+                        $filename = "{$baseName} ({$i}).{$extension}";
+                        $i++;
+                    }
+            
+                    $filePath = $file->storeAs('proposals', $filename, 'public');
+            
+                    // Find the existing file using $fileId
+                    $proposalFile = ProposalFile::find($fileId);
+                    if (!$proposalFile) {
+                        continue; // Skip if file record is not found
+                    }
+            
+                    // Deactivate the old file
+                    $proposalFile->is_active = false;
+                    $proposalFile->save();
+            
+                    // Create a new version
+                    $newProposalFile = ProposalFile::create([
+                        'proposal_id' => $proposalFile->proposal_id,
+                        'file' => $filename,
+                        'version' => $proposalFile->version + 1,
+                        'file_status' => 4,
+                        'file_reference_id' => $fileId, 
+                        'is_active' => true,
+                    ]);
                 }
-        
-                $filePath = $file->storeAs('proposals', $filename, 'public');
-        
-                // Find the existing file using $fileId
-                $proposalFile = ProposalFile::find($fileId);
-                if (!$proposalFile) {
-                    continue; // Skip if file record is not found
-                }
-        
-                // Deactivate the old file
-                $proposalFile->is_active = false;
-                $proposalFile->save();
-        
-                // Create a new version
-                $newProposalFile = ProposalFile::create([
-                    'proposal_id' => $proposalFile->proposal_id,
-                    'file' => $filename,
-                    'version' => $proposalFile->version + 1,
-                    'file_status' => 4,
-                    'file_reference_id' => $fileId, 
-                    'is_active' => true,
-                ]);
             }
-        }
         
 
             // Handle file deletions
             if ($request->input('deleted_files')) {
-            foreach($request->input('deleted_files') as $fileID)
-            {
-                ProposalFile::where('id', $fileID)->delete();
-            }
+                foreach($request->input('deleted_files') as $fileID)
+                {
+                    ProposalFile::where('id', $fileID)->delete();
+                }
             
             }
 
@@ -431,21 +463,40 @@ class ProposalController extends Controller
         }
     }
 
-    // NEW DELETE PROPOSAL CODE 
-    public function deleteProposal(Request $request){
-        try{
-        $request->validate([
-            'proposal_id' => 'required',
-        ]);
-        $proposal_id = $request->input('proposal_id');
-        Proposal::find(decrypt($proposal_id))->delete();
-        
-        return response()->json(['type' => 'success', 'message' => 'Proposal deleted successfully!', 'title' => 'Success!']);
+    // NEW DELETE PROPOSAL 
+    public function deleteProposal(Request $request)
+    {
+        try {
+            $request->validate([
+                'proposal_id' => 'required',
+            ]);
+
+            $proposal_id = decrypt($request->input('proposal_id'));
+            $proposal = Proposal::findOrFail($proposal_id);
+
+            // Delete related records in agenda tables
+            LocalMeetingAgenda::where('local_proposal_id', $proposal_id)->delete();
+            UniversityMeetingAgenda::where('university_proposal_id', $proposal_id)->delete();
+            BoardMeetingAgenda::where('board_proposal_id', $proposal_id)->delete();
+
+            // Delete the proposal
+            $proposal->delete();
+
+            return response()->json([
+                'type' => 'success',
+                'message' => 'Proposal and related agendas deleted successfully!',
+                'title' => 'Success!',
+            ]);
 
         } catch (\Throwable $th) {
-        return response()->json(['type' => 'danger', 'message' => $th->getMessage(), 'title'=> "Something went wrong!"]);
+            return response()->json([
+                'type' => 'danger',
+                'message' => $th->getMessage(),
+                'title' => "Something went wrong!"
+            ]);
         }
     }
+
     
     // DELETE PROPOSAL FILE 
 

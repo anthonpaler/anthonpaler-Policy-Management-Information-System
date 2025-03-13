@@ -160,84 +160,88 @@ $(document).ready(function() {
 
     // SUBMIT PROPOSAL FOR PROPONENT
     let submitProposalBtn = $("#submitProposalBtn");
+
     submitProposalBtn.on('click', function (e) {
         e.preventDefault();
-    
-        var proposalFrm = $("#proposalFrm");
+
+        let proposalFrm = $("#proposalFrm");
         var actionUrl = proposalFrm.attr('action');
-    
+
+        // Create FormData object
+        var formData = new FormData(proposalFrm[0]);
+
+        // Append uploadedProposalFiles to FormData
+        uploadedProposalFiles.forEach((file, index) => {
+            formData.append(`proposal_files[${index}]`, file);
+        });
+
         $.ajax({
             method: "POST",
             url: actionUrl,
-            data: proposalFrm.serialize(),
+            data: formData,
+            processData: false, // Prevent jQuery from processing data
+            contentType: false, // Set proper content type for file uploads
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             beforeSend: function () {
-                submitProposalBtn.html(`<i class='bx bx-loader-alt bx-spin' ></i>
-                    <span>Submitting...</span> `).prop('disabled', true);
+                submitProposalBtn.html(`<i class='bx bx-loader-alt bx-spin'></i>
+                    <span>Submitting...</span>`).prop('disabled', true);
             },
             success: function (response) {
-                proposalFrm[0].reset();
                 submitProposalBtn.html(`<i class='bx bx-send'></i>
-                    <span>Submit Proposal</span> `).prop('disabled', false);
+                    <span>Submit Proposal</span>`).prop('disabled', false);
                 showAlert(response.type, response.title, response.message);
-            
-               // Loop through each file in Dropzone and remove its preview element
-                myDropzone.files.forEach(function(file) {
-                    if (file.previewElement) {
-                        file.previewElement.remove();
-                    }
-                });
 
-                // Clear the Dropzone file array without triggering removedfile callback
-                myDropzone.files = [];
+                if(response.type == 'success'){
+                    uploadedFilesLabel.style.display = "none";
+                    proposalFrm[0].reset();
 
-                // Clear the proposalFiles array and update the hidden input field
-                proposalFiles = [];
-                proposalInput.val("");
-            
-                // Reset selected proponents, keeping only the primary proponent
-                selectedProponents = [primaryProponent];
-                let proponentIds = selectedProponents.map(proponent => proponent.id);
-                proponentInput.val(proponentIds.join(','));
-            
-                // Remove additional proponents from UI
-                $("#proponentListCon").html(`
-                    <li data-id="${primaryProponent.id}">
-                        <div class="d-flex justify-content-between align-items-center ms-2 me-2">
-                            <div class="d-flex justify-content-start align-items-center">
-                                <div class="avatar-wrapper">
-                                    <div class="avatar avatar-sm me-3">
-                                        <img src="${primaryProponent.image}" alt="Avatar" class="rounded-circle">
+                    // Reset uploadedProposalFiles
+                    uploadedProposalFiles = [];
+                    fileList.innerHTML = ""; // Clear file list
+    
+                    // Reset selected proponents, keeping only the primary proponent
+                    selectedProponents = [primaryProponent];
+                    let proponentIds = selectedProponents.map(proponent => proponent.id);
+                    proponentInput.val(proponentIds.join(','));
+    
+                    // Remove additional proponents from UI
+                    $("#proponentListCon").html(`
+                        <li data-id="${primaryProponent.id}">
+                            <div class="d-flex justify-content-between align-items-center ms-2 me-2 flex-wrap gap-2">
+                                <div class="d-flex justify-content-start align-items-center">
+                                    <div class="avatar-wrapper">
+                                        <div class="avatar avatar-sm me-3">
+                                            <img src="${primaryProponent.image}" alt="Avatar" class="rounded-circle">
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-column">
+                                        <a href="javascript:void(0);" class="text-heading text-truncate m-0">
+                                            <span class="fw-medium">${primaryProponent.name}</span>
+                                        </a>
+                                        <small>${primaryProponent.email}</small>
                                     </div>
                                 </div>
-                                <div class="d-flex flex-column">
-                                    <a href="javascript:void(0);" class="text-heading text-truncate m-0">
-                                        <span class="fw-medium">${primaryProponent.name}</span>
-                                    </a>
-                                    <small>${primaryProponent.email}</small>
+                                <div class="">
+                                    <small class="badge bg-label-secondary d-flex align-items-center gap-2">
+                                        <i class='bx bx-user-check'></i>Submitter
+                                    </small>
                                 </div>
                             </div>
-                            <div class="">
-                                <small class="badge bg-label-secondary d-flex align-items-center gap-2">
-                                    <i class='bx bx-user-check'></i>Submitter
-                                </small>
-                            </div>
-                        </div>
-                    </li>
-                `);
-            },            
+                        </li>
+                    `);
+                }
+            },
             error: function (xhr, status, error) {
                 submitProposalBtn.html(`<i class='bx bx-send'></i>
-                    <span>Submit Proposal</span> `).prop('disabled', false);
+                    <span>Submit Proposal</span>`).prop('disabled', false);
                 console.log(xhr.responseText);
                 let response = JSON.parse(xhr.responseText);
                 showAlert("warning", response.title, response.message);
             }
         });
     });
-
 
     // SHOW PROPOSAL FILE
     $(document).on('click', '.view-files', function (e) {
@@ -270,18 +274,6 @@ $(document).ready(function() {
                     data-file-url="/storage/proposals/${fileObj.file}" >
                         <i class='bx bx-file-blank'></i><span>${fileObj.file}</span>
                     </a>`;
-
-                    // fileListHtml += `  <div class="mb-3">
-                    //     <label class="form-label" for="">Current File Name</label>
-                    //     <div class="input-group input-group-merge">
-                    //         <span id="" class="input-group-text">
-                    //             <i class='bx bx-file' ></i>
-                    //         </span>
-                    //         <a type="text" class="form-control" data-bs-toggle="modal" 
-                    //         data-bs-target="#fileModal"
-                    //         data-file-url="/storage/proposals/${fileObj.file}" value="${fileObj.file}" disabled>
-                    //     </div>
-                    // </div>`;
                 }
             });
     
@@ -291,12 +283,14 @@ $(document).ready(function() {
     
         var myModal = new bootstrap.Modal(document.getElementById('proposalFIleModal'));
         myModal.show();
-    });
+    })
     
     
     $('#fileModal').on('show.bs.modal', function (event) {
         const button = $(event.relatedTarget); 
         const fileUrl = button.data('file-url'); 
+
+        console.log(fileUrl);
 
         $('#fileIframe').attr('src', fileUrl); 
     });
@@ -308,6 +302,7 @@ $(document).ready(function() {
         var is_delete_disabled = $(this).data("deletable");
         var button = $(this); 
 
+        console.log(proposal_id);
         if(is_delete_disabled){
             showAlert("danger", "Can't Delete!", "You can no longer delete this proposal.");
             return;
@@ -352,7 +347,7 @@ $(document).ready(function() {
     });
 
     // DELETE PROPOSAL FILE - SECRETARY POV
-    $(".delete-proposal").on('click', function(e){
+    $(".delete-proposal-file-sec").on('click', function(e){
         e.preventDefault();
         var file_id = $(this).data("file-id");
     

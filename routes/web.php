@@ -102,7 +102,13 @@ Route::middleware(['auth', 'local_secretary'])->prefix('local-campus-secretary')
 
   Route::get('/meetings/edit/{level}/{meeting_id}', [MeetingController::class, 'viewEditMeeting'])->name('local_sec.meeting.edit_meeting');
 
-  Route::post('/meetings/save-edit/{level}/{meeting_id}', [MeetingController::class, 'EditMeeting'])->name('local_sec.meetings.save-edit');
+
+  // FINAL EDIT PROPOSAL
+  Route::post('/proposals/edit/{proposal_id}', [ProposalController::class, 'editProposal'])->name('local_sec.proposal.edit.save');
+
+
+  // Route::post('/meetings/save-edit/{level}/{meeting_id}', [MeetingController::class, 'EditMeeting'])->name('local_sec.meetings.save-edit');
+
   Route::get('/proposals', [ProposalController::class, 'viewMeetingsWithProposalCount'])->name('local_sec.proposals');
 
   Route::get('/meetings/view-generate-oob/{level}/{meeting_id}', [OrderOfBusinessController::class, 'viewGenerateOOB'])->name('local_sec.order_of_business.view-generate');
@@ -173,7 +179,7 @@ Route::post('/proposals/update-selected-proposal-status', [ProposalController::c
 
 Route::post('/proposals/update-proposal-status', [ProposalController::class, 'updateProposalStatus'])->name('proposals.update_proposal_status');
 
-Route::get('/order-of-business/pdf/{oob_id}', [OrderOfBusinessController::class, 'generatePDF'])->name('order_of_business.pdf');
+Route::get('/order-of-business/pdf/{level}/{oob_id}', [OrderOfBusinessController::class, 'exportOOB_PDF'])->name('oob.export.pdf');
 
 Route::post('/delete-proposal-file', [ProposalController::class, 'deleteFile']);
 

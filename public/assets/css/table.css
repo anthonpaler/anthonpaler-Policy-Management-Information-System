@@ -18,7 +18,7 @@
 }
 .custom_tab_item:hover{
     color: var(--bs-primary);
-    transition: .5s;
+    /* transition: .5s; */
 }
 .custom_tab_item{
     padding: 20px 25px; 

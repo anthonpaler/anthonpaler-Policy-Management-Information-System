@@ -46,7 +46,7 @@
                             >{{$proposal->title}}</textarea>
                         </div>
                         <div class="col-md-6 c-field-p w-100">
-                            <div class="mb-3" id="subTypeContainer" style="">
+                            <div class="mb-3" id="" style="">
                                 <label class="form-label" for="addProponent">Add Proponents (Optional)</label>
                                 <div class="input-group input-group-merge">
                                     <span id="title-icon" class="input-group-text"><i class='bx bx-user'></i></span>
@@ -62,7 +62,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="mb-3" id="subTypeContainer" style="">
+                        <div class="mb-3" id="" style="">
                             <label class="form-label" for="proponents">Proponent/s <span class="ms-1 text-danger">*</span></label>
                             <div class="form-control proponent-con" style="">
                                 <input type="text" class="form-control mb-3" value="{{$proposal->employee_id}}" id="proponents" name="proponents" hidden>
@@ -232,13 +232,13 @@
                                                     </td>
                                                     <td>
                                                         <div class="d-flex align-items-center gap-2">
-                                                            <!-- <button class="btn btn-primary btn-sm rename-file-btn" 
+                                                            <button class="btn btn-primary btn-sm rename-file-btn" 
                                                                 data-bs-toggle="modal" 
                                                                 data-bs-target="#renameFileModal"
                                                                 data-id="{{ $file->id }}"
                                                                 data-filename="{{ $file->file }}">
                                                                 <i class='bx bx-rename'></i>
-                                                            </button> -->
+                                                            </button>
 
                                                             <button class="btn btn-sm btn-success resubmit-proposal"
                                                             
@@ -272,50 +272,19 @@
                                     </tbody>
                                 </table>
                             </div>
-                            <!-- <div class="proposal-file-con mb-2">
-                                @php
-                                    $countLatestVersion = 0;
-                                @endphp
-                                @foreach ($proposal->files as $file)
-                                    @if ($file->is_active == 1)
-                                        @php
-                                            $countLatestVersion++;
-                                        @endphp
-                                        <div class="proposal-file-card">
-                                            <div class="proposal-file-card-header">
-                                                <span class="custom-badge version">Version {{ $file->version }}</span>
-                                                <span class="custom-badge file-status">{{ config('proposals.proposal_file_status.'.$file->file_status ) }}</span>
-                                            </div>
-                                            <div class="proposal-file-card-body" 
-                                                data-bs-toggle="modal" 
-                                                data-bs-target="#fileModal"
-                                                data-file-url="/storage/proposals/{{$file->file}}">
-                                                <div class="proposal-file-img">
-                                                    <img src="{{ asset('assets/img/icons/document/folder_2.png') }}" alt="">
-                                                </div>
-                                                <small data-bs-toggle="tooltip" data-bs-placement="top" title="{{ pathinfo($file->file, PATHINFO_FILENAME) . '.' . pathinfo($file->file, PATHINFO_EXTENSION) }}">
-                                                    {{ Str::limit(pathinfo($file->file, PATHINFO_FILENAME), 15, '...') . '.' . pathinfo($file->file, PATHINFO_EXTENSION) }}
-                                                </small>
-                                            </div>
-                                            <div class="d-flex align-items-center gap-2 proposal-file-footer">
-                                                <button class="btn btn-sm btn-primary resubmit-proposal" data-id="{{ $file->id }}" {{ (!in_array($proposal->status, [2,5,6]) && $proposal->is_edit_disabled && $file->file_status) ? 'disabled' : '' }}>Reupload</button>
-
-                                                <button class="btn btn-sm btn-danger delete-proposal-file"  data-id="{{ $file->id }}" {{ (!in_array($proposal->status, [2,5,6]) && $proposal->is_edit_disabled  && $file->file_status) ? 'disabled' : '' }}>Delete</button>
-                                            </div>
-                                        </div>
-                                    @endif
-                                @endforeach
-                            </div> -->
                             <small class="text-muted text-wrap d-flex gap-2"><strong>Note:</strong><em>Please be cautious when reuploading and deleting a proposal file.</em></small>
                         </div>
                         <div class="">
-                            <div class="dropzone-container mb-3">
-                                <label class="form-label" for="file">Add Attachment/s</label>
-                                <input type="text" class="form-control mb-3" value="" name="proposalFiles" id="proposalInput" hidden>
-                                <div class="dropzone mb-2" id="fileDropzone">
-                                
+                            <div class="mb-3">
+                                <label class="form-label" for="file">Add Attachment/s (Optional)</label>
+                                <div id="dropArea" class="drop-area">
+                                    <span class="upload-text">Drag & Drop files here, or <strong class="text-primary">click to upload</strong></span>
+                                    <small class="text-muted">Accepted formats: .pdf, .xls, .xlsx, and .csv only</small>
+                                    <input type="file" id="fileUpload" accept=".pdf,.xls,.xlsx,.csv" multiple hidden>
                                 </div>
-                                <span class="text-muted">Accepted formats: .pdf, .xls, .xlsx, .csv only</span>
+                                <h5 id="uploadedFilesLabel" class="file-header mt-3"><i class='bx bx-file'></i> Uploaded Files</h5>
+                                <ul id="fileList" class="file-list mt-3">
+                                </ul>
                             </div>
                         </div>
                         <div class="d-flex gap-2">
@@ -465,60 +434,125 @@
 <script>
     var proposalStatus = @json(config('proposals.status'));
 
-    var proposalFiles = [];
     let deletedFiles = [];
     let reuploadedFiles = [];
-    let proposalInput = $('#proposalInput');
 
-    var myDropzone = new Dropzone("div#fileDropzone", {
-        url: "{{route(getUserRole().'.projects.storeMedia')}}",
-        paramName: "file",
-        maxFilesize: 100,
-        addRemoveLinks: true,
-        autoProcessQueue: true,
-        acceptedFiles: ".pdf, .xls, .xlsx, .csv",
-        dictDefaultMessage: `<div class='d-flex gap-2 align-items-center justify-content-center'>
-            <i class='bx bx-upload text-primary'></i>
-            <h5 class='text-primary m-0'>Choose File</h5>
-        </div><br> or <br>Drag and drop your <strong>proposal</strong> file here`,
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        },
-        success: function (file, response) {
-            file.renamedFileName = response.name;
-
-            proposalFiles.push(response.name);
-            console.log(response);
-            console.log('Added Files')
-            console.log(proposalFiles);
-            proposalInput.val(proposalFiles.join('/'));
-        },
-        removedfile: function (file) {
-            var fileName = file.renamedFileName; 
-
-            $.ajax({
-                url: "{{route(getUserRole().'.media.delete')}}", 
-                type: "POST",
-                data: { filename: fileName },
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                success: function (response) {
-                    console.log("File removed:", response);
-                },
-                error: function (xhr, status, error) {
-                    console.error("Error removing file:", error);
-                }
-            });
-
-            file.previewElement.remove(); // Remove file preview from Dropzone
-            proposalFiles = proposalFiles.filter(f => f !== fileName); // Remove file from array
-            proposalInput.val(proposalFiles.join('/')); // Update hidden input field
-        },
-        error: function (xhr, status, error) {
-            console.error(xhr.responseText);
+    function getImageByFileType(fileType) {
+        switch (fileType) {
+            case "pdf":
+                return "{{ asset('assets/img/icons/file-icons/pdf.png') }}";
+            case "xls":
+                return "{{ asset('assets/img/icons/file-icons/xls.png') }}";
+            case "xlsx":
+                return "{{ asset('assets/img/icons/file-icons/xlsx.png') }}";
+            case "csv":
+                return "{{ asset('assets/img/icons/file-icons/csv-file.png') }}";
+            default:
+                return "{{ asset('assets/img/icons/file-icons/file.png') }}";
         }
+    }
+
+    // COSTUM MULTIPLE FILE UPLOAD
+ 
+    const dropArea = document.getElementById("dropArea");
+    const fileUpload = document.getElementById("fileUpload");
+    const fileList = document.getElementById("fileList");
+    let uploadedProposalFiles = [];
+
+    dropArea.addEventListener("click", () => fileUpload.click());
+    dropArea.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropArea.style.background = "#f1f1f1";
     });
+    dropArea.addEventListener("dragleave", () => {
+        dropArea.style.background = "#fff";
+    });
+    dropArea.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropArea.style.background = "#fff";
+        handleFiles(e.dataTransfer.files);
+    });
+    fileUpload.addEventListener("change", (e) => {
+        handleFiles(e.target.files);
+    });
+
+    function handleFiles(files) {
+        Array.from(files).forEach((file) => {
+            if (!uploadedProposalFiles.some(f => f.name === file.name)) {
+                uploadedProposalFiles.push(file);
+                displayFile(file);
+                simulateUpload(file);
+            }
+        });
+    }
+
+    function displayFile(file) {
+        const listItem = document.createElement("li");
+        listItem.classList.add("file-item");    
+
+        const uploadedFilesLabel = document.getElementById("uploadedFilesLabel");
+
+        if (fileList.children.length === 0) {
+            uploadedFilesLabel.style.display = "block";
+        }
+
+        const fileType = file.name.split('.').pop().toLowerCase();
+        const iconSrc = getImageByFileType(fileType); 
+
+        listItem.innerHTML = `
+            <div class="d-flex align-items-center gap-2">
+                <div class="">
+                    <img src="${iconSrc}" class="file-icon" alt="File Icon">
+                </div>
+                <div class="file-name">
+                    <strong>${file.name}</strong>
+                    <small class="text-muted">${(file.size / 1024).toFixed(1)} KB</small>
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="delete-file-btn"><i class='bx bx-trash'></i></button>
+                <div class="progress-circle" data-progress="0">
+                    <span class="progress-text">0%</span>
+                </div>
+            </div>
+        `;
+
+        console.log(uploadedProposalFiles);
+
+        listItem.querySelector(".delete-file-btn").addEventListener("click", () => {
+            uploadedProposalFiles = uploadedProposalFiles.filter(f => f.name !== file.name);
+            listItem.remove();
+
+            if (fileList.children.length === 0) {
+                uploadedFilesLabel.style.display = "none";
+            }
+            console.log(uploadedProposalFiles);
+        });
+
+        fileList.appendChild(listItem);
+    }
+
+    // CUSTOM UPLOAD CIRCLE PROGRESS BAR
+    function simulateUpload(file) {
+        const listItem = Array.from(fileList.children).find(li => li.querySelector("strong").textContent === file.name);
+        if (!listItem) return;
+
+        const progressCircle = listItem.querySelector(".progress-circle");
+        const progressText = listItem.querySelector(".progress-text");
+        let progress = 0;
+        const interval = setInterval(() => {
+            if (progress >= 100) {
+                clearInterval(interval);
+                progressText.innerHTML  =`<i class='bx bx-check progress-check'></i>`;
+                progressCircle.style.background = "#39DA8A";
+                return;
+            }
+            progress += 10;
+            progressCircle.setAttribute("data-progress", progress);
+            progressCircle.style.background = `conic-gradient(#fd7e14 ${progress}%, #ffffff ${progress}% 100%)`;
+            progressText.textContent = `${progress}%`;
+        }, 200);
+    }
 
     $(".resubmit-proposal").on('click', function (e) {
         e.preventDefault();
@@ -530,37 +564,39 @@
     
     $("#file-upload").on("change", function (e) {
         var file = e.target.files[0]; // Get selected file
-       var file_id = $(this).data('id');
+        var file_id = $(this).data("id");
 
         if (file) {
             reuploadedFiles.push({ file_id, file });
         }
 
         console.log(reuploadedFiles);
-        if (this.files.length > 0) {
-            var file_id = $(this).data("id");
-            var proposalCard = $(".resubmit-proposal[data-id='" + file_id + "']").closest(".proposal-file-card");
 
-            // Update status to "Revised"
-            proposalCard.find(".file-status")
-                .css("color", "#96D4C7")
-                .html("Revised");
+        if (this.files.length > 0) {
+            var proposalRow = $("button.resubmit-proposal[data-id='" + file_id + "']").closest("tr");
+
+            // Update the status to "Revised"
+            proposalRow.find(".badge.bg-label-primary").text("Revised");
 
             // Increment version number
-            var versionElement = proposalCard.find(".version");
+            var versionElement = proposalRow.find(".badge.bg-label-success");
             var currentVersion = parseInt(versionElement.text().replace("Version ", "").trim());
             var newVersion = currentVersion + 1;
 
             // Update version badge
-            versionElement.css("color", "#96D4C7").text("Version " + newVersion);
-        }
+            versionElement.text("Version " + newVersion);
 
+            // Update file name
+            proposalRow.find(".text-wrap").text(file.name);
+        }
     });
+
     
-    $(".delete-proposal-file").on('click', function(e){
+    $(".delete-proposal-file").on("click", function (e) {
         e.preventDefault();
-        var file_id = $(this).data('id');
-    
+        var file_id = $(this).data("id");
+        var button = $(this); 
+
         Swal.fire({
             title: "Are you sure?",
             text: "You won't be able to revert this!",
@@ -568,15 +604,16 @@
             showCancelButton: true,
             confirmButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
-            confirmButtonText: "Yes, delete it!"
+            confirmButtonText: "Yes, delete it!",
         }).then((result) => {
             if (result.isConfirmed) {
                 deletedFiles.push(file_id);
-                $(this).closest(".proposal-file-card").remove();
+                button.closest("tr").remove();
                 console.log(deletedFiles);
             }
         });
     });
+
 
     $("#updateProposal").on('click', function (e) {
         e.preventDefault();
@@ -585,6 +622,11 @@
         var formData = new FormData(proposalFrm); // Create FormData from the form
 
         var actionUrl = $("#editProposalFrm").attr('action');
+
+
+        uploadedProposalFiles.forEach((file, index) => {
+            formData.append(`proposal_files[${index}]`, file);
+        });
 
         // Append deleted files
         deletedFiles.forEach((fileId) => {
@@ -634,5 +676,6 @@
     });
 
 </script>
+
 <script src="{{asset('assets/js/proposal.js')}}"></script>
 @endsection

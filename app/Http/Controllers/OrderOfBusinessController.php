@@ -15,6 +15,7 @@ use App\Models\ProposalFile;
 use App\Models\LocalOob;
 use App\Models\UniversityOob;
 use App\Models\BoardOob;
+use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Venues;
 
 
@@ -217,25 +218,27 @@ class OrderOfBusinessController extends Controller
                 throw new \Exception("Meeting not found for the given Order of Business.");
             }
 
-            if ($level == 'Local') {
-                $proposals = LocalMeetingAgenda::where("local_council_meeting_id", $meeting->id)
-                    ->with('proposal')
-                    ->where('status', 1)
-                    ->orderBy('created_at', 'desc')
-                    ->get();
-            } elseif ($level == 'University') {
-                $proposals = UniversityMeetingAgenda::where("university_meeting_id", $meeting->id)
-                    ->with('proposal')
-                    ->where('status', 1)
-                    ->orderBy('created_at', 'desc')
-                    ->get();
-            } elseif ($level == 'BOR') {
-                $proposals = BoardMeetingAgenda::where("bor_meeting_id", $meeting->id)
-                    ->with('proposal')
-                    ->where('status', 1)
-                    ->orderBy('created_at', 'desc')
-                    ->get();
-            }
+            $meetingTypes = [
+                'Local' => ['model' => LocalMeetingAgenda::class, 'meeting_key' => 'local_council_meeting_id', 'oob_key' => 'local_oob_id'],
+                'University' => ['model' => UniversityMeetingAgenda::class, 'meeting_key' => 'university_meeting_id', 'oob_key' => 'university_oob_id'],
+                'BOR' => ['model' => BoardMeetingAgenda::class, 'meeting_key' => 'bor_meeting_id', 'oob_key' => 'board_oob_id'],
+            ];
+            
+            if (isset($meetingTypes[$level])) {
+                $model = $meetingTypes[$level]['model'];
+                $meetingKey = $meetingTypes[$level]['meeting_key'];
+                $oobKey = $meetingTypes[$level]['oob_key'];
+            
+                $query = $model::where($meetingKey, $meeting->id)->with('proposal')->orderBy('created_at', 'desc');
+            
+                if ($orderOfBusiness->status == 1) {
+                    $query->where($oobKey, $orderOfBusiness->id);
+                } else {
+                    $query->where('status', 1);
+                }
+            
+                $proposals = $query->get();
+            }            
 
             // Get meeting type
             $councilType = $meeting->council_type ?? null;
@@ -329,6 +332,97 @@ class OrderOfBusinessController extends Controller
             return response()->json(['type' => 'danger', 'message' => $th->getMessage(), 'title'=> "Something went wrong!"]);
         }
     }
+
+
+    public function exportOOB_PDF(Request $request, String $level, String $oob_id)
+    {
+        try {
+            $oobID = decrypt($oob_id);
+            $proposals = collect();
+            $matters = config('proposals.matters');
+            $orderOfBusiness = null;
+            $meeting = null;
+
+            if ($level == 'Local') {
+                $orderOfBusiness = LocalOob::with('meeting')->findOrFail($oobID);
+            } elseif ($level == 'University') {
+                $orderOfBusiness = UniversityOob::with('meeting')->findOrFail($oobID);
+            } elseif ($level == 'BOR') {
+                $orderOfBusiness = BoardOob::with('meeting')->findOrFail($oobID);
+            } else {
+                throw new \Exception("Invalid council level provided.");
+            }
+
+            $meeting = $orderOfBusiness->meeting;
+
+            if (!$meeting) {
+                throw new \Exception("Meeting not found for the given Order of Business.");
+            }
+
+            $meetingTypes = [
+                'Local' => ['model' => LocalMeetingAgenda::class, 'meeting_key' => 'local_council_meeting_id', 'oob_key' => 'local_oob_id'],
+                'University' => ['model' => UniversityMeetingAgenda::class, 'meeting_key' => 'university_meeting_id', 'oob_key' => 'university_oob_id'],
+                'BOR' => ['model' => BoardMeetingAgenda::class, 'meeting_key' => 'bor_meeting_id', 'oob_key' => 'board_oob_id'],
+            ];
+            
+            if (isset($meetingTypes[$level])) {
+                $model = $meetingTypes[$level]['model'];
+                $meetingKey = $meetingTypes[$level]['meeting_key'];
+                $oobKey = $meetingTypes[$level]['oob_key'];
+            
+                $query = $model::where($meetingKey, $meeting->id)->with('proposal')
+                ->where($oobKey, $orderOfBusiness->id)
+                ->orderBy('created_at', 'desc');
+            
+                $proposals = $query->get();
+            }            
+
+            // Get meeting type
+            $councilType = $meeting->council_type ?? null;
+            $councilTypesConfig = config('proposals.council_types');
+
+            $categorizedProposals = [];
+
+            foreach ($matters as $type => $title) {
+                $categorizedProposals[$type] = $proposals->filter(fn($p) => $p->proposal->type === $type) ?? collect();
+            }
+
+            if (!isset($categorizedProposals[$type])) {
+                $categorizedProposals[$type] = collect();
+            }
+
+            foreach ($categorizedProposals as &$proposalsGroup) {
+                foreach ($proposalsGroup as $proposal) {
+                    $proponentIds = explode(',', $proposal->proposal->employee_id);
+                    $proposal->proponentsList = User::whereIn('employee_id', $proponentIds)->get();
+                    $proposal->files = ProposalFile::where('proposal_id', $proposal->proposal->id)->get();
+                }
+            }
+
+            
+            $pdf = Pdf::loadView('pdf.export_oob_pdf', compact('orderOfBusiness', 'categorizedProposals', 'meeting', 'matters'))
+            ->setPaper('A4', 'portrait');
+            
+            $oob_filename = "";
+            if($meeting->getMeetingCouncilType() == 0){
+                $oob_filename = config('meetings.quaterly_meetings.'.$meeting->quarter)." ".config('meetings.council_types.local_level.'.$meeting->council_type)." ".$meeting->year.'.pdf';
+            } else  if($meeting->getMeetingCouncilType() == 1){
+                $oob_filename = config('meetings.quaterly_meetings.'.$meeting->quarter)." ".config('meetings.council_types.university_level.'.$meeting->council_type)." ".$meeting->year.'.pdf';
+            }
+            else  if($meeting->getMeetingCouncilType() == 2){
+                $oob_filename = config('meetings.quaterly_meetings.'.$meeting->quarter)." ".config('meetings.council_types.board_level.'.$meeting->council_type)." ".$meeting->year.'.pdf';
+            }
+        
+            return $pdf->stream($oob_filename);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'type' => 'danger',
+                'message' => $th->getMessage(),
+                'title' => "Something went wrong!"
+            ]);
+        }
+    }
+
 
 
 
