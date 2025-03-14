@@ -236,10 +236,17 @@ $(document).ready(function() {
             error: function (xhr, status, error) {
                 submitProposalBtn.html(`<i class='bx bx-send'></i>
                     <span>Submit Proposal</span>`).prop('disabled', false);
-                console.log(xhr.responseText);
-                let response = JSON.parse(xhr.responseText);
-                showAlert("warning", response.title, response.message);
+                
+                console.log(xhr.responseText); // Log the raw response
+                
+                try {
+                    let response = JSON.parse(xhr.responseText);
+                    showAlert("warning", response.title, response.message);
+                } catch (e) {
+                    showAlert("danger", "Error", "An unexpected error occurred. Please try again.");
+                }
             }
+            
         });
     });
 

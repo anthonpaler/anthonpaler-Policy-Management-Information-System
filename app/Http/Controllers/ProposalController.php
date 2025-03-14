@@ -44,7 +44,7 @@ class ProposalController extends Controller
             return response()->json([]); 
         }
     
-        $userRole = auth()->user()->role; 
+        $userRole = session('user_role'); 
         $roles = match ($userRole) {
             0 => [0, 2, 6],
             1 => [1, 2, 6],

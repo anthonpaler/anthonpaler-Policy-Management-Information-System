@@ -17,7 +17,7 @@ return new class extends Migration
             $table->unsignedInteger('university_meeting_id');
             $table->unsignedInteger('university_oob_id');
             $table->tinyInteger('status');
-            $table->tinyInteger('order_no');
+            $table->tinyInteger('order_no')->nullable();
             $table->timestamps();
             $table->softdeletes();
 
