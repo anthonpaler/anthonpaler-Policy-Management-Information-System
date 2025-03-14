@@ -18,6 +18,7 @@ class LocalMeetingAgenda extends Model
         'local_proposal_id',
         'status',
         'local_oob_id',
+        'order_no',
     ];
 
     public function proposal()

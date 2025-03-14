@@ -17,6 +17,7 @@ class BoardMeetingAgenda extends Model
         'bor_meeting_id',
         'status',
         'board_oob_id',
+        'order_no',
     ];
 
     public function proposal()

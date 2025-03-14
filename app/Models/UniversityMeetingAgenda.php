@@ -17,7 +17,8 @@ class UniversityMeetingAgenda extends Model
         'university_proposal_id',
         'university_meeting_id',
         'status',
-        'university_oob_id'
+        'university_oob_id',
+        'order_no',
     ];
 
     public function proposal()

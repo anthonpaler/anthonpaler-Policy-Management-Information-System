@@ -17,6 +17,7 @@ return new class extends Migration
             $table->unsignedInteger('local_proposal_id')->nullable();
             $table->unsignedInteger('local_oob_id')->nullable();
             $table->tinyInteger('status');
+            $table->tinyInteger('order_no');
             $table->timestamps();
             $table->softdeletes();
 
