@@ -17,13 +17,16 @@ return new class extends Migration
             $table->unsignedInteger('local_proposal_id')->nullable();
             $table->unsignedInteger('local_oob_id')->nullable();
             $table->tinyInteger('status');
-            $table->tinyInteger('order_no')->nullable();
+            $table->integer('order_no')->nullable();
+            $table->unsignedInteger('group_proposal_id')->nullable();
             $table->timestamps();
             $table->softdeletes();
 
             $table->foreign('local_council_meeting_id')->nullable()->references('id')->on('local_council_meetings')->onDelete('cascade');
             $table->foreign('local_proposal_id')->nullable()->references('id')->on('proposals')->onDelete('cascade');
             $table->foreign('local_oob_id')->nullable()->references('id')->on('local_oob')->onDelete('cascade');
+
+            $table->foreign('group_proposal_id')->nullable()->references('id')->on('group_proposals')->onDelete('cascade');
         });
     }
 

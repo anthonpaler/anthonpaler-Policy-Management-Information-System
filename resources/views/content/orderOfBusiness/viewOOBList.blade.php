@@ -78,6 +78,7 @@
                         <tr>
                             <th>#</th>
                             <th>Level</th>
+                            <th>Campus</th>
                             <th>Quarter</th>
                             <th>Year</th>
                             <th>Meeting Title</th>
@@ -93,6 +94,7 @@
                             <td>
                                 {{ config('meetings.level.'.$oob->meeting->getMeetingCouncilType()) }}
                             </td>
+                            <td>{{ $oob->meeting->getCampusName() }}</td>
                             <td>{{ config('meetings.quaterly_meetings.'.$oob->meeting->quarter) ?? 'N/A' }}</td>
                             <td>{{ $oob->meeting->year }}</td>
                             <td>

@@ -256,7 +256,7 @@
                             </td>
                             <td> {{ config('proposals.requested_action.'.$proposal->proposal->action) }}</td>
                             <!-- <td>{{config('meetings.level.'.$proposal->proposal->getCurrentLevelAttribute())}}</td> -->
-                            <td>
+                            <td class="status-cell">
                                 <div style="width: 230px; white-space: nowrap; ">
                                     <span class="mb-0 align-items-center d-flex w-px-100 gap-1">
                                         <i class='bx bx-radio-circle-marked text-{{ $actionColors[$proposal->status] ?? 'primary' }}'></i>

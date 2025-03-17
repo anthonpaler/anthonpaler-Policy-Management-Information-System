@@ -17,13 +17,16 @@ return new class extends Migration
             $table->unsignedInteger('bor_meeting_id');
             $table->unsignedInteger('board_oob_id');
             $table->tinyInteger('status');
-            $table->tinyInteger('order_no')->nullable();
+            $table->integer('order_no')->nullable();
+            $table->unsignedInteger('group_proposal_id')->nullable();
             $table->timestamps();
             $table->softdeletes();
 
             $table->foreign('board_proposal_id')->references('id')->on('proposals')->onDelete('cascade');
             $table->foreign('bor_meeting_id')->references('id')->on('bor_meetings')->onDelete('cascade');
             $table->foreign('board_oob_id')->references('id')->on('board_oob')->onDelete('cascade');
+
+            $table->foreign('group_proposal_id')->nullable()->references('id')->on('group_proposals')->onDelete('cascade');
         });
     }
 

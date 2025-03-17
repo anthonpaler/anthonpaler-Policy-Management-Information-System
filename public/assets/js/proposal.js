@@ -457,10 +457,10 @@ $(document).ready(function() {
                     selectedProposals.forEach(id => {
                         let row = $(`input[data-id="${id}"]`).closest('tr');
                         
-                        row.find('td:eq(7) small')
+                        row.find('td.status-cell span')
                         .html(`<i class='bx bx-radio-circle-marked'></i>${status_label}`)
                         .removeClass()
-                        .addClass('mb-0 align-items-center d-flex w-px-100');
+                        .addClass('mb-0 align-items-center d-flex w-px-100 gap-1');
                         
                         // Disable checkbox
                         row.find('input.select-proposal').prop('disabled', true).prop('checked', false);
@@ -758,7 +758,7 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log(fileId);
         });
 
-        fetch("/update-proposal-order", {
+        fetch("/update-proposal-file-order", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

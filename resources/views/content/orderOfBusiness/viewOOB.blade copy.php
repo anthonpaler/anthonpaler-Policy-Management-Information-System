@@ -108,46 +108,19 @@
 
             @php 
                 $counter = 1; 
-                $groupCounter = 1;
                 $actionColors = ['secondary', 'success', 'warning', 'danger', 'info']; 
                 $noProposals = collect($categorizedProposals)->flatten()->isEmpty();
+
                 $allProposalIds = collect($categorizedProposals)->flatten()->pluck('id');
             @endphp
 
+            <!-- Loop through proposals and display tables -->
             @foreach ($matters as $type => $title)
-                @php 
-                    // Group proposals and standalone proposals together based on order_no
-                    $allProposals = collect();
-
-                    // Add standalone proposals to collection
-                    foreach ($categorizedProposals[$type]->whereNull('group_proposal_id') as $proposal) {
-                        $allProposals->push([
-                            'type' => 'individual',
-                            'order_no' => $proposal->order_no,
-                            'data' => $proposal
-                        ]);
-                    }
-
-                    // Add grouped proposals to collection
-                    foreach ($categorizedProposals[$type]->whereNotNull('group_proposal_id')->groupBy('group_proposal_id') as $groupID => $proposals) {
-                        $groupOrderNo = $proposals->first()->proposal_group->order_no ?? 9999;
-                        $allProposals->push([
-                            'type' => 'group',
-                            'order_no' => $groupOrderNo,
-                            'group_id' => $groupID,
-                            'data' => $proposals
-                        ]);
-                    }
-
-                    // Sort by order_no
-                    $allProposals = $allProposals->sortBy('order_no');
-                @endphp
-                
                 @if ($categorizedProposals[$type]->count() > 0)
                     <div class="table-responsive text-nowrap mb-4">
                         <table class="table table-bordered sortable" id="oobTable">
                             <thead>
-                                <tr style="background-color: var(--bs-primary-bg-subtle) !important; border: 1px solid #9B9DFF !important;">
+                                <tr class="" style="background-color: var(--bs-primary-bg-subtle) !important; border: 1px solid #9B9DFF !important;">
                                     <th colspan="5" class="p-4 text-primary">{{ $title }}</th>
                                 </tr>
                                 <tr>
@@ -159,109 +132,256 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($allProposals as $proposal)
-                                    @if ($proposal['type'] === 'individual')
-                                        <tr class="selectable-row" data-id="{{ $proposal['data']->proposal->id }}">
-                                            <td>2.<span class="order_no">{{ $counter }}</span></td>
+                                @if ($categorizedProposals[$type]->count() > 0)
+                                    @foreach ($categorizedProposals[$type] as $proposal)
+                                    @php $group = $proposal->group_proposal_id; @endphp
+
+                                    @if (!$proposal->group_proposal_id)
+                                        <tr class="selectable-row" data-id="{{ $proposal->proposal->id }}">
+                                            <td><span class="matter_no">2</span>.<span class="order_no">{{$proposal->order_no ? $proposal->order_no : $counter}}</span></td>
                                             <td>
-                                                <a href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal['data']->proposal->id)]) }}">{{ $proposal['data']->proposal->title }}</a>
+                                                <div style="min-width: 300px; max-width: 700px; white-space: wrap; ">
+                                                    <a  href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->proposal->id)]) }}" >{{ $proposal->proposal->title }}</a>
+                                                </div>
                                             </td>
                                             <td>
-                                                @foreach ($proposal['data']->proponentsList ?? [] as $proponent)
-                                                    <div class="d-flex align-items-center gap-3">
-                                                        <img class="rounded-circle avatar-sm" src="{{ $proponent->image ?? '/default-avatar.png' }}" alt="Avatar">
-                                                        <span>{{ $proponent->name }}</span>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="d-flex flex-column gap-3">
+                                                        @foreach ($proposal->proponentsList as $proponent)
+                                                            <div class="d-flex gap-3 align-items-center">
+                                                            <div data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $proponent->name }}" class="avatar avatar-sm pull-up">
+                                                                    <img class="rounded-circle" src="{{ $proponent->image ?? '/default-avatar.png' }}" alt="Avatar">
+                                                                </div>
+                                                                <span>{{ $proponent->name }}</span>
+                                                            </div>
+                                                        @endforeach
                                                     </div>
-                                                @endforeach
+                                                </div>
                                             </td>
-                                            <td>
-                                                <span class="d-flex gap-2 align-items-center">
-                                                    <i class='bx bx-up-arrow-circle text-{{ $actionColors[$proposal['data']->proposal->action] ?? 'primary' }}'></i>
-                                                    {{ config('proposals.requested_action.'.$proposal['data']->proposal->action) }}
+
+                                            <td> 
+                                                <span class="align-items-center d-flex gap-2"> 
+                                                    <i class='bx bx-up-arrow-circle text-{{ $actionColors[$proposal->proposal->action] ?? 'primary' }}'></i>
+                                                    {{ config('proposals.requested_action.'.$proposal->proposal->action) }}
                                                 </span>
+                                        
                                             </td>
                                             <td>
-                                                @if ($proposal['data']->files->isNotEmpty())
-                                                    <button class="btn btn-sm btn-primary view-files" data-files="{{ json_encode($proposal['data']->files) }}" data-title="{{ $proposal['data']->title }}">
+                                                @if($proposal->files->count() > 0)
+                                                    <button class="btn btn-sm btn-primary d-flex gap-2 view-files"
+                                                            data-files="{{ json_encode($proposal->files) }}" 
+                                                            data-title="{{ $proposal->title }}">
                                                         <i class='bx bx-file'></i> VIEW FILES
                                                     </button>
                                                 @else
-                                                    <button class="btn btn-sm btn-danger" disabled>
+                                                    <button class="btn btn-sm btn-danger d-flex gap-2" disabled>
                                                         <i class='bx bx-file'></i> NO FILES
                                                     </button>
                                                 @endif
                                             </td>
                                         </tr>
-                                        @php $counter++; @endphp
                                     @else
-                                    <tr class="tr-group selectable-row group position-relative" data-id="{{ $proposal['data']->first()->proposal_group->id }}">
-                                        <td>2.<span class="order_no">{{ $counter }}</span></td>
-                                        <td colspan="4">
-                                            <strong>{{ $proposal['data']->first()->proposal_group->group_title ?? 'Group Proposal' }}</strong>
-
-                                            <!-- Dropdown inside the row (hidden by default) -->
-                                            <div class="dropdown position-absolute" style="right: 10px; top: 50%; transform: translateY(-50%);">
-                                                <button class="btn btn-sm btn-secondary dropdown-toggle d-none group-menu-btn" type="button" data-bs-toggle="dropdown">
-                                                    Actions
-                                                </button>
-                                                <ul class="dropdown-menu">
-                                                    <li><button class="dropdown-item ungroup-btn">Ungroup</button></li>
-                                                    <li><button class="dropdown-item edit-group-btn">Edit</button></li>
-                                                </ul>
-                                            </div>
-                                        </td>
-                                    </tr>
-
-                                        @foreach ($proposal['data'] as $groupedProposal)
-                                            <tr class="selectable-row group-items" data-id="{{ $groupedProposal->proposal->id }}">
-                                                <td class="ps-5 pe-1">
-                                                    <span class="order_no">2.{{ $counter }}.{{ $groupCounter }}</span>
+                                        <tr data-id="{{$proposal->group_proposal_id}}">     
+                                            <tr>
+                                                <td>2.{{$proposal->proposal_group?->order_no}}</td>
+                                                <td colspan="4">{{ $proposal->proposal_group?->group_title }}</td>
+                                            </tr>  
+                                            @if($group == $proposal->group_proposal_id)
+                                                <tr class="selectable-row" data-id="{{ $proposal->proposal->id }}">
+                                                <td><span class="matter_no">2</span>.<span class="order_no">{{ $proposal->proposal_group?->order_no }}.{{$proposal->order_no ? $proposal->order_no : $counter}}</span></td>
+                                                <td>
+                                                    <div style="min-width: 300px; max-width: 700px; white-space: wrap; ">
+                                                        <a  href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->proposal->id)]) }}" >{{ $proposal->proposal->title }}</a>
+                                                    </div>
                                                 </td>
                                                 <td>
-                                                    <a href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($groupedProposal->proposal->id)]) }}">{{ $groupedProposal->proposal->title }}</a>
-                                                </td>
-                                                <td>
-                                                    @foreach ($groupedProposal->proponentsList ?? [] as $proponent)
-                                                        <div class="d-flex align-items-center gap-3">
-                                                            <img class="rounded-circle avatar-sm" src="{{ $proponent->image ?? '/default-avatar.png' }}" alt="Avatar">
-                                                            <span>{{ $proponent->name }}</span>
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="d-flex flex-column gap-3">
+                                                            @foreach ($proposal->proponentsList as $proponent)
+                                                                <div class="d-flex gap-3 align-items-center">
+                                                                <div data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $proponent->name }}" class="avatar avatar-sm pull-up">
+                                                                        <img class="rounded-circle" src="{{ $proponent->image ?? '/default-avatar.png' }}" alt="Avatar">
+                                                                    </div>
+                                                                    <span>{{ $proponent->name }}</span>
+                                                                </div>
+                                                            @endforeach
                                                         </div>
-                                                    @endforeach
+                                                    </div>
                                                 </td>
-                                                <td>
-                                                    <span class="d-flex gap-2 align-items-center">
-                                                        <i class='bx bx-up-arrow-circle text-{{ $actionColors[$groupedProposal->proposal->action] ?? 'primary' }}'></i>
-                                                        {{ config('proposals.requested_action.'.$groupedProposal->proposal->action) }}
+
+                                                <td> 
+                                                    <span class="align-items-center d-flex gap-2"> 
+                                                        <i class='bx bx-up-arrow-circle text-{{ $actionColors[$proposal->proposal->action] ?? 'primary' }}'></i>
+                                                        {{ config('proposals.requested_action.'.$proposal->proposal->action) }}
                                                     </span>
+                                            
                                                 </td>
                                                 <td>
-                                                    @if ($groupedProposal->files->isNotEmpty())
-                                                        <button class="btn btn-sm btn-primary view-files" data-files="{{ json_encode($groupedProposal->files) }}" data-title="{{ $groupedProposal->title }}">
+                                                    @if($proposal->files->count() > 0)
+                                                        <button class="btn btn-sm btn-primary d-flex gap-2 view-files"
+                                                                data-files="{{ json_encode($proposal->files) }}" 
+                                                                data-title="{{ $proposal->title }}">
                                                             <i class='bx bx-file'></i> VIEW FILES
                                                         </button>
                                                     @else
-                                                        <button class="btn btn-sm btn-danger" disabled>
+                                                        <button class="btn btn-sm btn-danger d-flex gap-2" disabled>
                                                             <i class='bx bx-file'></i> NO FILES
                                                         </button>
                                                     @endif
                                                 </td>
                                             </tr>
-                                            @php $groupCounter++; @endphp
-                                        @endforeach
-                                        @php $counter++; $groupCounter = 1; @endphp
+                                            @endif
+                                        </tr>
                                     @endif
-                                @endforeach
+                                    @php $counter++; @endphp
+                                    @endforeach
+                                @else
+                                    <tel
+                                        <td colspan="6" class="p-4">
+                                            <div class="alert alert-warning m-0" role="alert">
+                                                <i class="bx bx-info-circle"></i> No proposals for endorsement at the moment.
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endif
                             </tbody>
                         </table>
                     </div>
                 @endif
             @endforeach
-
-
             <script>
                 var postedToAgendaProposalIDS = @json($allProposalIds);
             </script>
+        </div>@php 
+    $mainCounter = 1; 
+    $actionColors = ['secondary', 'success', 'warning', 'danger', 'info']; 
+    $noProposals = collect($categorizedProposals)->flatten()->isEmpty();
+    $allProposalIds = collect($categorizedProposals)->flatten()->pluck('id');
+@endphp
+
+@foreach ($matters as $type => $title)
+    @if ($categorizedProposals[$type]->count() > 0)
+        <div class="table-responsive text-nowrap mb-4">
+            <table class="table table-bordered sortable" id="oobTable">
+                <thead>
+                    <tr style="background-color: var(--bs-primary-bg-subtle) !important; border: 1px solid #9B9DFF !important;">
+                        <th colspan="5" class="p-4 text-primary">{{ $title }}</th>
+                    </tr>
+                    <tr>
+                        <th style="width: 50px;">No.</th>
+                        <th style="width: 700px;">Title of the Proposal</th>
+                        <th style="width: 200px;">Presenters</th>
+                        <th style="width: 150px;">Requested Action</th>
+                        <th style="width: 100px;">File</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($categorizedProposals[$type] as $proposal)
+                        @php 
+                            $group = $proposal->group_proposal_id;
+                        @endphp
+
+                        @if (!$group)
+                            {{-- Individual Proposal --}}
+                            <tr class="selectable-row" data-id="{{ $proposal->proposal->id }}">
+                                <td>2.{{ $mainCounter }}</td>
+                                <td>
+                                    <a href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->proposal->id)]) }}">
+                                        {{ $proposal->proposal->title }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-column gap-3">
+                                        @foreach ($proposal->proponentsList as $proponent)
+                                            <div class="d-flex gap-3 align-items-center">
+                                                <img class="rounded-circle avatar avatar-sm pull-up" src="{{ $proponent->image ?? '/default-avatar.png' }}" alt="Avatar">
+                                                <span>{{ $proponent->name }}</span>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="align-items-center d-flex gap-2"> 
+                                        <i class='bx bx-up-arrow-circle text-{{ $actionColors[$proposal->proposal->action] ?? 'primary' }}'></i>
+                                        {{ config('proposals.requested_action.'.$proposal->proposal->action) }}
+                                    </span>
+                                </td>
+                                <td>
+                                    @if($proposal->files->count() > 0)
+                                        <button class="btn btn-sm btn-primary d-flex gap-2 view-files"
+                                                data-files="{{ json_encode($proposal->files) }}" 
+                                                data-title="{{ $proposal->title }}">
+                                            <i class='bx bx-file'></i> VIEW FILES
+                                        </button>
+                                    @else
+                                        <button class="btn btn-sm btn-danger d-flex gap-2" disabled>
+                                            <i class='bx bx-file'></i> NO FILES
+                                        </button>
+                                    @endif
+                                </td>
+                            </tr>
+                            @php $mainCounter++; @endphp
+
+                        @else
+                            {{-- Grouped Proposal (First occurrence) --}}
+                            @if (!isset($groupSeen[$group]))
+                                @php
+                                    $groupSeen[$group] = true;
+                                    $subCounter = 1;
+                                @endphp
+                                <tr>
+                                    <td>2.{{ $mainCounter }}</td>
+                                    <td colspan="4"><strong>{{ $proposal->proposal_group?->group_title }}</strong></td>
+                                </tr>
+                            @endif
+
+                            {{-- Grouped Sub-Proposals --}}
+                            <tr class="selectable-row" data-id="{{ $proposal->proposal->id }}">
+                                <td>2.{{ $mainCounter }}.{{ $subCounter }}</td>
+                                <td>
+                                    <a href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->proposal->id)]) }}">
+                                        {{ $proposal->proposal->title }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-column gap-3">
+                                        @foreach ($proposal->proponentsList as $proponent)
+                                            <div class="d-flex gap-3 align-items-center">
+                                                <img class="rounded-circle avatar avatar-sm pull-up" src="{{ $proponent->image ?? '/default-avatar.png' }}" alt="Avatar">
+                                                <span>{{ $proponent->name }}</span>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="align-items-center d-flex gap-2"> 
+                                        <i class='bx bx-up-arrow-circle text-{{ $actionColors[$proposal->proposal->action] ?? 'primary' }}'></i>
+                                        {{ config('proposals.requested_action.'.$proposal->proposal->action) }}
+                                    </span>
+                                </td>
+                                <td>
+                                    @if($proposal->files->count() > 0)
+                                        <button class="btn btn-sm btn-primary d-flex gap-2 view-files"
+                                                data-files="{{ json_encode($proposal->files) }}" 
+                                                data-title="{{ $proposal->title }}">
+                                            <i class='bx bx-file'></i> VIEW FILES
+                                        </button>
+                                    @else
+                                        <button class="btn btn-sm btn-danger d-flex gap-2" disabled>
+                                            <i class='bx bx-file'></i> NO FILES
+                                        </button>
+                                    @endif
+                                </td>
+                            </tr>
+                            @php $subCounter++; @endphp
+                        @endif
+                    @endforeach
+                </tbody>
+            </table>
         </div>
+    @endif
+@endforeach
+
         
         @if(session('isSecretary'))
             <div class="d-flex gap-3 align-items-center flex-wrap">
@@ -276,7 +396,6 @@
             </div>
         @endif
     </form>
-
     <!-- Modal Preview File -->
     <div class="modal fade" id="fileModal" tabindex="-1" aria-labelledby="fileModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl">
@@ -297,11 +416,11 @@
         </div>
     </div>
 
-   <!-- CREATE GROUP MODAL -->
+    <!-- CREATE GROUP MODAL -->
     <div class="modal fade" id="groupModal" tabindex="-1" aria-labelledby="groupModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
-                <form method="POST" action="{{ route('save_proposal_group', ['level' => $orderOfBusiness->meeting->getMeetingLevel()]) }}" id="groupFrm">
+                <form method="POST"  action="{{ route('save_proposal_group', ['level' => $orderOfBusiness->meeting->getMeetingLevel()]) }}" id="groupFrm">
                     @csrf
                     <div class="modal-header">
                         <h5 class="modal-title" id="groupModalLabel">Group Selected Proposals</h5>
@@ -312,23 +431,26 @@
                             <label class="form-label" for="orderNo">Order No:<span class="ms-1 text-danger">*</span></label>
                             <div class="input-group input-group-merge">
                                 <span id="" class="input-group-text">
-                                    <i class='bx bx-objects-horizontal-left'></i>
+                                    <i class='bx bx-objects-horizontal-left' ></i>
                                 </span>
-                                <input type="number" id="orderNo" name="order_no" class="form-control" placeholder="Order number (ex: 2.1)" required />
+                                <input
+                                    type="number" id="orderNo" name="order_no" class="form-control" placeholder="Order number (ex: 2.1)"  required
+                                />
                             </div>
                         </div>
                         <div class="">
                             <label class="form-label" for="orderNo">Enter Group Proposal Title<span class="ms-1 text-danger">*</span></label>
                             <div class="input-group input-group-merge">
+                                <!-- <span id="" class="input-group-text">
+                                    <i class='bx bx-grid-alt' ></i>
+                                </span> -->
                                 <textarea name="group_title" id="group_title" rows="4" placeholder="Enter group proposal title" class="form-control"></textarea>
                             </div>
                         </div>
-                        <input type="hidden" id="group_id" name="group_id" />
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                         <button type="button" id="saveGroup" class="btn btn-primary">Save Group</button>
-                        <button type="button" id="updateGroup" class="btn btn-primary" style="display: none;">Save Changes</button>
                     </div>
                 </form>
             </div>
@@ -336,70 +458,9 @@
     </div>
 </div>
 <script>
-    $(document).ready(function () {
-        // Right-click event for group rows
-        $(document).on("contextmenu", ".tr-group", function (event) {
-            event.preventDefault(); // Prevent default menu
+   $(document).ready(function () {
 
-            // Hide all other dropdowns
-            $(".group-menu-btn").addClass("d-none");
-
-            // Show the dropdown menu inside the clicked row
-            let dropdown = $(this).find(".group-menu-btn");
-            dropdown.removeClass("d-none").dropdown("toggle");
-        });
-
-        // Hide menu when clicking elsewhere
-        $(document).on("click", function () {
-            $(".group-menu-btn").addClass("d-none");
-        });
-
-        // Handle 'Ungroup' click
-        $(".ungroup-btn").click(function (e) {
-            e.preventDefault();
-            let groupId = $(this).closest(".tr-group").data("id");
-           
-            $.ajax({
-                url: "{{ route('ungroup_proposal', ['level' => $orderOfBusiness->meeting->getMeetingLevel()]) }}",
-                method: "POST",
-                data: {
-                    group_id: groupId,
-                    _token: "{{ csrf_token() }}" // CSRF token for security
-                },
-                success: function (response) {
-                    if (response.type === 'success') {
-                        showAlert(response.type, response.title, response.message);
-                        location.reload(); // Refresh to reflect changes
-                    } else {
-                        showAlert('danger', 'Error', response.message);
-                    }
-                },
-                error: function (xhr) {
-                    showAlert('danger', 'Error', (xhr.responseJSON ? xhr.responseJSON.error : "Unknown error"));
-                }
-            });
-        });
-
-        // Handle 'Edit' click
-        $(".edit-group-btn").click(function (e) {
-            e.preventDefault();
-            let groupId = $(this).closest(".tr-group").data("id");
-            let groupTitle = $(this).closest(".tr-group").find("strong").text();
-            let orderNo = $(this).closest(".tr-group").find(".order_no").text();
-
-            // Set the values in the modal
-            $("#groupModal #group_title").val(groupTitle);
-            $("#groupModal #orderNo").val(orderNo);
-            $("#groupModal #group_id").val(groupId);
-            $("#groupModal #saveGroup").hide();
-            $("#groupModal #updateGroup").show();
-
-            // Show the modal
-            let modal = new bootstrap.Modal($("#groupModal")[0]);
-            modal.show();
-        });
-
-        // Initialize Sortable.js
+       // Initialize Sortable.js
         $("#oobTable tbody").each(function () {
             new Sortable(this, {
                 animation: 150,
@@ -456,7 +517,7 @@
             selectionEnabled = false;
             selectedProposalRows = [];
             $(".selectable-row").removeClass("selected-row");
-            $("#enableSelection, #cancelSelection").removeClass("active");
+            $("#enableSelection, #cancelSelection").removeClass("active"); 
         });
 
         // Row Click Selection
@@ -492,6 +553,7 @@
             // Create FormData object
             var formData = new FormData(groupFrm[0]);
 
+
             // Append selectedProposalRows properly
             selectedProposalRows.forEach((proposalId, index) => {
                 formData.append(`proposals[${index}]`, proposalId);
@@ -504,16 +566,15 @@
                 processData: false,
                 contentType: false,
                 success: function (response) {
-                    if (response.type == 'success') {
-                        showAlert(response.type, response.title, response.message);
+                    if(response.type == 'success'){
+                        alert("Group saved!");
                         location.reload(); // Refresh to reflect changes
-                    } else {
-                        showAlert('danger', 'Error', response.message);
                     }
+                    alert(response);    
                     console.log(response);
                 },
                 error: function (xhr) {
-                    showAlert('danger', 'Error', (xhr.responseJSON ? xhr.responseJSON.error : "Unknown error"));
+                    alert("Error: " + (xhr.responseJSON ? xhr.responseJSON.error : "Unknown error"));
                 }
             });
 
@@ -522,38 +583,9 @@
             $("#groupModal").modal("hide");
         });
 
-        // Update Group
-        $("#updateGroup").click(function (e) {
-            e.preventDefault();
-            let groupFrm = $("#groupFrm");
-            var actionUrl = "{{ route('update_proposal_group', ['level' => $orderOfBusiness->meeting->getMeetingLevel()]) }}";
 
-            // Create FormData object
-            var formData = new FormData(groupFrm[0]);
-
-            $.ajax({
-                method: "POST",
-                url: actionUrl,
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function (response) {
-                    if (response.type == 'success') {
-                        showAlert(response.type, response.title, response.message);
-                        location.reload(); // Refresh to reflect changes
-                    } else {
-                        showAlert('danger', 'Error', response.message);
-                    }
-                    console.log(response);
-                },
-                error: function (xhr) {
-                    showAlert('danger', 'Error', (xhr.responseJSON ? xhr.responseJSON.error : "Unknown error"));
-                }
-            });
-
-            $("#groupModal").modal("hide");
-        });
     });
+
 </script>
 
 <script src="{{asset('assets/js/orderOfBusiness.js')}}"></script>

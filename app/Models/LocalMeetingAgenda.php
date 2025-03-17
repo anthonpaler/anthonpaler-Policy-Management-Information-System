@@ -19,11 +19,18 @@ class LocalMeetingAgenda extends Model
         'status',
         'local_oob_id',
         'order_no',
+        'group_proposal_id',
     ];
 
     public function proposal()
     {
         return $this->belongsTo(Proposal::class, 'local_proposal_id');
+    }
+
+    
+    public function proposal_group()
+    {
+        return $this->belongsTo(GroupProposal::class, 'group_proposal_id');
     }
 
     public function meeting()
