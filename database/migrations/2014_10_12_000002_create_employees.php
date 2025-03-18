@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('Cellphone')->nullable();
             $table->unsignedBigInteger('campus');
             $table->text('profilephoto')->nullable();
-            $table->foreign('campus')->references('id')->on('campus');
+            $table->foreign('campus')->references('id')->on('campus')->onDelete('cascade');
 
             $table->timestamps();
             $table->softdeletes();
