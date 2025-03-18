@@ -1,48 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\layouts\WithoutMenu;
-use App\Http\Controllers\layouts\WithoutNavbar;
-use App\Http\Controllers\layouts\Fluid;
-use App\Http\Controllers\layouts\Container;
-use App\Http\Controllers\layouts\Blank;
-use App\Http\Controllers\pages\AccountSettingsAccount;
-use App\Http\Controllers\pages\AccountSettingsNotifications;
-use App\Http\Controllers\pages\AccountSettingsConnections;
-use App\Http\Controllers\pages\MiscError;
-use App\Http\Controllers\pages\MiscUnderMaintenance;
-use App\Http\Controllers\authentications\LoginBasic;
-use App\Http\Controllers\authentications\RegisterBasic;
-use App\Http\Controllers\authentications\ForgotPasswordBasic;
-use App\Http\Controllers\cards\CardBasic;
-use App\Http\Controllers\user_interface\Accordion;
-use App\Http\Controllers\user_interface\Alerts;
-use App\Http\Controllers\user_interface\Badges;
-use App\Http\Controllers\user_interface\Buttons;
-use App\Http\Controllers\user_interface\Carousel;
-use App\Http\Controllers\user_interface\Collapse;
-use App\Http\Controllers\user_interface\Dropdowns;
-use App\Http\Controllers\user_interface\Footer;
-use App\Http\Controllers\user_interface\ListGroups;
-use App\Http\Controllers\user_interface\Modals;
-use App\Http\Controllers\user_interface\Navbar;
-use App\Http\Controllers\user_interface\Offcanvas;
-use App\Http\Controllers\user_interface\PaginationBreadcrumbs;
-use App\Http\Controllers\user_interface\Progress;
-use App\Http\Controllers\user_interface\Spinners;
-use App\Http\Controllers\user_interface\TabsPills;
-use App\Http\Controllers\user_interface\Toasts;
-use App\Http\Controllers\user_interface\TooltipsPopovers;
-use App\Http\Controllers\user_interface\Typography;
-use App\Http\Controllers\extended_ui\PerfectScrollbar;
-use App\Http\Controllers\extended_ui\TextDivider;
-use App\Http\Controllers\icons\Boxicons;
-use App\Http\Controllers\form_elements\BasicInput;
-use App\Http\Controllers\form_elements\InputGroups;
-use App\Http\Controllers\form_layouts\VerticalForm;
-use App\Http\Controllers\form_layouts\HorizontalForm;
-use App\Http\Controllers\tables\Basic as TablesBasic;
-
 use App\Http\Controllers\MeetingController;
 use App\Http\Controllers\OrderOfBusinessController;
 use App\Http\Controllers\ProposalController;
@@ -72,11 +30,17 @@ Route::middleware(['auth', 'super_admin'])->prefix('super-admin')->group(functio
 
 // PROPONENT
 Route::middleware(['auth', 'proponents'])->prefix('proponents')->group(function() {
+  // DASHBOARD ROUTES
   Route::get('/dashboard', [Analytics::class, 'index'])->name('proponent.dashboard');
+
+  // MEETINGS ROUTES
   Route::get('/meetings', [MeetingController::class, 'viewMeetings'])->name('proponent.meetings');
   Route::get('/meetings/meeting-details/{level}/{meeting_id}', [MeetingController::class, 'viewMeetingDetails']
     )->name('proponent.meetings.details');
   Route::get('/meetings/submit-proposal/{level}/{meeting_id}', [ProposalController::class, 'viewSubmitProposal'])->name('proponent.meetings.submit-proposal');
+  Route::post('/meetings/filter', [MeetingController::class, 'filterMeetings'])->name(name: 'proponent.meetings.filter');
+
+  // PROPOSALS ROUTES
   Route::post('/proposals/store/{meeting_id}', [ProposalController::class, 'submitProposal'])->name('proponent.proposals.store');
   Route::post('/projects/media', [ProposalController::class, 'storeMedia'])->name('proponent.projects.storeMedia');
   Route::post('/projects/media/delete', [ProposalController::class, 'deleteMedia'])->name('proponent.media.delete');
@@ -87,8 +51,8 @@ Route::middleware(['auth', 'proponents'])->prefix('proponents')->group(function(
   Route::get('/proposals/details/{proposal_id}', [ProposalController::class, 'viewProposalDetails'])->name('proponent.proposal.details');
   Route::post('/proposals/edit/{proposal_id}', [ProposalController::class, 'editProposal'])->name('proponent.proposal.edit.save');
   Route::post('/proposal/delete', [ProposalController::class, 'deleteProposal'])->name('proponent.proposal.delete');
-  Route::post('/meetings/filter', [MeetingController::class, 'filterMeetings'])->name(name: 'proponent.meetings.filter');
 
+  // ORDER OF BUSINESS ROUTES
 });
 
 // LOCAL SECRETARY
@@ -167,6 +131,37 @@ Route::middleware(['auth', 'university_secretary'])->prefix('university-secretar
   Route::get('/meetings/view-submit-proposal/{level}/{meeting_id}',[ProposalController::class, 'viewSubmitProposalSecretary'])->name('univ_sec.submit.proposal.secretary');
 
   Route::post('/meetings/submit/proposal/{level}/{meeting_id}',[ProposalController::class, 'submitProposalSecretary'])->name('univ_sec.proposal.submit');
+});
+
+// BOARD SECRETARY ROUTES 
+Route::middleware(['auth', 'board_secretary'])->prefix('board-secretary')->group(function() {
+  Route::get('/dashboard', [Analytics::class, 'index'])->name('board_sec.dashboard');
+  Route::get('/meetings', [MeetingController::class, 'viewMeetings'])->name('board_sec.meetings');
+  Route::get('/meetings/create-meeting', [MeetingController::class, 'viewCreateMeeting'])->name('board_sec.view_create_meeting');
+  Route::post('/meetings/create', [MeetingController::class, 'createMeeting'])->name('board_sec.meetings.create');
+  Route::get('/meetings/meeting-details/{level}/{meeting_id}', [MeetingController::class, 'viewMeetingDetails']
+  )->name('board_sec.meetings.details');
+
+  Route::get('/meetings/edit/{level}/{meeting_id}', [MeetingController::class, 'viewEditMeeting'])->name('board_sec.meeting.edit_meeting');
+
+  Route::post('/meetings/save-edit/{level}/{meeting_id}', [MeetingController::class, 'EditMeeting'])->name('board_sec.meetings.save-edit');
+  Route::get('/proposals', [ProposalController::class, 'viewMeetingsWithProposalCount'])->name('board_sec.proposals');
+
+  Route::get('/meetings/view-generate-oob/{level}/{meeting_id}', [OrderOfBusinessController::class, 'viewGenerateOOB'])->name('board_sec.order_of_business.view-generate');
+  Route::post('/meetings/generate-oob/{level}/{meeting_id}', [OrderOfBusinessController::class, 'generateOOB'])->name('board_sec.order_of_business.generate');
+
+  Route::get('/meetings/proposals/{level}/{meeting_id}', [ProposalController::class, 'viewMeetingProposals'])->name('board_sec.meetings.proposals');
+  Route::get('/proposals/details/{proposal_id}', [ProposalController::class, 'viewProposalDetails_Secretary'])->name('board_sec.proposal.details');
+  Route::post('/proposal/edit/{proposal_id}', [ProposalController::class, 'editProposalSecretary'])->name('board_sec.proposal.edit');
+
+  Route::get('/order-of-business', [OrderOfBusinessController::class, 'viewOOBList' ])->name('board_sec.order-of-business');
+  Route::post('/oob/filter', [OrderOfBusinessController::class, 'filterOOB'])->name(name: 'board_sec.oob.filter');
+  Route::get('/meetings/view-order-of-business/{level}/{oob_id}', [OrderOfBusinessController::class, 'viewOOB'])->name('board_sec.order_of_business.view-oob');
+
+  Route::post('/order-of-business/save/{oob_id}', [OrderOfBusinessController::class, 'saveOOB'])->name('board_sec.order_of_business.save');
+  Route::post('/order-of-business/disseminate/{level}/{oob_id}', [OrderOfBusinessController::class, 'disseminateOOB'])->name('board_sec.dissemenate.order_of_business');
+
+  Route::post('/meetings/filter', [MeetingController::class, 'filterMeetings'])->name(name: 'board_sec.meetings.filter');
 });
 
 

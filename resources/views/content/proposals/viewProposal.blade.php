@@ -379,7 +379,7 @@
                 </div>
             </div>
         </div> 
-        <div class="col mb-4">
+        <div class="col mb-4" sty>
             <div class="card mb-4 proposal-action-wrapper">
                 <div class="card-header com-sec-header ">
                     <h6>PROPOSAL COMMENTS / SUGGESTIONS</h6>

@@ -182,7 +182,7 @@
                                             </td>
                                             <td>
                                                 @if ($proposal['data']->files->isNotEmpty())
-                                                    <button class="btn btn-sm btn-primary view-files" data-files="{{ json_encode($proposal['data']->files) }}" data-title="{{ $proposal['data']->title }}">
+                                                    <button class="btn btn-sm btn-primary view-files" data-files="{{ json_encode($proposal['data']->files) }}" data-title="{{ $proposal['data']->proposal->title }}">
                                                         <i class='bx bx-file'></i> VIEW FILES
                                                     </button>
                                                 @else
@@ -236,7 +236,7 @@
                                                 </td>
                                                 <td>
                                                     @if ($groupedProposal->files->isNotEmpty())
-                                                        <button class="btn btn-sm btn-primary view-files" data-files="{{ json_encode($groupedProposal->files) }}" data-title="{{ $groupedProposal->title }}">
+                                                        <button class="btn btn-sm btn-primary view-files" data-files="{{ json_encode($groupedProposal->files) }}" data-title="{{ $groupedProposal->proposal->title  }}">
                                                             <i class='bx bx-file'></i> VIEW FILES
                                                         </button>
                                                     @else
