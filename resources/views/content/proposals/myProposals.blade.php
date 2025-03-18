@@ -90,13 +90,15 @@
                             </td>
                             <td>
                                 @if($proposal->files->count() > 0)
-                                    <span class="btn btn-primary btn-sm d-flex gap-2 view-files"
-                                            data-files="{{ json_encode($proposal->files) }}" 
+                                    <button class="btn btn-sm btn-success d-flex gap-2 view-files"
+                                            data-files="{{ json_encode(value: $proposal->files) }}" 
                                             data-title="{{ $proposal->title }}">
                                         <i class='bx bx-file'></i> VIEW FILES
-                                    </span>
+                                    </button>
                                 @else
-                                    <span class="text-muted pe-auto">No Files</span>
+                                    <button class="btn btn-sm btn-danger d-flex gap-2">
+                                        <i class='bx bx-file'></i> NO FILES
+                                    </button>
                                 @endif
                             </td>
                             <td>

@@ -65,20 +65,23 @@
                 <td>
                     <div class="d-flex align-items-center gap-2">
                         @if(session('isProponent'))
-                            @if ($meeting->getIsSubmissionClosedAttribute() || $meeting->status == 1)
-                                <a class="btn btn-sm btn-danger d-flex gap-2 disabled">
-                                    <i class='bx bx-lock'></i>Closed
-                                </a>
-                            @else
-                                <a class="btn btn-sm btn-primary d-flex align-items-center gap-1"
-                                    id="submitProposal"
-                                    data-meetingStatus="{{ $meeting->status }}"
-                                    href="{{ route(getUserRole().'.meetings.submit-proposal', ['level' => $meeting->getMeetingLevel(), 'meeting_id'=> encrypt($meeting->id)]) }}"
-                                >
-                                    <i class='bx bx-send'></i> SUBMIT
-                                </a>
-                            @endif
 
+                            @if ($meeting->getMeetingCouncilType() == 0)
+                                @if ($meeting->getIsSubmissionClosedAttribute() || $meeting->status == 1)
+                                    <a class="btn btn-sm btn-danger d-flex gap-2 disabled">
+                                        <i class='bx bx-lock'></i>Closed
+                                    </a>
+                                @else
+                                    <a class="btn btn-sm btn-primary d-flex align-items-center gap-1"
+                                        id="submitProposal"
+                                        data-meetingStatus="{{ $meeting->status }}"
+                                        href="{{ route(getUserRole().'.meetings.submit-proposal', ['level' => $meeting->getMeetingLevel(), 'meeting_id'=> encrypt($meeting->id)]) }}"
+                                    >
+                                        <i class='bx bx-send'></i> SUBMIT
+                                    </a>
+                                @endif
+                            @endif
+                            
                             <a class="btn btn-sm btn-success d-flex align-items-center gap-1"
                                 data-meetingStatus="{{ $meeting->status }}"
                                 href="{{ route(getUserRole().'.meetings.details', ['level' => $meeting->getMeetingLevel(), 'meeting_id'=> encrypt($meeting->id)]) }}"

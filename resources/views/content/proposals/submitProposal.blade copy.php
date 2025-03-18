@@ -56,10 +56,10 @@
             <div class="d-flex flex-wrap align-items-center justify-content-between w-100 mb-3">
                 <span class="text-muted m-0">Please fill all the required fields <em class="text-danger">*</em></span>
             </div>
-            <div class="row ">
+            <div class="row mb-4">
                 <!-- Proposal details -->
-                <div class="col-md-6 mb-4">
-                    <div class="card" style="height:100%;">
+                <div class="col-md-6">
+                    <div class="card mb-4" style="height:100%;">
                         <div class="card-body">
                             <h6 class="text-primary">PROPOSAL DETAILS</h6>
                             <div class="mb-3">
@@ -173,8 +173,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-6 mb-4">
-                    <div class="card" style="height:100%;">
+                <div class="col-md-6">
+                    <div class="card mb-4" style="height:100%;">
                         <div class="card-body">
                             <h6 class="text-primary">PROPONENT/S</h6>
                             <div class="col-md-6 c-field-p w-100">
@@ -207,7 +207,7 @@
                                     <input type="text" class="form-control" value="" id="proponents" name="proponents" hidden>
                                     <ul class="" id="proponentListCon">
                                         <li data-id="{{auth()->user()->employee_id;}}" data-name="{{auth()->user()->name;}}" data-email="{{auth()->user()->email;}}" data-image="{{auth()->user()->image;}}" id="primaryProponent">
-                                            <div class="d-flex justify-content-between align-items-center ms-2 me-2 flex-wrap gap-2">
+                                            <div class="d-flex justify-content-between align-items-center ms-2 me-2">
                                                 <div class="d-flex justify-content-start align-items-center ">
                                                     <div class="avatar-wrapper">
                                                         <div class="avatar avatar-sm me-3">
@@ -239,16 +239,14 @@
                 <div class="card">
                     <div class="card-body">
                         <h6 class="text-primary">PROPOSAL FILES</h6>
-                        <div class="upload-container mb-3">
-                            <label class="form-label" for="fileUpload">Proposal File/s <span class="ms-1 text-danger">*</span></label>
-                            <div id="dropArea" class="drop-area">
-                                <span class="upload-text">Drag & Drop files here, or <strong class="text-primary">click to upload</strong></span>
-                                <small class="text-muted">Accepted formats: .pdf, .xls, .xlsx, and .csv only</small>
-                                <input type="file" id="fileUpload" accept=".pdf,.xls,.xlsx,.csv" multiple hidden>
+                        <div class="dropzone-container mb-3">
+                            <label class="form-label" for="file">Proposal File/s <span class="ms-1 text-danger">*</span></label>
+                            <input type="text" class="form-control mb-3" value="" name="proposalFiles" id="proposalInput" hidden>
+                            <div class="dropzone mb-2" id="fileDropzone">
+                            
                             </div>
-                            <h5 id="uploadedFilesLabel" class="file-header mt-3"><i class='bx bx-file'></i> Uploaded Files</h5>
-                            <ul id="fileList" class="file-list mt-3">
-                            </ul>
+                            <span class="text-muted">Accepted formats: .pdf .xls, .xlsx and .csv only</span>
+                        
                         </div>
                     </div>
                 </div>
@@ -260,124 +258,60 @@
         </div>
     </form>
 </div>
-
 <script>
-    function getImageByFileType(fileType) {
-        switch (fileType) {
-            case "pdf":
-                return "{{ asset('assets/img/icons/file-icons/pdf.png') }}";
-            case "xls":
-                return "{{ asset('assets/img/icons/file-icons/xls.png') }}";
-            case "xlsx":
-                return "{{ asset('assets/img/icons/file-icons/xlsx.png') }}";
-            case "csv":
-                return "{{ asset('assets/img/icons/file-icons/csv-file.png') }}";
-            default:
-                return "{{ asset('assets/img/icons/file-icons/file.png') }}";
+    var proposalFiles = [];
+    let proposalInput = $('#proposalInput');
+
+    var myDropzone = new Dropzone("div#fileDropzone", {
+        url: "{{route(getUserRole().'.projects.storeMedia')}}",
+        paramName: "file",
+        maxFilesize: 100,
+        addRemoveLinks: true,
+        autoProcessQueue: true,
+        acceptedFiles: ".pdf, .xls, .xlsx, .csv",
+        dictDefaultMessage: `<div class='d-flex gap-2 align-items-center justify-content-center'>
+            <i class='bx bx-upload text-primary'></i>
+            <h5 class='text-primary m-0'>Choose File</h5>
+        </div><br> or <br>Drag and drop your <strong>proposal</strong> file here`,
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        success: function (file, response) {
+            file.renamedFileName = response.name;
+
+            proposalFiles.push(response.name);
+            console.log(response);
+            console.log('Added Files')
+            console.log(proposalFiles);
+            proposalInput.val(proposalFiles.join('/'));
+        },
+        removedfile: function (file) {
+            var fileName = file.renamedFileName; 
+
+            $.ajax({
+                url: "{{route(getUserRole().'.media.delete')}}", 
+                type: "POST",
+                data: { filename: fileName },
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function (response) {
+                    console.log("File removed:", respons1e);
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error removing file:", error);
+                }
+            });
+
+            file.previewElement.remove(); // Remove file preview from Dropzone
+            proposalFiles = proposalFiles.filter(f => f !== fileName); // Remove file from array
+            proposalInput.val(proposalFiles.join('/')); // Update hidden input field
+        },
+        error: function (xhr, status, error) {
+            console.error(xhr.responseText);
         }
-    }
-
-    // COSTUM MULTIPLE FILE UPLOAD
- 
-    const dropArea = document.getElementById("dropArea");
-    const fileUpload = document.getElementById("fileUpload");
-    const fileList = document.getElementById("fileList");
-    let uploadedProposalFiles = [];
-
-    dropArea.addEventListener("click", () => fileUpload.click());
-    dropArea.addEventListener("dragover", (e) => {
-        e.preventDefault();
-        dropArea.style.background = "#f1f1f1";
-    });
-    dropArea.addEventListener("dragleave", () => {
-        dropArea.style.background = "#fff";
-    });
-    dropArea.addEventListener("drop", (e) => {
-        e.preventDefault();
-        dropArea.style.background = "#fff";
-        handleFiles(e.dataTransfer.files);
-    });
-    fileUpload.addEventListener("change", (e) => {
-        handleFiles(e.target.files);
     });
 
-    function handleFiles(files) {
-        Array.from(files).forEach((file) => {
-            if (!uploadedProposalFiles.some(f => f.name === file.name)) {
-                uploadedProposalFiles.push(file);
-                displayFile(file);
-                simulateUpload(file);
-            }
-        });
-    }
-
-    function displayFile(file) {
-        const listItem = document.createElement("li");
-        listItem.classList.add("file-item");    
-
-        const uploadedFilesLabel = document.getElementById("uploadedFilesLabel");
-
-        if (fileList.children.length === 0) {
-            uploadedFilesLabel.style.display = "block";
-        }
-
-        const fileType = file.name.split('.').pop().toLowerCase();
-        const iconSrc = getImageByFileType(fileType); 
-
-        listItem.innerHTML = `
-            <div class="d-flex align-items-center gap-2">
-                <div class="">
-                    <img src="${iconSrc}" class="file-icon" alt="File Icon">
-                </div>
-                <div class="file-name">
-                    <strong>${file.name}</strong>
-                    <small class="text-muted">${(file.size / 1024).toFixed(1)} KB</small>
-                </div>
-            </div>
-            <div class="d-flex gap-2">
-                <button class="delete-file-btn"><i class='bx bx-trash'></i></button>
-                <div class="progress-circle" data-progress="0">
-                    <span class="progress-text">0%</span>
-                </div>
-            </div>
-        `;
-
-        console.log(uploadedProposalFiles);
-
-        listItem.querySelector(".delete-file-btn").addEventListener("click", () => {
-            uploadedProposalFiles = uploadedProposalFiles.filter(f => f.name !== file.name);
-            listItem.remove();
-
-            if (fileList.children.length === 0) {
-                uploadedFilesLabel.style.display = "none";
-            }
-            console.log(uploadedProposalFiles);
-        });
-
-        fileList.appendChild(listItem);
-    }
-
-    // CUSTOM UPLOAD CIRCLE PROGRESS BAR
-    function simulateUpload(file) {
-        const listItem = Array.from(fileList.children).find(li => li.querySelector("strong").textContent === file.name);
-        if (!listItem) return;
-
-        const progressCircle = listItem.querySelector(".progress-circle");
-        const progressText = listItem.querySelector(".progress-text");
-        let progress = 0;
-        const interval = setInterval(() => {
-            if (progress >= 100) {
-                clearInterval(interval);
-                progressText.innerHTML  =`<i class='bx bx-check progress-check'></i>`;
-                progressCircle.style.background = "#39DA8A";
-                return;
-            }
-            progress += 10;
-            progressCircle.setAttribute("data-progress", progress);
-            progressCircle.style.background = `conic-gradient(#fd7e14 ${progress}%, #ffffff ${progress}% 100%)`;
-            progressText.textContent = `${progress}%`;
-        }, 200);
-    }
 </script>
 <script src="{{asset('assets/js/proposal.js')}}"></script>
 @endsection

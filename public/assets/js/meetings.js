@@ -126,19 +126,19 @@ $(document).ready(function() {
     var filterFrm = $("#filterFrm");
     var filterBtn = $("#filterButton");
     filterBtn.on('click', function(event){
-        filter_meeting();
+        filter_meeting(event);
     });
     $(".meeting-tab").on('click', function(event){
         $(".meeting-tab").removeClass("active"); 
         $(this).addClass("active"); 
-
+    
         var level = $(this).data('level');
         $("#level").val(level);
-        filter_meeting();
+        filter_meeting(event);
     });
-
-    function filter_meeting(){
-        event.preventDefault();
+    
+    function filter_meeting(event){
+        if (event) event.preventDefault();    
         var actionUrl = filterFrm.attr('action');
         
         $.ajax({
@@ -153,22 +153,21 @@ $(document).ready(function() {
             },
             success: function (response) {
                 $("#customFilterLoader").addClass('d-none');
-    
+            
                 if(response.type == 'success'){
                     let table = $('#meetingTable').DataTable();
-                    table.destroy();
-                    
-                    $('#meetingsTableBody').html(response.html);
+                    table.clear().destroy();
+                
+                    $('#meetingsTableBody').html(response.html); // Ensure backend returns proper <tr> data
                     
                     // Reinitialize DataTable
-                    $('#meetingTable').DataTable({
+                    let newTable = $('#meetingTable').DataTable({
                         "paging": true,
-                        "searching": false,
+                        "searching": true,
                         "ordering": true,
                         "info": true,
                         "pageLength": 10,
                         "language": {
-                            "search": "Search: ",
                             "paginate": {
                                 "previous": "<i class='bx bx-chevrons-left'></i> Previous",
                                 "next": "Next <i class='bx bx-chevrons-right'></i>"
@@ -176,10 +175,29 @@ $(document).ready(function() {
                         },
                         "dom": '<"top"f>rt<"bottom"ip><"clear">',
                     });
+            
+                    $('.dataTables_filter').hide();
+            
+                    // Rebind search input event
+                    $('#meetingSearch').off('keyup').on('keyup', function () {
+                        newTable.search(this.value).draw();
+                    });
+            
+                    // Rebind year filter event
+                    $('select[name="year"]').off('change').on('change', function () {
+                        let selectedYear = $(this).val(); 
+            
+                        if (selectedYear) {
+                            newTable.column(4).search(selectedYear).draw();
+                        } else {
+                            newTable.column(4).search('').draw();
+                        }
+                    });
+            
                 } else {
                     showAlert("danger", "Can't Filter", "Something went wrong!");
                 }
-            },            
+            },       
             error: function (xhr, status, error) {
                 $("#customFilterLoader").addClass('d-none');
                 console.log(xhr.responseText);

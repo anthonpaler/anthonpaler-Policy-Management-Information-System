@@ -24,16 +24,17 @@
 
 <div class="p-0">
     <div class="row">
-        <div class="col col-lg-5 mb-4" >
-            <div class="card mb-4">
+        <div class="col col-lg-5 mb-4">
+            <div class="card">
                 <div class="card-body">
-                    <form action="{{ route(getUserRole().'.proposal.edit', ['proposal_id' => encrypt($proposal->id)]) }}" method="post" id="editProposalFrm">
+                    <form action="{{ route(getUserRole().'.proposal.edit.save', ['proposal_id' => encrypt($proposal->id)]) }}" method="post" id="editProposalFrm">
                         <div class="d-flex justify-content-between gap-2 mb-3">
                             <h6 class="m-0">PROPOSAL DETAILS </h6>                       
                             <span class="badge bg-label-primary">{{ config('proposals.status.'.$proposal->status) }}</span>
                         </div>
                         <div class="mb-3">
                             <label class="form-label" for="title">Proposal Title <span class="ms-1 text-danger">*</span></label>
+                              
                             <textarea
                                 id="title"
                                 name="title"
@@ -41,30 +42,77 @@
                                 placeholder="Enter title"
                                 aria-label="Enter title"
                                 required
-                                rows="3"
-                            >{{ $proposal->title }}</textarea>
-                            @error('title')
-                                <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
-                            @enderror
+                                rows="2"
+                            >{{$proposal->title}}</textarea>
                         </div>
-                        <label class="form-label" for="">Proponent <span class="ms-1 text-danger">*</span></label>
-                        <div class="border rounded p-2 mb-3">
-                            <div class="d-flex flex-wrap gap-2">
-                                @foreach ($proposal->proponentsList as $proponent)
-                                    <div class="border rounded p-2 flex-grow-1">
-                                        <div class="d-flex  ">
-                                            <div class="flex-shrink-0 me-3">
-                                                <div class="avatar avatar-sm">
-                                                    <img src="{{ $proponent->image ?? '/default-avatar.png' }}" alt class="w-px-40 h-auto rounded-circle">
-                                                </div>
-                                            </div>
-                                            <div class="flex-grow-1 user-info">
-                                                <span class="fw-medium d-block">{{ $proponent->name }}</span>
-                                                <small class="text-muted">{{ config('usersetting.role.'.$proponent->role) }}</small>
-                                            </div>
-                                        </div>
+                        <!-- <div class="col-md-6 c-field-p w-100">
+                            <div class="mb-3" id="subTypeContainer" style="">
+                                <label class="form-label" for="addProponent">Add Proponents (Optional)</label>
+                                <div class="input-group input-group-merge">
+                                    <span id="title-icon" class="input-group-text"><i class='bx bx-user'></i></span>
+                                    <input type="text" class="form-control" id="addProponent" name="addProponent" autocomplete="off" placeholder="Search for users...">
                                 </div>
-                                @endforeach
+                                @error('proponent')
+                                    <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <div class="search-drop-card card" style="display: none;">
+                                <div class="card-body">
+                                    <ul class=""></ul>
+                                </div>
+                            </div>
+                        </div> -->
+                        <div class="mb-3" id="" style="">
+                            <label class="form-label" for="proponents">Proponent/s <span class="ms-1 text-danger">*</span></label>
+                            <div class="form-control proponent-con" style="">
+                                <input type="text" class="form-control mb-3" value="{{$proposal->employee_id}}" id="proponents" name="proponents" hidden>
+                                <ul class="" id="proponentListCon">
+                                    @foreach ($proposal->proponentsList as $proponent)
+                                        <li data-id="{{$proponent->employee_id}}" data-name="{{$proponent->name}}" data-email="{{$proponent->email}}" data-image="{{$proponent->image}}" id="primaryProponent">
+                                            <div class="d-flex justify-content-between align-items-center ms-2 me-2">
+                                                <div class="d-flex justify-content-start align-items-center ">
+                                                    <div class="avatar-wrapper">
+                                                        <div class="avatar avatar-sm me-3">
+                                                            <img src="{{$proponent->image}}" alt="Avatar" class="rounded-circle">
+                                                        </div>
+                                                    </div>
+                                                    <div class="d-flex flex-column">
+                                                        <a href="" class="text-heading text-truncate m-0">
+                                                            <span class="fw-medium">{{$proponent->name}}</span>
+                                                        </a>
+                                                        <small>{{$proponent->email}}</small>
+                                                    </div>
+                                                </div>
+                                                <!-- @if($proponent->employee_id === session('employee_id'))
+                                                    <div class="">
+                                                        <small class="badge bg-label-secondary d-flex align-items-center gap-2">
+                                                            <i class='bx bx-user-check'></i>Submitter
+                                                        </small>
+                                                    </div>
+                                                @else
+                                                    <div class="">
+                                                        <small class="badge bg-label-danger d-flex align-items-center gap-2 remove" data-id="{{$proponent->employee_id}}"><i class='bx bx-trash'></i>Remove</small>
+                                                    </div> 
+                                                @endif -->
+                                            </div>
+                                        </li>
+                                    @endforeach
+<!-- 
+                                    @php
+                                        $selectedProponents = $proposal->proponentsList->map(function ($proponent) {
+                                            return [
+                                                'id' => $proponent->employee_id,
+                                                'name' => $proponent->name,
+                                                'email' => $proponent->email,
+                                                'image' => $proponent->image,
+                                            ];
+                                        })->toArray();
+                                    @endphp
+
+                                    <script>
+                                        window.selectedProponents = @json($selectedProponents); 
+                                    </script> -->
+                                </ul>
                             </div>
                         </div>
                         <div class="mb-3">
@@ -123,6 +171,7 @@
                                     aria-label="Sub-type of proposal"
                                     aria-describedby="sub-type-icon"
                                     required
+                                    disabled
                                 >
                                     <option value="">Select Sub-type</option>
                                     @foreach (config('proposals.proposal_subtypes') as $key => $subType)
@@ -134,37 +183,33 @@
                                 <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
                             @enderror
                         </div>
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-primary d-flex gap-2" id="updateProposalSec"><i class='bx bx-save'></i> Save Changes</button>
-                            <!-- <button class="btn btn-secondary">Save Changes</button> -->
-                        </div>
-                    </form>
-                </div>
-            </div>
-            <div class="">
-                <h6 class="">PROPOSAL FILES</h6>
-                <div class="nav-align-top mb-6">
-                    <ul class="nav nav-pills mb-4 nav-fill" role="tablist">
-                        <li class="nav-item mb-1 mb-sm-0">
-                        <button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#recent-files" aria-controls="recent-files" aria-selected="true"><span class="d-flex align-items-center gap-2">
-                            <i class='bx bx-file'></i>
-                            <span class="d-none d-sm-block"> Latest Versions</span>
-                        </button>
-                        </li>
-                        <li class="nav-item mb-1 mb-sm-0">
-                        <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#archived-files" aria-controls="archived-files" aria-selected="false"><span class="d-flex align-items-center gap-2">
-                            <i class='bx bx-file'></i>
-                            <span class="d-none d-sm-block">Old Versions</span> 
-                        </button>
-                        </li>
-                    </ul>
-                    <div class="tab-content">
-                        <div class="tab-pane fade show active" id="recent-files" role="tabpanel">
+                        <div class="mb-3">
+                            <label class="form-label" for="">PROPOSAL FILE/S</label>
+                            <div class="d-flex justify-content-between align-items-center custom_tab_wrapper mb-3">
+                                <div class="">
+                                    <ul class="custom_tab_list">
+                                        <li class="custom_tab_item file-tab latest-file-tab active" data-status = "0">
+                                            <div class="">
+                                                <i class='bx bx-file' ></i>
+                                                <span>Latest File Versions</span>
+                                            </div>
+                                        </li>
+                                        <li class="custom_tab_item file-tab old-file-tab" data-status = "1">
+                                            <div class="">
+                                                <i class='bx bxs-file-blank' ></i>
+                                                <span>Old File Versions</span>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <input type="file" id="file-upload" style="display: none;" accept=".pdf, .xls, .xlsx, .csv"
+                            >
                             @php
                                 $countLatestVersion = 0;
                             @endphp
-                            <h6 class="text-primary">PROPOSAL FILES</h6>
-                            <div class="table-responsive text-nowrap">
+                            <div class="table-responsive text-nowrap latest-version-files">
                                 <table id="proposalFilesTable" class="table table-bordered sortable">
                                     <thead>
                                         <tr>
@@ -214,11 +259,20 @@
                                                                 <i class='bx bx-rename'></i>
                                                             </button>
 
-                                                            <button type="button" class="btn btn-sm  btn-danger delete-proposal" data-bs-toggle="tooltip" data-bs-offset="0,8" data-bs-placement="top" data-bs-custom-class="tooltip-primary" data-bs-original-title="Delete File "
+                                                            <!-- <button class="btn btn-sm btn-success resubmit-proposal"
+                                                            
+                                                            data-bs-toggle="tooltip" data-bs-offset="0,8" data-bs-placement="top" data-bs-custom-class="tooltip-primary" data-bs-original-title="Resubmit File "
+
+                                                            data-id="{{ $file->id }}" {{ (!in_array($proposal->status, [2,5,6]) && $proposal->is_edit_disabled && $file->file_status) ? 'disabled' : '' }}>
+                                                                <i class='bx bx-upload' ></i>
+                                                            </button> -->
+
+                                                            <button type="button" class="btn btn-sm  btn-danger delete-proposal-file" data-bs-toggle="tooltip" data-bs-offset="0,8" data-bs-placement="top" data-bs-custom-class="tooltip-primary" data-bs-original-title="Delete File "
                                                             data-id="{{ $file->id }}" {{ (!in_array($proposal->status, [2,5,6]) && $proposal->is_edit_disabled  && $file->file_status) ? 'disabled' : '' }}
                                                             > 
                                                                 <i class='bx bxs-trash'></i>
                                                             </button>
+                                                            
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -237,17 +291,14 @@
                                     </tbody>
                                 </table>
                             </div>
-                        </div>
-                        <div class="tab-pane fade" id="archived-files" role="tabpanel">
                             @php
                                 $countOldVersion = 0;
                             @endphp
-                            <h6 class="text-primary">PROPOSAL FILES</h6>
-                            <div class="table-responsive text-nowrap">
-                                <table class="table table-bordered">
+                            <div class="table-responsive text-nowrap old-version-files d-none">
+                                <table id="" class="table table-bordered">
                                     <thead>
                                         <tr>
-                                            <th style="width: 50px;"></th>
+                                            <th style="width: 40px;"></th>
                                             <th style="">File</th>
                                         </tr>
                                     </thead>
@@ -259,7 +310,12 @@
                                                 @endphp
                                                 <tr>
                                                     <td>
-                                                        <input type="checkbox" class="form-check-input select-proposal-file" data-id="{{ $file->id }}" > 
+                                                        <div class="d-flex gap-3">
+                                                            <input type="checkbox" class="form-check-input select-proposal-file" data-id="{{ $file->id }}" > 
+                                                            <span class="text-muted file_order_no">
+                                                                {{  $file->order_no }}
+                                                            </span>
+                                                        </div>
                                                     </td>
                                                     <td>
                                                         <div class="d-flex gap-3">
@@ -271,7 +327,7 @@
                                                                 data-bs-target="#fileModal"
                                                                 data-file-url="/storage/proposals/{{$file->file}}">{{ $file->file }} </span>
                                                                 <div class="d-flex gap-2">
-                                                                    <span class="badge bg-label-primary">{{ config('proposals.proposal_file_status.'.$file->file_status) }}</span>
+                                                                    <span class="badge bg-label-primary">{{ config(key: 'proposals.proposal_file_status.'.$file->file_status) }}</span>
                                                                     <span class="badge bg-label-success">Version {{ $file->version }}</span>
                                                                 </div>
                                                             </div>
@@ -293,12 +349,37 @@
                                     </tbody>
                                 </table>
                             </div>
+                            <!-- <small class="text-muted text-wrap d-flex gap-2"><strong>Note:</strong><em>Please be cautious when reuploading and deleting a proposal file.</em></small> -->
                         </div>
-                    </div>
+                        <div class="">
+                            <div class="mb-3">
+                                <label class="form-label" for="file">Add Attachment/s (Optional)</label>
+                                <div id="dropArea" class="drop-area">
+                                    <span class="upload-text">Drag & Drop files here, or <strong class="text-primary">click to upload</strong></span>
+                                    <small class="text-muted">Accepted formats: .pdf, .xls, .xlsx, and .csv only</small>
+                                    <input type="file" id="fileUpload" accept=".pdf,.xls,.xlsx,.csv" multiple hidden>
+                                </div>
+
+                                <div class="file-header mt-3" id="uploadedFilesLabel">
+                                    <label class="form-label d-flex align-items-center " for="">
+                                        <i class='bx bx-file'></i> UPLOADED FILES
+                                    </label>
+                                </div>
+
+                                <ul id="fileList" class="file-list mt-3">
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-primary d-flex gap-2" id="updateProposal" {{ (!in_array($proposal->status, [2,5,6]) && $proposal->is_edit_disabled  && $file->file_status) ? 'disabled' : '' }}
+                            ><i class='bx bx-save'></i> Save Changes</button>
+                            <!-- <button class="btn btn-secondary">Save Changes</button> -->
+                        </div>
+                    </form>
                 </div>
             </div>
         </div> 
-        <div class="col mb-4">
+        <div class="col mb-4" sty>
             <div class="card mb-4 proposal-action-wrapper">
                 <div class="card-header com-sec-header ">
                     <h6>PROPOSAL COMMENTS / SUGGESTIONS</h6>
@@ -310,8 +391,8 @@
                             @foreach($proposal_logs as $log)
                                 @if (in_array($log->action, [1,4,5,6]))
                                     @php $noLogsFound = false; @endphp
-                                    <div class="com-wrapper d-flex {{ $log->employee_id == auth()->id() ? 'justify-content-end' : 'justify-content-start' }}">
-                                        <div class="{{ $log->employee_id == auth()->id() ? 'sender' : 'receiver' }}">
+                                    <div class="com-wrapper d-flex {{ $log->user->employee_id == session('employee_id') ? 'justify-content-end' : 'justify-content-start' }}">
+                                        <div class="{{$log->user->employee_id == session('employee_id') ? 'sender' : 'receiver' }}">
                                             <div class="d-flex gap-4 justify-content-between">
                                                 <div class="d-flex gap-2">
                                                     <div class="flex-shrink-0 me-3">
@@ -491,6 +572,263 @@
 </div>
 <script>
     var proposalStatus = @json(config('proposals.status'));
+
+    let deletedFiles = [];
+    let reuploadedFiles = [];
+
+    function getImageByFileType(fileType) {
+        switch (fileType) {
+            case "pdf":
+                return "{{ asset('assets/img/icons/file-icons/pdf.png') }}";
+            case "xls":
+                return "{{ asset('assets/img/icons/file-icons/xls.png') }}";
+            case "xlsx":
+                return "{{ asset('assets/img/icons/file-icons/xlsx.png') }}";
+            case "csv":
+                return "{{ asset('assets/img/icons/file-icons/csv-file.png') }}";
+            default:
+                return "{{ asset('assets/img/icons/file-icons/file.png') }}";
+        }
+    }
+
+    // COSTUM MULTIPLE FILE UPLOAD
+ 
+    const dropArea = document.getElementById("dropArea");
+    const fileUpload = document.getElementById("fileUpload");
+    const fileList = document.getElementById("fileList");
+    let uploadedProposalFiles = [];
+
+    dropArea.addEventListener("click", () => fileUpload.click());
+    dropArea.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropArea.style.background = "#f1f1f1";
+    });
+    dropArea.addEventListener("dragleave", () => {
+        dropArea.style.background = "#fff";
+    });
+    dropArea.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropArea.style.background = "#fff";
+        handleFiles(e.dataTransfer.files);
+    });
+    fileUpload.addEventListener("change", (e) => {
+        handleFiles(e.target.files);
+    });
+
+    function handleFiles(files) {
+        Array.from(files).forEach((file) => {
+            if (!uploadedProposalFiles.some(f => f.name === file.name)) {
+                uploadedProposalFiles.push(file);
+                displayFile(file);
+                simulateUpload(file);
+            }
+        });
+    }
+
+    function displayFile(file) {
+        const listItem = document.createElement("li");
+        listItem.classList.add("file-item");    
+
+        const uploadedFilesLabel = document.getElementById("uploadedFilesLabel");
+
+        if (fileList.children.length === 0) {
+            uploadedFilesLabel.style.display = "block";
+        }
+
+        const fileType = file.name.split('.').pop().toLowerCase();
+        const iconSrc = getImageByFileType(fileType); 
+
+        listItem.innerHTML = `
+            <div class="d-flex align-items-center gap-2">
+                <div class="">
+                    <img src="${iconSrc}" class="file-icon" alt="File Icon">
+                </div>
+                <div class="file-name">
+                    <strong>${file.name}</strong>
+                    <small class="text-muted">${(file.size / 1024).toFixed(1)} KB</small>
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="delete-file-btn"><i class='bx bx-trash'></i></button>
+                <div class="progress-circle" data-progress="0">
+                    <span class="progress-text">0%</span>
+                </div>
+            </div>
+        `;
+
+        console.log(uploadedProposalFiles);
+
+        listItem.querySelector(".delete-file-btn").addEventListener("click", () => {
+            uploadedProposalFiles = uploadedProposalFiles.filter(f => f.name !== file.name);
+            listItem.remove();
+
+            if (fileList.children.length === 0) {
+                uploadedFilesLabel.style.display = "none";
+            }
+            console.log(uploadedProposalFiles);
+        });
+
+        fileList.appendChild(listItem);
+    }
+
+    // CUSTOM UPLOAD CIRCLE PROGRESS BAR
+    function simulateUpload(file) {
+        const listItem = Array.from(fileList.children).find(li => li.querySelector("strong").textContent === file.name);
+        if (!listItem) return;
+
+        const progressCircle = listItem.querySelector(".progress-circle");
+        const progressText = listItem.querySelector(".progress-text");
+        let progress = 0;
+        const interval = setInterval(() => {
+            if (progress >= 100) {
+                clearInterval(interval);
+                progressText.innerHTML  =`<i class='bx bx-check progress-check'></i>`;
+                progressCircle.style.background = "#39DA8A";
+                return;
+            }
+            progress += 10;
+            progressCircle.setAttribute("data-progress", progress);
+            progressCircle.style.background = `conic-gradient(#fd7e14 ${progress}%, #ffffff ${progress}% 100%)`;
+            progressText.textContent = `${progress}%`;
+        }, 200);
+    }
+
+    $(".resubmit-proposal").on('click', function (e) {
+        e.preventDefault();
+        
+        var file_id = $(this).data('id');
+        $("#file-upload").data("id", file_id).click(); // Store file ID and trigger file input
+        $(this).closest(".file-status").html("Revised");
+    });
+    
+    $("#file-upload").on("change", function (e) {
+        var file = e.target.files[0]; // Get selected file
+        var file_id = $(this).data("id");
+
+        if (file) {
+            reuploadedFiles.push({ file_id, file });
+        }
+
+        console.log(reuploadedFiles);
+
+        if (this.files.length > 0) {
+            var proposalRow = $("button.resubmit-proposal[data-id='" + file_id + "']").closest("tr");
+
+            // Update the status to "Revised"
+            proposalRow.find(".badge.bg-label-primary").text("Revised");
+
+            // Increment version number
+            var versionElement = proposalRow.find(".badge.bg-label-success");
+            var currentVersion = parseInt(versionElement.text().replace("Version ", "").trim());
+            var newVersion = currentVersion + 1;
+
+            // Update version badge
+            versionElement.text("Version " + newVersion);
+
+            // Update file name
+            proposalRow.find(".text-wrap").text(file.name);
+        }
+    });
+
+    
+    $(".delete-proposal-file").on("click", function (e) {
+        e.preventDefault();
+        var file_id = $(this).data("id");
+        var button = $(this); 
+
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You won't be able to revert this!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, delete it!",
+        }).then((result) => {
+            if (result.isConfirmed) {
+                deletedFiles.push(file_id);
+                button.closest("tr").remove();
+                console.log(deletedFiles);
+            }
+        });
+    });
+
+
+    $("#updateProposal").on('click', function (e) {
+        e.preventDefault();
+
+        var proposalFrm = $("#editProposalFrm")[0]; // Get the raw form element
+        var formData = new FormData(proposalFrm); // Create FormData from the form
+
+        var actionUrl = $("#editProposalFrm").attr('action');
+
+
+        uploadedProposalFiles.forEach((file, index) => {
+            formData.append(`proposal_files[${index}]`, file);
+        });
+
+        // Append deleted files
+        deletedFiles.forEach((fileId) => {
+            formData.append("deleted_files[]", fileId);
+            console.log("Deleted File ID: " + fileId);
+        });
+
+        // Append reuploaded files
+        reuploadedFiles.forEach(({ file_id, file }) => {
+            formData.append(`reuploaded_files[${file_id}]`, file);
+            console.log("Reuploaded File ID: " + file_id);
+            console.log("Reuploaded File: " + file);
+            
+        });
+
+        console.log('Form Data:', formData);
+
+        // Send AJAX Request
+        $.ajax({
+            method: "POST",
+            url: actionUrl,
+            data: formData,
+            processData: false,  
+            contentType: false,  
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            beforeSend: function () {
+                $("#updateProposal").html(`<i class='bx bx-loader-alt bx-spin' ></i>
+                    <span>Saving Changes...</span>`).prop('disabled', true);
+            },
+            success: function (response) {
+                $("#updateProposal").html(`<i class='bx bx-save'></i>
+                    <span>Save Changes</span>`).prop('disabled', false);
+                console.log(response);
+                showAlert(response.type, response.title, response.message);
+                location.reload();
+            },
+            error: function (xhr, status, error) {
+                $("#updateProposal").html(`<i class='bx bx-save'></i>
+                    <span>Save Changes</span>`).prop('disabled', false);
+                console.log(xhr.responseText);
+                let response = JSON.parse(xhr.responseText);
+                showAlert("warning", response.title, response.message);
+            }
+        });
+    });
+
+    $(".file-tab").click(function() {
+        $(".file-tab").removeClass("active");
+        $(this).addClass("active");
+
+        let level = $(this).data("status");
+
+        if (level == 0) {
+            $(".latest-version-files").removeClass("d-none");
+            $(".old-version-files").addClass("d-none");
+        } else {
+            $(".latest-version-files").addClass("d-none");
+            $(".old-version-files").removeClass("d-none");
+        }
+    });
 </script>
+
 <script src="{{asset('assets/js/proposal.js')}}"></script>
 @endsection
