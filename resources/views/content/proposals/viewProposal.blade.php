@@ -311,10 +311,10 @@
                                                 <tr>
                                                     <td>
                                                         <div class="d-flex gap-3">
-                                                            <input type="checkbox" class="form-check-input select-proposal-file" data-id="{{ $file->id }}" > 
+                                                            <!-- <input type="checkbox" class="form-check-input select-proposal-file" data-id="{{ $file->id }}" > 
                                                             <span class="text-muted file_order_no">
                                                                 {{  $file->order_no }}
-                                                            </span>
+                                                            </span> -->
                                                         </div>
                                                     </td>
                                                     <td>
@@ -327,7 +327,6 @@
                                                                 data-bs-target="#fileModal"
                                                                 data-file-url="/storage/proposals/{{$file->file}}">{{ $file->file }} </span>
                                                                 <div class="d-flex gap-2">
-                                                                    <span class="badge bg-label-primary">{{ config(key: 'proposals.proposal_file_status.'.$file->file_status) }}</span>
                                                                     <span class="badge bg-label-success">Version {{ $file->version }}</span>
                                                                 </div>
                                                             </div>
@@ -808,21 +807,6 @@
                 showAlert("warning", response.title, response.message);
             }
         });
-    });
-
-    $(".file-tab").click(function() {
-        $(".file-tab").removeClass("active");
-        $(this).addClass("active");
-
-        let level = $(this).data("status");
-
-        if (level == 0) {
-            $(".latest-version-files").removeClass("d-none");
-            $(".old-version-files").addClass("d-none");
-        } else {
-            $(".latest-version-files").addClass("d-none");
-            $(".old-version-files").removeClass("d-none");
-        }
     });
 </script>
 

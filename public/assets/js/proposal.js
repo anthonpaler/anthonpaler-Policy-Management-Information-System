@@ -1,4 +1,20 @@
 $(document).ready(function() {
+    // CHANGE FILE TAB
+    $(".file-tab").click(function() {
+        $(".file-tab").removeClass("active");
+        $(this).addClass("active");
+
+        let level = $(this).data("status");
+
+        if (level == 0) {
+            $(".latest-version-files").removeClass("d-none");
+            $(".old-version-files").addClass("d-none");
+        } else {
+            $(".latest-version-files").addClass("d-none");
+            $(".old-version-files").removeClass("d-none");
+        }
+    });
+
     $('#matter').on('change', function() {
         var matter = $(this).val();
         var subType = $('#sub_type');
@@ -279,7 +295,7 @@ $(document).ready(function() {
                     data-bs-toggle="modal" 
                     data-bs-target="#fileModal"
                     data-file-url="/storage/proposals/${fileObj.file}" >
-                        <i class='bx bx-file-blank'></i><span>${fileObj.file}</span>
+                        <span>${fileObj.order_no}. </span><i class='bx bx-file-blank'></i><span>${fileObj.file}</span>
                     </a>`;
                 }
             });
@@ -700,6 +716,50 @@ $(document).ready(function() {
     });        
 })
 document.addEventListener("DOMContentLoaded", function () {
+
+    const proposalTable = document.querySelector("#proposalFilesTable tbody");
+
+    new Sortable(proposalTable, {
+        animation: 150,
+        handle: "td",
+        ghostClass: "sortable-ghost",
+        onEnd: function (evt) {
+            console.log("Row moved from index", evt.oldIndex, "to", evt.newIndex);
+            updateOrderNumbers();
+        }
+    });
+
+    function updateOrderNumbers() {
+        let updatedFiles = [];
+        document.querySelectorAll("#proposalFilesTable tbody tr").forEach((row, index) => {
+            let fileId = row.querySelector(".select-proposal-file").dataset.id;
+            let orderNoElement = row.querySelector(".file_order_no");
+        
+            orderNoElement.textContent = index + 1;
+            updatedFiles.push({
+                id: fileId,
+                order_no: index + 1
+            });
+            console.log(fileId);
+        });
+
+        fetch("/update-proposal-file-order", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+            },
+            body: JSON.stringify({ files: updatedFiles })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Order updated successfully", data);
+        })
+        .catch(error => {
+            console.error("Error updating order", error);
+        });
+    }
+
     // SUBMIT PROPOSAL SECRETARY 
     var endorsedProposals = endorsedProposalIds;
     console.log("Endorsed Proposals: "+ endorsedProposals);
@@ -749,48 +809,4 @@ document.addEventListener("DOMContentLoaded", function () {
             showAlert('danger', 'Error!', 'No Proposals');
         }
     }); 
-
-
-    const proposalTable = document.querySelector("#proposalFilesTable tbody");
-
-    new Sortable(proposalTable, {
-        animation: 150,
-        handle: "td",
-        ghostClass: "sortable-ghost",
-        onEnd: function (evt) {
-            console.log("Row moved from index", evt.oldIndex, "to", evt.newIndex);
-            updateOrderNumbers();
-        }
-    });
-
-    function updateOrderNumbers() {
-        let updatedFiles = [];
-        document.querySelectorAll("#proposalFilesTable tbody tr").forEach((row, index) => {
-            let fileId = row.querySelector(".select-proposal-file").dataset.id;
-            let orderNoElement = row.querySelector(".file_order_no");
-        
-            orderNoElement.textContent = index + 1;
-            updatedFiles.push({
-                id: fileId,
-                order_no: index + 1
-            });
-            console.log(fileId);
-        });
-
-        fetch("/update-proposal-file-order", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
-            },
-            body: JSON.stringify({ files: updatedFiles })
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log("Order updated successfully", data);
-        })
-        .catch(error => {
-            console.error("Error updating order", error);
-        });
-    }
 });

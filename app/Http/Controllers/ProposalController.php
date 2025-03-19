@@ -76,7 +76,6 @@ class ProposalController extends Controller
     public function submitProposal(Request $request, String $meeting_id)
     {
       try{
-        
         $meetingID = decrypt($meeting_id);
 
         $meeting = LocalCouncilMeeting::find($meetingID);
@@ -115,7 +114,7 @@ class ProposalController extends Controller
         
       
         $fileIds = [];
-
+        $file_order_no = 1;
         if ($request->hasFile('proposal_files')) {
             foreach ($request->file('proposal_files') as $file) {
                 // Process file
@@ -144,9 +143,11 @@ class ProposalController extends Controller
                     'file_status' => 1,
                     'file_reference_id' => null,
                     'is_active' => true,
+                    'order_no' => $file_order_no,
                 ]);
 
                 $fileIds[] = $proposalFile->id;
+                $file_order_no++;
             }
         }
 
@@ -168,45 +169,6 @@ class ProposalController extends Controller
         return response()->json(['type' => 'danger', 'message' => $th->getMessage(), 'title'=> "Something went wrong!"]);
       }
     }
-    public function storeMedia(Request $request)
-    {
-      $file = $request->file('file');
-      $originalNameWithExt = $file->getClientOriginalName();
-      $extension = $file->getClientOriginalExtension();
-
-      // Extract filename without the final extension
-      preg_match('/^(.*?)(\(\d+\))?(\.\w+)?$/', $originalNameWithExt, $matches);
-      $baseName = trim($matches[1]); // Filename without versioning
-      $filename = "{$baseName}.{$extension}";
-
-      $i = 1;
-      while (Storage::disk('public')->exists("proposals/{$filename}")) {
-          $filename = "{$baseName} ({$i}).{$extension}";
-          $i++;
-      }
-
-      // Store in storage/proposals but make it accessible from public/storage/proposals
-      $filePath = $file->storeAs('proposals', $filename, 'public');
-
-      return response()->json([
-          'name' => $filename,
-      ]);
-    }
-    public function deleteMedia(Request $request)
-    {
-        $fileName = $request->input('filename');
-
-        // Define the path in storage/app/public/proposals
-        $filePath = storage_path('app/public/proposals/' . $fileName);
-
-        if (file_exists($filePath)) {
-            unlink($filePath); // Delete the file from storage
-            return response()->json(['message' => 'File deleted successfully']);
-        }
-
-        return response()->json(['message' => 'File not found'], 404);
-    }
-
 
     // RENAME FILE
     public function renameFile(Request $request)
@@ -269,7 +231,7 @@ class ProposalController extends Controller
           $proposal->proponentsList = User::whereIn('employee_id', $proponentIds)->get();
 
           // Proposal Files
-          $proposal->files = ProposalFile::where('proposal_id', $proposal->id)->get();
+          $proposal->files = ProposalFile::where('proposal_id', $proposal->id)->orderBy('order_no', 'asc')->get();
       }
       return view('content.proposals.myProposals', compact('proposals'));
     }
@@ -356,8 +318,22 @@ class ProposalController extends Controller
                 'status' => $new_status,
             ]);
 
-            $fileIds = [];
 
+            // Update the proposal in the agenda status
+            if ($proposal->getCurrentLevelAttribute() == 0) {
+                LocalMeetingAgenda::where('local_proposal_id', decrypt($proposal_id))->update(['status' => $new_status]);
+            } elseif ($proposal->getCurrentLevelAttribute() == 1) {
+                UniversityMeetingAgenda::where('university_proposal_id', decrypt($proposal_id))->update(['status' => $new_status]);
+            } elseif ($proposal->getCurrentLevelAttribute() == 2) {
+                BoardMeetingAgenda::where('board_proposal_id', decrypt($proposal_id))->update(['status' => $new_status]);
+            }
+
+
+            $fileIds = [];
+            $file_order_no = ProposalFile::where('proposal_id', $proposal->id)
+            ->where('is_active', true)
+            ->max('order_no') ?? 1; // Get the last order_no or default to 1
+            
             // Handle new attachments
             $fileIdsString = "";
             if ($request->hasFile('proposal_files')) {
@@ -388,6 +364,7 @@ class ProposalController extends Controller
                         'file_status' => 1,
                         'file_reference_id' => null,
                         'is_active' => true,
+                        'order_no' => ++$file_order_no,
                     ]);
     
                     $fileIds[] = $proposalFile->id;
@@ -435,6 +412,7 @@ class ProposalController extends Controller
                         'file_status' => 4,
                         'file_reference_id' => $fileId, 
                         'is_active' => true,
+                        'order_no' => $proposalFile->order_no,
                     ]);
                 }
             }
@@ -583,7 +561,7 @@ class ProposalController extends Controller
                 $proposal->proponentsList = User::whereIn('employee_id', $proponentIds)->get();
 
                 // Proposal Files
-                $proposal->files = ProposalFile::where('proposal_id', $proposal->proposal->id)->get();
+                $proposal->files = ProposalFile::where('proposal_id', $proposal->proposal->id)->orderBy('order_no', 'asc')->get();
             }
         }
 
@@ -770,40 +748,40 @@ class ProposalController extends Controller
         }
     }
     
-    // UPDATE PROPOSAL - SECRETARY POV
-    public function editProposalSecretary(Request $request, String $proposal_id)
-    {
-        try{
-        $proposal_id = decrypt($proposal_id);
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'matter' => 'required|integer',
-            'action' => 'required|integer'
-        ]);
+    // // UPDATE PROPOSAL - SECRETARY POV
+    // public function editProposalSecretary(Request $request, String $proposal_id)
+    // {
+    //     try{
+    //     $proposal_id = decrypt($proposal_id);
+    //     $request->validate([
+    //         'title' => 'required|string|max:255',
+    //         'matter' => 'required|integer',
+    //         'action' => 'required|integer'
+    //     ]);
         
-        $matter = $request->input('matter');
+    //     $matter = $request->input('matter');
 
-        $sub_type = null;
-        if($matter == 2){
-            $request->validate([
-            'sub_type' => 'required|integer',
-            ]);
-            $sub_type = $request->input('sub_type');
-        }
+    //     $sub_type = null;
+    //     if($matter == 2){
+    //         $request->validate([
+    //         'sub_type' => 'required|integer',
+    //         ]);
+    //         $sub_type = $request->input('sub_type');
+    //     }
 
-        $proposal = Proposal::where('id', $proposal_id)
-        ->update([
-            'title' => $request->input('title'),
-            'type' => $request->input('matter'),
-            'action' => $request->input('action'),
-            'sub_type' => $sub_type,
-        ]);
+    //     $proposal = Proposal::where('id', $proposal_id)
+    //     ->update([
+    //         'title' => $request->input('title'),
+    //         'type' => $request->input('matter'),
+    //         'action' => $request->input('action'),
+    //         'sub_type' => $sub_type,
+    //     ]);
 
-        return response()->json(['type' => 'success', 'message' => 'Proposal updated successfully', 'title' => 'Success']);    
-        } catch (\Throwable $th) {
-        return response()->json(['type' => 'danger', 'message' => $th->getMessage(), 'title'=> "Something went wrong!"]);
-        }
-    }
+    //     return response()->json(['type' => 'success', 'message' => 'Proposal updated successfully', 'title' => 'Success']);    
+    //     } catch (\Throwable $th) {
+    //     return response()->json(['type' => 'danger', 'message' => $th->getMessage(), 'title'=> "Something went wrong!"]);
+    //     }
+    // }
 
     // VIEW SUBMIT PROPOSAL - SECRETARY POV
     public function viewSubmitProposalSecretary(Request $request, String $level, String $meeting_id)
@@ -871,7 +849,8 @@ class ProposalController extends Controller
                 foreach ($proposalsGroup as $proposal) {
                     $proponentIds = explode(',', $proposal->proposal->employee_id);
                     $proposal->proponentsList = User::whereIn('employee_id', $proponentIds)->get();
-                    $proposal->files = ProposalFile::where('proposal_id', $proposal->proposal->id)->get();
+                    $proposal->files = ProposalFile::where('proposal_id', $proposal->proposal->id)->orderBy('order_no', 'asc')
+                    ->get();
                 }
             }
 

@@ -72,7 +72,7 @@ class OrderOfBusinessController extends Controller
                 foreach ($proposalsGroup as $proposal) {
                     $proponentIds = explode(',', $proposal->proposal->employee_id);
                     $proposal->proponentsList = User::whereIn('employee_id', $proponentIds)->get();
-                    $proposal->files = ProposalFile::where('proposal_id', $proposal->proposal->id)->get();
+                    $proposal->files = ProposalFile::where('proposal_id', $proposal->proposal->id)->orderBy('order_no', 'asc')->get();
                 }
             }
             // dd($categorizedProposals);
@@ -363,7 +363,7 @@ class OrderOfBusinessController extends Controller
                                     ? User::whereIn('employee_id', $proponentIds)->get() 
                                     : collect();
 
-                                $proposal->files = ProposalFile::where('proposal_id', $proposal->proposal->id)->get() ?? collect();
+                                $proposal->files = ProposalFile::where('proposal_id', $proposal->proposal->id)->orderBy('order_no', 'asc')->get() ?? collect();
                             }
                         }
                     } elseif ($group instanceof stdClass || is_object($group)) {
@@ -374,7 +374,7 @@ class OrderOfBusinessController extends Controller
                                 ? User::whereIn('employee_id', $proponentIds)->get() 
                                 : collect();
 
-                            $group->files = ProposalFile::where('proposal_id', $group->proposal->id)->get() ?? collect();
+                            $group->files = ProposalFile::where('proposal_id', $group->proposal->id)->orderBy('order_no', 'asc')->get() ?? collect();
                         }
                     }
                 }

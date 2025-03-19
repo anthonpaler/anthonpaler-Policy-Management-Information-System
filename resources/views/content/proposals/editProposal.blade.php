@@ -185,12 +185,31 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label" for="">PROPOSAL FILE/S</label>
+                            <div class="d-flex justify-content-between align-items-center custom_tab_wrapper mb-3">
+                                <div class="">
+                                    <ul class="custom_tab_list">
+                                        <li class="custom_tab_item file-tab latest-file-tab active" data-status = "0">
+                                            <div class="">
+                                                <i class='bx bx-file' ></i>
+                                                <span>Latest File Versions</span>
+                                            </div>
+                                        </li>
+                                        <li class="custom_tab_item file-tab old-file-tab" data-status = "1">
+                                            <div class="">
+                                                <i class='bx bxs-file-blank' ></i>
+                                                <span>Old File Versions</span>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
                             <input type="file" id="file-upload" style="display: none;" accept=".pdf, .xls, .xlsx, .csv"
                             >
                             @php
                                 $countLatestVersion = 0;
                             @endphp
-                            <div class="table-responsive text-nowrap">
+                            <div class="table-responsive text-nowrap latest-version-files">
                                 <table id="proposalFilesTable" class="table table-bordered sortable">
                                     <thead>
                                         <tr>
@@ -272,7 +291,64 @@
                                     </tbody>
                                 </table>
                             </div>
-                            <small class="text-muted text-wrap d-flex gap-2"><strong>Note:</strong><em>Please be cautious when reuploading and deleting a proposal file.</em></small>
+                            @php
+                                $countOldVersion = 0;
+                            @endphp
+                            <div class="table-responsive text-nowrap old-version-files d-none">
+                                <table id="" class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 40px;"></th>
+                                            <th style="">File</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($proposal->files as $file)
+                                            @if ($file->is_active == 0)
+                                                @php
+                                                    $countOldVersion++;
+                                                @endphp
+                                                <tr>
+                                                    <td>
+                                                        <div class="d-flex gap-3">
+                                                            <!-- <input type="checkbox" class="form-check-input select-proposal-file" data-id="{{ $file->id }}" > 
+                                                            <span class="text-muted file_order_no">
+                                                                {{  $file->order_no }}
+                                                            </span> -->
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div class="d-flex gap-3">
+                                                            <div class="proposal-file-img">
+                                                                <img src="{{ asset('assets/img/icons/document/folder_3.png') }}" alt="">
+                                                            </div>
+                                                            <div class="d-flex flex-column gap-2">
+                                                                <span class="text-wrap"  data-bs-toggle="modal" 
+                                                                data-bs-target="#fileModal"
+                                                                data-file-url="/storage/proposals/{{$file->file}}">{{ $file->file }} </span>
+                                                                <div class="d-flex gap-2">
+                                                                    <span class="badge bg-label-success">Version {{ $file->version }}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            @endif
+                                        @endforeach
+                                        @if ($countOldVersion == 0)
+                                            <td colspan="2">
+                                                <div
+                                                    class="alert alert-info"
+                                                    role="alert"
+                                                >
+                                                    <p>No old version files</p>
+                                                </div>
+                                            </td>
+                                        @endif
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!-- <small class="text-muted text-wrap d-flex gap-2"><strong>Note:</strong><em>Please be cautious when reuploading and deleting a proposal file.</em></small> -->
                         </div>
                         <div class="">
                             <div class="mb-3">
