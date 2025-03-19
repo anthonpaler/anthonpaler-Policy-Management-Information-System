@@ -1,7 +1,7 @@
 @php 
     $actionColors = [ 'secondary', 'primary', 'success', 'warning', 'info', 'danger']; 
 @endphp  
-   @if ($meetings->isEmpty())
+    @if ($meetings->isEmpty())
         <td valign="top" colspan="11" class="dataTables_empty">
             No data available in table
         </td>
@@ -146,14 +146,15 @@
                                 >
                                     <i class='bx bx-right-top-arrow-circle'></i>VIEW
                                 </a>
-
-                                <a class="btn btn-sm btn-success d-flex align-items-center gap-1"
-                                    id="submitProposal"
-                                    data-meetingStatus="{{ $meeting->status }}"
-                                    href="{{ route(getUserRole().'.submit.proposal.secretary', ['level' => $meeting->getMeetingLevel(), 'meeting_id'=> encrypt($meeting->id)]) }}"
-                                >
-                                    <i class='bx bx-send'></i> SUBMIT
-                                </a>
+                                @if ($level != 2)
+                                    <a class="btn btn-sm btn-success d-flex align-items-center gap-1"
+                                        id="submitProposal"
+                                        data-meetingStatus="{{ $meeting->status }}"
+                                        href="{{ route(getUserRole().'.submit.proposal.secretary', ['level' => $meeting->getMeetingLevel(), 'meeting_id'=> encrypt($meeting->id)]) }}"
+                                    >
+                                        <i class='bx bx-send'></i> SUBMIT
+                                    </a>
+                                @endif
                             @endif
                     
                         @endif

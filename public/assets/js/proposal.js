@@ -721,7 +721,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     $('#submitSecBtn').html(`<i class='bx bx-loader-alt bx-spin bx-rotate-90'></i> Submitting`).prop('disabled', true);
                 },
                 success: function(response) {
-                    console.log("Success Response:", response);
+                    console.log("Response:", response);
                 
                     if (response.type === 'success') {
                         $('#submitSecBtn').prop('disabled', true);

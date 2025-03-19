@@ -42,6 +42,8 @@
                 <span> | Venue  at  {{$meeting->venue->name}}</span>
                 @elseif ($meeting->modality == 2 || $meeting->modality == 3)
                 <span> | Via {{ config('meetings.mode_if_online_types.'.$meeting->mode_if_online) }} - Online</span>
+
+                <a href="{{$meeting->link ? $meeting->link : '/#'}}"  class="text-primary m-0"><i class='bx bx-link me-1'></i>Click Meeeting Link</a>
                 @else
                     <span class="form-label m-0">Venue or platform not yet set</span>
                 @endif

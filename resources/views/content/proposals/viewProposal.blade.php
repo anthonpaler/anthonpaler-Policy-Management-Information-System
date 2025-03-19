@@ -456,11 +456,7 @@
                                     <ul class="dropdown-menu">
                                         @foreach (array_slice(config('proposals.proposal_action'), 0, 7, true) as $index => $item)
                                             @php
-                                                if(auth()->user()->role > 3){
-                                                    if (in_array($index, [1])) {
-                                                        continue;
-                                                    }
-                                                }
+                                               
                                                 if(auth()->user()->role == 5 ){
                                                     if (in_array($index, [3,5])) {
                                                         continue;

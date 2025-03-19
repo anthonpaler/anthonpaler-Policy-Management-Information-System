@@ -47,8 +47,12 @@
             $actionColors = ['secondary', 'success', 'warning', 'danger', 'info']; 
             $noProposals = collect($categorizedProposals)->flatten()->isEmpty();
 
-            $allProposalIds = collect($categorizedProposals)->flatten()->pluck('id');
 
+            if($meeting->getMeetingCouncilType() == 1){
+                $allProposalIds = collect($categorizedProposals)->flatten()->pluck('local_proposal_id');  // PROPOSAL ID FROM LOCAL MEETING AGENDA TO BE PASSED TO UNIVERSITY     
+            }elseif($meeting->getMeetingCouncilType() == 2){
+                $allProposalIds = collect($categorizedProposals)->flatten()->pluck('university_proposal_id');   // PROPOSAL ID FROM UNIVERSITY MEETING AGENDA TO BE PASSED TO BOR     
+            }
         @endphp
 
         <div class="d-flex align-items-center justify-content-between mt-3 mb-3">
@@ -126,12 +130,12 @@
                                                     @if($proposal->files->count() > 0)
                                                         <button class="btn btn-sm btn-success d-flex gap-2 view-files"
                                                                 data-files="{{ json_encode($proposal->files) }}" 
-                                                                data-title="{{ $proposal->title }}">
+                                                                data-title="{{ $proposal->proposal->title }}">
                                                             <i class='bx bx-file'></i> VIEW FILES
                                                         </button>
                                                     @else
                                                         <button class="btn btn-sm btn-danger d-flex gap-2">
-                                                            <i class='bx bx-file'></i> No Files
+                                                            <i class='bx bx-file'></i> NO FILES
                                                         </button>
                                                     @endif
                                                 </td>
@@ -156,6 +160,7 @@
            
             <script>
                 var endorsedProposalIds = @json($allProposalIds);
+                console.log('Endorsed Proposal'.endorsedProposalIds);
             </script>
         </div>
     </form>
@@ -168,7 +173,7 @@
                     <h1 class="modal-title fs-5" id="exampleModalLabel">PROPOSAL FILES</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body" id="modalFiles">
+             <div class="modal-body" id="modalFiles">
                 
                 </div>
                 <div class="modal-footer">

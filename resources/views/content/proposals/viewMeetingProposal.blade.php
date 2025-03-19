@@ -196,7 +196,7 @@
                             <th>Type</th>
                             <th>Requested Action</th>
                             <!-- <th>Current Level</th> -->
-                            <th>Current Status</th>
+                            <th>Status</th>
                             <th>File</th>
                             <th>Actions</th>
                         </tr>
@@ -214,14 +214,14 @@
                                         <td>
                                             <input type="checkbox" 
                                             class="form-check-input select-proposal" 
-                                            data-id="{{ encrypt($proposal->id) }}" 
+                                            data-id="{{ encrypt($proposal->proposal->id) }}" 
                                             {{ (!in_array($proposal->status , [0, 8])) ? 'disabled' : '' }}>
                                         </td>
                                     @elseif($meetingDateTime && $currentDateTime->greaterThan($meetingDateTime))
                                         <td>
                                             <input type="checkbox" 
                                             class="form-check-input select-proposal" 
-                                            data-id="{{ encrypt($proposal->id) }}" 
+                                            data-id="{{ encrypt($proposal->proposal->id) }}" 
                                             {{ (!in_array($proposal->status , [1])) ? 'disabled' : '' }}>
                                         </td>
                                     @endif
@@ -244,7 +244,7 @@
                             </td>
                             <td>
                                 <div style="min-width: 300px; max-width: 500px; white-space: wrap; ">
-                                    <a href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->id)]) }}" >{{ $proposal->proposal->title }}</a>
+                                    <a href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->proposal->id)]) }}" >{{ $proposal->proposal->title }}</a>
                                 </div>
                             </td>
                             <td>
@@ -267,13 +267,13 @@
                             <td>
                                 @if($proposal->files->count() > 0)
                                     <button class="btn btn-sm btn-success d-flex gap-2 view-files"
-                                            data-files="{{ json_encode(value: $proposal->files) }}" 
-                                            data-title="{{ $proposal->title }}">
-                                        <i class='bx bx-file'></i> View Files
+                                            data-files="{{ json_encode($proposal->files) }}" 
+                                            data-title="{{ $proposal->proposal->title }}">
+                                        <i class='bx bx-file'></i> VIEW FILES
                                     </button>
                                 @else
                                     <button class="btn btn-sm btn-danger d-flex gap-2">
-                                        <i class='bx bx-file'></i> No Files
+                                        <i class='bx bx-file'></i> NO FILES
                                     </button>
                                 @endif
                             </td>
@@ -286,24 +286,24 @@
                                                 <i class="bx bx-dots-vertical-rounded"></i>
                                             </button>
                                             <div class="dropdown-menu">
-                                                <a class="dropdown-item" href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->id)]) }} ">
+                                                <a class="dropdown-item" href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->proposal->id)]) }} ">
                                                     <i class="fa-regular fa-eye me-3"></i>View Details
                                                 </a>
                                                 
                                                 @if(in_array($proposal->status, [2,5,6]))
-                                                    <a class="dropdown-item" href="{{ route(getUserRole().'.proposal.edit', ['proposal_id' => encrypt($proposal->id)]) }}">
+                                                    <a class="dropdown-item" href="{{ route(getUserRole().'.proposal.edit', ['proposal_id' => encrypt($proposal->proposal->id)]) }}">
                                                         <i class='bx bx-right-arrow-circle me-3'></i>Resubmit Proposal
                                                     </a>
                                                 @endif
                                                 @if(!$proposal->is_edit_disabled)
-                                                    <a class="dropdown-item" href="{{ route(getUserRole().'.proposal.edit', ['proposal_id' => encrypt($proposal->id)]) }}">
+                                                    <a class="dropdown-item" href="{{ route(getUserRole().'.proposal.edit', ['proposal_id' => encrypt($proposal->proposal->id)]) }}">
                                                         <i class="bx bx-edit-alt me-3"></i>Edit Proposal
                                                     </a>
                                                 @endif
                                             </div>
                                         </div>
                                     @else
-                                        <a href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->id)]) }} "  class="btn btn-sm btn-primary d-flex gap-2"><i class="fa-regular fa-eye" disabled></i>View Details</a>
+                                        <a href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->proposal->id)]) }} "  class="btn btn-sm btn-primary d-flex gap-2"><i class="fa-regular fa-eye" disabled></i>VIEW DETAILS</a>
                                     @endif
                                 </div>
                             </td>

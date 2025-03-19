@@ -339,7 +339,12 @@ class ProposalController extends Controller
             }
 
             $status = $proposal->status;
-            $new_status = in_array($status, [2, 5, 6]) ? 9 : $status;
+
+            $new_status = $status;  // Default new status
+
+            if( session('isProponent')){
+                $new_status = in_array($status, [2, 5, 6]) ? 9 : $status;
+            }
 
             // Update the proposal details
             $proposal->update([
@@ -443,18 +448,19 @@ class ProposalController extends Controller
                 }
             
             }
-
-            // Log if proposal status changed
-            if (in_array($status, [2, 5, 6])) {
-                ProposalLog::create([
-                    'proposal_id' => $proposal->id,
-                    'employee_id' => session('employee_id'),
-                    'comments' => null,
-                    'status' => $new_status,
-                    'level' => $proposal->getCurrentLevelAttribute(),
-                    'action' => 8,
-                    'file_id' => implode(',', $fileIds), 
-                ]);
+            if(session('isProponent')){
+                // Log if proposal status changed
+                if (in_array($status, [2, 5, 6])) {
+                    ProposalLog::create([
+                        'proposal_id' => $proposal->id,
+                        'employee_id' => session('employee_id'),
+                        'comments' => null,
+                        'status' => $new_status,
+                        'level' => $proposal->getCurrentLevelAttribute(),
+                        'action' => 8,
+                        'file_id' => '', 
+                    ]);
+                }
             }
 
             return response()->json(['type' => 'success', 'message' => 'Proposal updated successfully!', 'title' => 'Success!']);
@@ -600,7 +606,7 @@ class ProposalController extends Controller
             ->get();
 
     
-        // dd($meeting);
+        // dd($proposal);
 
         return view('content.proposals.viewProposal', compact('proposal', 'proposal_logs', 'meeting'));
     }
@@ -948,6 +954,7 @@ class ProposalController extends Controller
                         'bor_meeting_id' => $meeting->id,
                         'status' => $status,
                     ]);
+
 
                     ProposalLog::create([
                         'proposal_id' => $proposal_ID,

@@ -57,43 +57,37 @@ Route::middleware(['auth', 'proponents'])->prefix('proponents')->group(function(
 
 // LOCAL SECRETARY
 Route::middleware(['auth', 'local_secretary'])->prefix('local-campus-secretary')->group(function() {
+  // DASHBOARD ROUTES
   Route::get('/dashboard', [Analytics::class, 'index'])->name('local_sec.dashboard');
+  
+  // MEETINGS ROUTES
   Route::get('/meetings', [MeetingController::class, 'viewMeetings'])->name('local_sec.meetings');
   Route::get('/meetings/create-meeting', [MeetingController::class, 'viewCreateMeeting'])->name('local_sec.view_create_meeting');
   Route::post('/meetings/create', [MeetingController::class, 'createMeeting'])->name('local_sec.meetings.create');
   Route::get('/meetings/meeting-details/{level}/{meeting_id}', [MeetingController::class, 'viewMeetingDetails']
   )->name('local_sec.meetings.details');
-
   Route::get('/meetings/edit/{level}/{meeting_id}', [MeetingController::class, 'viewEditMeeting'])->name('local_sec.meeting.edit_meeting');
-
-
-  // FINAL EDIT PROPOSAL
-  Route::post('/proposals/edit/{proposal_id}', [ProposalController::class, 'editProposal'])->name('local_sec.proposal.edit.save');
-
-
   Route::post('/meetings/save-edit/{level}/{meeting_id}', [MeetingController::class, 'EditMeeting'])->name('local_sec.meetings.save-edit');
-
-  Route::get('/proposals', [ProposalController::class, 'viewMeetingsWithProposalCount'])->name('local_sec.proposals');
-
+  Route::post('/meetings/filter', [MeetingController::class, 'filterMeetings'])->name(name: 'local_sec.meetings.filter');
+  Route::get('/meetings/view-submit-proposal/{level}/{meeting_id}',[ProposalController::class, 'viewSubmitProposalSecretary'])->name('local_sec.submit.proposal.secretary');
+  Route::post('/meetings/submit/proposal/{level}/{meeting_id}',[ProposalController::class, 'submitProposalSecretary'])->name('local_sec.proposal.submit');
   Route::get('/meetings/view-generate-oob/{level}/{meeting_id}', [OrderOfBusinessController::class, 'viewGenerateOOB'])->name('local_sec.order_of_business.view-generate');
   Route::post('/meetings/generate-oob/{level}/{meeting_id}', [OrderOfBusinessController::class, 'generateOOB'])->name('local_sec.order_of_business.generate');
 
+
+  // PROPOSALS ROUTES
+  Route::post('/proposals/edit/{proposal_id}', [ProposalController::class, 'editProposal'])->name('local_sec.proposal.edit.save');  // FINAL EDIT PROPOSAL
+  Route::get('/proposals', [ProposalController::class, 'viewMeetingsWithProposalCount'])->name('local_sec.proposals');
   Route::get('/meetings/proposals/{level}/{meeting_id}', [ProposalController::class, 'viewMeetingProposals'])->name('local_sec.meetings.proposals');
   Route::get('/proposals/details/{proposal_id}', [ProposalController::class, 'viewProposalDetails_Secretary'])->name('local_sec.proposal.details');
   Route::post('/proposal/edit/{proposal_id}', [ProposalController::class, 'editProposalSecretary'])->name('local_sec.proposal.edit');
 
+  // ORDER OF BUSINESS ROUTES
   Route::get('/order-of-business', [OrderOfBusinessController::class, 'viewOOBList' ])->name('local_sec.order-of-business');
   Route::post('/oob/filter', [OrderOfBusinessController::class, 'filterOOB'])->name(name: 'local_sec.oob.filter');
   Route::get('/meetings/view-order-of-business/{level}/{oob_id}', [OrderOfBusinessController::class, 'viewOOB'])->name('local_sec.order_of_business.view-oob');
-
   Route::post('/order-of-business/save/{oob_id}', [OrderOfBusinessController::class, 'saveOOB'])->name('local_sec.order_of_business.save');
   Route::post('/order-of-business/disseminate/{level}/{oob_id}', [OrderOfBusinessController::class, 'disseminateOOB'])->name('local_sec.dissemenate.order_of_business');
-
-  Route::post('/meetings/filter', [MeetingController::class, 'filterMeetings'])->name(name: 'local_sec.meetings.filter');
-
-  Route::get('/meetings/view-submit-proposal/{level}/{meeting_id}',[ProposalController::class, 'viewSubmitProposalSecretary'])->name('local_sec.submit.proposal.secretary');
-
-  Route::post('/meetings/submit/proposal/{level}/{meeting_id}',[ProposalController::class, 'submitProposalSecretary'])->name('local_sec.proposal.submit');
 });
 
 
@@ -131,6 +125,8 @@ Route::middleware(['auth', 'university_secretary'])->prefix('university-secretar
   Route::get('/meetings/view-submit-proposal/{level}/{meeting_id}',[ProposalController::class, 'viewSubmitProposalSecretary'])->name('univ_sec.submit.proposal.secretary');
 
   Route::post('/meetings/submit/proposal/{level}/{meeting_id}',[ProposalController::class, 'submitProposalSecretary'])->name('univ_sec.proposal.submit');
+
+  Route::post('/proposals/edit/{proposal_id}', [ProposalController::class, 'editProposal'])->name('univ_sec.proposal.edit.save');  // FINAL EDIT PROPOSAL
 });
 
 // BOARD SECRETARY ROUTES 
@@ -162,6 +158,8 @@ Route::middleware(['auth', 'board_secretary'])->prefix('board-secretary')->group
   Route::post('/order-of-business/disseminate/{level}/{oob_id}', [OrderOfBusinessController::class, 'disseminateOOB'])->name('board_sec.dissemenate.order_of_business');
 
   Route::post('/meetings/filter', [MeetingController::class, 'filterMeetings'])->name(name: 'board_sec.meetings.filter');
+
+  Route::post('/proposals/edit/{proposal_id}', [ProposalController::class, 'editProposal'])->name('board_sec.proposal.edit.save');  // FINAL EDIT PROPOSAL
 });
 
 
