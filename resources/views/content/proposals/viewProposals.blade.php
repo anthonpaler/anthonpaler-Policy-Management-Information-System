@@ -104,7 +104,13 @@
                                         <div style="min-width: 200px">
                                             <span class="mb-0 align-items-center d-flex w-100 text-wrap gap-2">
                                                 <i class='bx bx-radio-circle-marked text-{{ $actionColors[$meeting->council_type] ?? 'primary' }}'></i>
-                                                {{ config('meetings.council_types.local_level.1') }}
+                                                    @if ($meeting->getMeetingCouncilType() == 0)
+                                                        {{ config('meetings.council_types.local_level.'.$meeting->council_type) }}
+                                                    @elseif ($meeting->getMeetingCouncilType() == 1)
+                                                        {{ config('meetings.council_types.university_level.'.$meeting->council_type) }}
+                                                    @elseif ($meeting->getMeetingCouncilType() == 2)
+                                                        {{ config('meetings.council_types.board_level.'.$meeting->council_type) }}
+                                                    @endif 
                                             </span>
                                         </div>
                                     </td>
@@ -128,7 +134,7 @@
                                         </a>
                                     </td>
                                     <td>
-                                        <a href="{{ route(getUserRole().'.meetings.proposals', ['level' => $meeting->getMeetingLevel(), 'meeting_id' => encrypt($meeting->id)]) }}" class="btn btn-sm btn-primary d-flex gap-2"><i class="fa-regular fa-eye"></i>View Proposals</a>
+                                        <a href="{{ route(getUserRole().'.meetings.proposals', ['level' => $meeting->getMeetingLevel(), 'meeting_id' => encrypt($meeting->id)]) }}" class="btn btn-sm btn-primary d-flex gap-2"><i class="fa-regular fa-eye"></i>VIEW PROPOSALS</a>
                                     </td>
                                 </tr>
                             @endforeach

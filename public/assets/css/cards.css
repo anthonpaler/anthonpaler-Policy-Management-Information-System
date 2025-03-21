@@ -6,3 +6,9 @@
 .col .card{
     min-width: 300px;
 }
+
+/* CUSTOM CARD CSS */
+.card{
+    border-radius: 5px !important;
+    box-shadow:  0 2px 14px rgba(38, 60, 85, 0.16);
+}

@@ -182,6 +182,10 @@
                     @if (session('isSecretary'))
                         <div class="d-flex justify-content-between gap-3">
                             <div class="d-flex gap-3 w-100 flex-wrap">
+                                <button type="button" class="btn btn-primary text-nowrap d-flex gap-2 align-items-center" data-bs-toggle="modal" data-bs-target="#proposalModal">
+                                    <i class='bx bx-book-add mt-1'></i> Add Proposal
+                                </button>
+
                                 <div>
                                     <div class="btn-group">
                                         <button type="button" class="btn btn-primary text-nowrap">Proposal Action</button>
@@ -202,7 +206,7 @@
                                                         continue;
                                                     }
 
-                                                    if(auth()->user()->role == 5 ){
+                                                    if(session('user_role') == 5 ){
                                                         if (in_array($index, [3])) {
                                                             continue;
                                                         }
@@ -418,7 +422,7 @@
 
                             <td>
                                 <div class="d-flex gap-2 align-items-center">
-                                    @if(in_array(auth()->user()->role, [0,1,2,6]))
+                                    @if(in_array(session('user_role'), [0,1,2,6]))
                                         <div class="dropdown">
                                             <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
                                                 <i class="bx bx-dots-vertical-rounded"></i>
@@ -491,8 +495,160 @@
     </div>
 </div>
 
+<!-- ADD PROOPOSAL MODAL -->
+<div class="modal fade" id="proposalModal" tabindex="-1" aria-labelledby="proposalModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-primary" id="proposalModalLabel">Proposal Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="" enctype="multipart/form-data" id="proposalFrm">
+                @csrf
+                    <!-- Proponent or Presenter Email -->
+                    <div class="mb-3">
+                        <label class="form-label" for="proponent_email">Proponent<span class="ms-1 text-danger">*</span></label>
+                        <div class="input-group">
+                            <span id="email-icon" class="input-group-text"><i class="bx bx-envelope"></i></span>
+                            <input 
+                                type="text" 
+                                id="proponent_email" 
+                                name="proponent_email" 
+                                class="form-control @error('proponent_email') is-invalid @enderror" 
+                                placeholder="Enter proponent's email"
+                                required
+                            >
+                        </div>
+                        @error('proponent_email')
+                            <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <!-- Title -->
+                    <div class="mb-3">
+                        <label class="form-label" for="title">Title <span class="ms-1 text-danger">*</span></label>
+                        <textarea id="title" name="title" class="form-control" placeholder="Enter title" required rows="3"></textarea>
+                        @error('title')
+                            <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <!-- Type of Matter -->
+                    <div class="mb-3">
+                        <label class="form-label" for="matter">Type of Matter or Proposal <span class="ms-1 text-danger">*</span></label>
+                        <div class="input-group">
+                            <span id="matters-icon" class="input-group-text"><i class="bx bx-briefcase"></i></span>
+                            <select class="form-select @error('matter') is-invalid @enderror" id="matter" name="matter" required>
+                                <option value="" disabled>Select Type of Matter or Proposal</option>
+                                @switch(session('user_role'))
+                                    @case(0)
+                                        <option value="1">{{ config('proposals.matters.1') }}</option>
+                                        @break
+                                    @case(1)
+                                        <option value="2">{{ config('proposals.matters.2') }}</option>
+                                        @break
+                                    @default
+                                        @foreach (config('proposals.matters') as $key => $value)
+                                            <option value="{{ $key }}">{{ $value }}</option>
+                                        @endforeach
+                                @endswitch
+                            </select>
+                        </div>
+                        @error('matter')
+                            <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <!-- Requested Action -->
+                    <div class="mb-3">
+                        <label class="form-label" for="action">Requested Action <span class="ms-1 text-danger">*</span></label>
+                        <div class="input-group">
+                            <span id="action-icon" class="input-group-text"><i class="bx bx-task"></i></span>
+                            <select class="form-control @error('action') is-invalid @enderror" id="action" name="action">
+                                @switch(session('user_role'))
+                                    @case(0)
+                                        <option value="1">{{ config('proposals.requested_action.1') }}</option>
+                                        <option value="3">{{ config('proposals.requested_action.3') }}</option>
+                                        @break
+                                    @case(1)
+                                        <option value="2">{{ config('proposals.requested_action.2') }}</option>
+                                        <option value="3">{{ config('proposals.requested_action.3') }}</option>
+                                        @break
+                                    @default
+                                        @foreach (config('proposals.requested_action') as $key => $value)
+                                            <option value="{{ $key }}">{{ $value }}</option>
+                                        @endforeach
+                                @endswitch
+                            </select>
+                        </div>
+                        @error('action')
+                            <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <!-- Sub Type -->
+                    <div class="mb-3" id="subTypeContainer" style="display: none;">
+                        <label class="form-label" for="sub_type">Sub Type</label>
+                        <div class="input-group">
+                            <span id="sub-type-icon" class="input-group-text"><i class="bx bx-category-alt"></i></span>
+                            <select name="sub_type" id="sub_type" class="form-control @error('sub_type') is-invalid @enderror" required>
+                                <option value="">Select Sub-type</option>
+                                @foreach (config('proposals.proposal_subtypes') as $key => $subType)
+                                    <option value="{{ $key }}" @selected(old('sub_type') == $key)>{{ $subType }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @error('sub_type')
+                            <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    
+
+                    <!-- Proposal Files -->
+                    <div class="">
+                        <h6 class="text-primary">PROPOSAL FILES</h6>
+                        <div class="upload-container mb-3">
+                            <label class="form-label" for="fileUpload">Proposal File/s <span class="ms-1 text-danger">*</span></label>
+                            <div id="dropArea" class="drop-area">
+                                <span class="upload-text">Drag & Drop files here, or <strong class="text-primary">click to upload</strong></span>
+                                <small class="text-muted">Accepted formats: .pdf, .xls, .xlsx, and .csv only</small>
+                                <input type="file" id="fileUpload" accept=".pdf,.xls,.xlsx,.csv" multiple hidden>
+                            </div>
+                            <h5 id="uploadedFilesLabel" class="file-header mt-3"><i class='bx bx-file'></i> Uploaded Files</h5>
+                            <ul id="fileList" class="file-list mt-3">
+                            </ul>
+                        </div>
+                    </div>
+                    <!-- Submit Button -->
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary">Add Proposal</button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     var proposalStatus = @json(config('proposals.status'));
+
+    function getImageByFileType(fileType) {
+        switch (fileType) {
+            case "pdf":
+                return "{{ asset('assets/img/icons/file-icons/pdf.png') }}";
+            case "xls":
+                return "{{ asset('assets/img/icons/file-icons/xls.png') }}";
+            case "xlsx":
+                return "{{ asset('assets/img/icons/file-icons/xlsx.png') }}";
+            case "csv":
+                return "{{ asset('assets/img/icons/file-icons/csv-file.png') }}";
+            default:
+                return "{{ asset('assets/img/icons/file-icons/file.png') }}";
+        }
+    }
 </script>
 <script src="{{asset('assets/js/proposal.js')}}"></script>
 <script src="{{asset('assets/js/dataTable.js')}}"></script>
