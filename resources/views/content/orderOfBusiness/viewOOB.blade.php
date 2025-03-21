@@ -22,7 +22,9 @@
         </button>
     </div>
     
+    @if (session('isSecretary'))
     <form action="{{ route(getUserRole().'.order_of_business.save', ['level' => $meeting->getMeetingLevel(), 'oob_id' => encrypt($orderOfBusiness->id)]) }}" method="post" id="oobFrm" meeting-id="{{encrypt($orderOfBusiness->meeting->id)}}">
+    @endif
         <div class="d-flex flex-column justify-content-center align-items-center">
             <h4 class="card-header p-0 mb-2 text-center">
                 {{ config('meetings.quaterly_meetings.'.$meeting->quarter) }} 
@@ -58,15 +60,18 @@
             <label class="form-label">1. Preliminaries</label>
             <div class="input-group input-group-merge">
             <textarea
-        id="preliminaries" 
-        class="form-control"
-        placeholder="Enter preliminaries."
-        aria-label="Enter preliminaries."
-        name="preliminaries"
-        rows="5"
-        {{ session('secretary_level') !=  $meeting->getMeetingCouncilType() ? 'disabled' : '' }}
-        >
-        {{$orderOfBusiness->preliminaries}}</textarea>
+                id="preliminaries" 
+                class="form-control"
+                placeholder="Enter preliminaries."
+                aria-label="Enter preliminaries."
+                name="preliminaries"
+                rows="6"
+                @if(session('isProponent') ||(session('isSecretary') && session('secretary_level') != $meeting->getMeetingCouncilType())) 
+                    disabled 
+                @endif
+            >    {{$orderOfBusiness->preliminaries}}
+            </textarea>
+
 
                 @error('preliminaries')
                     <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
@@ -91,19 +96,21 @@
             </div>
         </div>
         <!-- New Business Section -->
-
-        <div class="stick-buttons-group">
-            <div class="">
-                <button id="enableSelection"  class="action-btn primary">
-                    <i class='bx bx-square'></i>
-                    <span class="tooltiptext">Group Proposals</span>
-                </button>
-                <button id="cancelSelection" class="action-btn danger"> 
-                    <i class='bx bx-revision' ></i>
-                    <span class="tooltiptext">Cancel</span>
-                </button>
+        @if (session('isSecretary') && (session('secretary_level') == $meeting->getMeetingCouncilType()))
+            <div class="stick-buttons-group">
+                <div class="">
+                    <button id="enableSelection"  class="action-btn primary">
+                        <i class='bx bx-square'></i>
+                        <span class="tooltiptext">Group Proposals</span>
+                    </button>
+                    <button id="cancelSelection" class="action-btn danger"> 
+                        <i class='bx bx-revision' ></i>
+                        <span class="tooltiptext">Cancel</span>
+                    </button>
+                </div>
             </div>
-        </div>
+        @endif
+
 
         <div class="mb-3">
             <label class="form-label">2. New Business</label>
@@ -147,7 +154,7 @@
                 
                 @if ($categorizedProposals[$type]->count() > 0)
                     <div class="table-responsive text-nowrap mb-4">
-                        <table class="table table-bordered sortable" id="oobTable">
+                        <table class="table table-bordered sortable" id="{{ session('isSecretary') && (session('secretary_level') == $meeting->getMeetingCouncilType()) ? 'oobTable' :  ''}}">
                             <thead>
                                 <tr style="background-color: var(--bs-primary-bg-subtle) !important; border: 1px solid #9B9DFF !important;">
                                     <th colspan="5" class="p-4 text-primary">{{ $title }}</th>
@@ -202,15 +209,18 @@
                                             <strong>{{ $proposal['data']->first()->proposal_group->group_title ?? 'Group Proposal' }}</strong>
 
                                             <!-- Dropdown inside the row (hidden by default) -->
-                                            <div class="dropdown position-absolute" style="right: 10px; top: 50%; transform: translateY(-50%);">
-                                                <button class="btn btn-sm btn-secondary dropdown-toggle d-none group-menu-btn" type="button" data-bs-toggle="dropdown">
-                                                    Actions
-                                                </button>
-                                                <ul class="dropdown-menu">
-                                                    <li><button class="dropdown-item ungroup-btn">Ungroup</button></li>
-                                                    <li><button class="dropdown-item edit-group-btn">Edit</button></li>
-                                                </ul>
-                                            </div>
+                                                 <!-- New Business Section -->
+                                            @if (session('isSecretary') && (session('secretary_level') == $meeting->getMeetingCouncilType()))
+                                                <div class="dropdown position-absolute" style="right: 10px; top: 50%; transform: translateY(-50%);">
+                                                    <button class="btn btn-sm btn-secondary dropdown-toggle d-none group-menu-btn" type="button" data-bs-toggle="dropdown">
+                                                        Actions
+                                                    </button>
+                                                    <ul class="dropdown-menu">
+                                                        <li><button class="dropdown-item ungroup-btn">Ungroup</button></li>
+                                                        <li><button class="dropdown-item edit-group-btn">Edit</button></li>
+                                                    </ul>
+                                                </div>
+                                            @endif
                                         </td>
                                     </tr>
 
@@ -277,7 +287,9 @@
                 </button> 
             </div>
         @endif
+    @if (session('isSecretary'))
     </form>
+    @endif
 
     <!-- Modal Preview File -->
     <div class="modal fade" id="fileModal" tabindex="-1" aria-labelledby="fileModalLabel" aria-hidden="true">

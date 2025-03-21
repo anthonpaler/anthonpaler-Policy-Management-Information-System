@@ -153,7 +153,7 @@ $(".oob-tab").on('click', function(event){
 function filter_oob(event, level){
     if (event) event.preventDefault();    
     var actionUrl = $('#filterRow').data('action');
-    alert(level);
+    // alert(level);
     $.ajax({
         method: "POST",
         url: actionUrl,

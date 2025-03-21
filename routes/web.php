@@ -58,6 +58,10 @@ Route::middleware(['auth', 'proponents'])->prefix('proponents')->group(function(
   Route::post('/proposal/delete', [ProposalController::class, 'deleteProposal'])->name('proponent.proposal.delete');
 
   // ORDER OF BUSINESS ROUTES
+  Route::get('/order-of-business', [OrderOfBusinessController::class, 'viewOOBList' ])->name('proponent.order-of-business');
+  Route::post('/oob/filter', [OrderOfBusinessController::class, 'filterOOB'])->name(name: 'proponent.oob.filter');
+  Route::get('/meetings/view-order-of-business/{level}/{oob_id}', [OrderOfBusinessController::class, 'viewOOB'])->name('proponent.order_of_business.view-oob');
+
 });
 
 // LOCAL SECRETARY

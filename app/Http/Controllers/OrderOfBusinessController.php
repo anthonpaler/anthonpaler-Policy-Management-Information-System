@@ -249,7 +249,6 @@ class OrderOfBusinessController extends Controller
             ->where('status', 1)
             ->orderBy('created_at', 'desc')
             ->get();
-        
         } else{
             if(session('user_role') == 3){
                 $orderOfBusiness = $oobModel::with('meeting' )
@@ -263,7 +262,6 @@ class OrderOfBusinessController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->get();
             }
-          
         }
         // dd($orderOfBusiness);
         return view('content.orderOfBusiness.viewOOBList', compact('orderOfBusiness'));
@@ -721,7 +719,8 @@ class OrderOfBusinessController extends Controller
             'level' => 'required|integer',
         ]);
 
-        $oobLevel = match ($request->input('level')) {
+        $level = (int) $request->input('level');
+        $oobLevel = match ($level) {
             0 => 'Local',
             1 => 'University',
             2 => 'BOR',
@@ -739,7 +738,7 @@ class OrderOfBusinessController extends Controller
             return abort(404, 'Invalid Order of Business Level');
         }
 
-        if(session('isProponent')){
+        if(session('isProponent') && $level == 0){
             $orderOfBusiness = $oobModel::with('meeting')
             ->whereHas('meeting', function ($query) use ($campus_id) { 
                 $query->where('campus_id', $campus_id);
