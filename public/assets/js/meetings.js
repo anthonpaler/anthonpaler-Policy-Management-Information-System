@@ -123,28 +123,22 @@ $(document).ready(function() {
 
 
     // FILTER MEETINGS
-    var filterFrm = $("#filterFrm");
-    var filterBtn = $("#filterButton");
-    filterBtn.on('click', function(event){
-        filter_meeting(event);
-    });
     $(".meeting-tab").on('click', function(event){
         $(".meeting-tab").removeClass("active"); 
         $(this).addClass("active"); 
     
         var level = $(this).data('level');
-        $("#level").val(level);
-        filter_meeting(event);
+        filter_meeting(event, level);
     });
     
-    function filter_meeting(event){
+    function filter_meeting(event, level){
         if (event) event.preventDefault();    
-        var actionUrl = filterFrm.attr('action');
+        var actionUrl = $('#filterRow').data('action');
         
         $.ajax({
             method: "POST",
             url: actionUrl,
-            data: filterFrm.serialize(),
+            data: {level:level},
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },

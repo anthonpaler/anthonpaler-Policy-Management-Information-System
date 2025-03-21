@@ -19,32 +19,165 @@
 </div>
 @php 
     $actionColors = [ 'secondary', 'primary', 'success', 'warning', 'info', 'danger']; 
+    $statusCounts = [
+        'For Endorsement' => 0,
+        'Posted to Agenda' => 0,
+        'Approved' => 0,
+        'Endorsed' => 0,
+        'Returned' => 0,
+        'Deferred' => 0,
+    ];
+
+    foreach ($proposals as $proposal) {
+        $status = config('proposals.status.' . $proposal->status);
+        if (isset($statusCounts[$status])) {
+            $statusCounts[$status]++;
+        }
+    }
 @endphp 
+<div class="row">
+<!-- /single card  -->
+  <div class="col-lg-2 col-sm-6 mb-3">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          <div class="card-info">
+            <p class="text-heading mb-1">For Endorsment</p>
+            <div class="d-flex align-items-center mb-1">
+                <h4 class="card-title mb-0 me-2">{{ $statusCounts['For Endorsement'] }}</h4>
+                <span class="text-success"> proposals</span>
+            </div>
+          </div>
+          <div class="card-icon">
+            <span class="badge bg-label-primary rounded p-2">
+              <i class='bx bx-trending-up'></i>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-2 col-md-6 col-sm-6 mb-3">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          <div class="card-info">
+            <p class="text-heading mb-1">Post Agenda</p>
+            <div class="d-flex align-items-center mb-1">
+                <h4 class="card-title mb-0 me-2">{{ $statusCounts['Posted to Agenda'] }}</h4>
+              <span class="text-success">proposals</span>
+            </div>
+          </div>
+          <div class="card-icon">
+            <span class="badge bg-label-info rounded p-2">
+                <i class='bx bx-book-content' ></i>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-2 col-md-6 col-sm-6 mb-3">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          <div class="card-info">
+            <p class="text-heading mb-1">Approved</p>
+            <div class="d-flex align-items-center mb-1">
+                <h4 class="card-title mb-0 me-2">{{ $statusCounts['Approved'] }}</h4>
+              <span class="text-success">proposals</span>
+            </div>
+          </div>
+          <div class="card-icon">
+            <span class="badge bg-label-success rounded p-2">
+                <i class='bx bx-like' ></i>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-2 col-md-6 col-sm-6 mb-3">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          <div class="card-info">
+            <p class="text-heading mb-1">Endorsed</p>
+            <div class="d-flex align-items-center mb-1">
+                <h4 class="card-title mb-0 me-2">{{ $statusCounts['Endorsed'] }}</h4>
+                <span class="text-info">proposals</span>
+            </div>
+          </div>
+          <div class="card-icon">
+            <span class="badge bg-label-info rounded p-2">
+                <i class='bx bx-up-arrow-circle' ></i>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-2 col-md-6 col-sm-6 mb-3">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          <div class="card-info">
+            <p class="text-heading mb-1">Returned</p>
+            <div class="d-flex align-items-center mb-1">
+                <h4 class="card-title mb-0 me-2">{{ $statusCounts['Returned'] }}</h4>
+                <span class="text-warning">proposals</span>
+            </div>
+          </div>
+          <div class="card-icon">
+            <span class="badge bg-label-warning rounded p-2">
+                <i class='bx bx-left-arrow-circle'></i>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-2 col-md-6 col-sm-6 mb-3">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          <div class="card-info">
+            <p class="text-heading mb-1">Deffered</p>
+            <div class="d-flex align-items-center mb-1">
+                <h4 class="card-title mb-0 me-2">{{ $statusCounts['Deferred'] }}</h4>
+                <span class="text-danger">proposal</span>
+            </div>
+          </div>
+          <div class="card-icon">
+            <span class="badge bg-label-danger rounded p-2">
+                <i class='bx bx-dislike' ></i>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="card mb-3">
     <div class="card-body">
-        <div class="d-flex gap-3 justify-content-between align-items-center flex-wrap">
-            <h5 class="m-0">
-                {{ config('meetings.quaterly_meetings.'.$meeting->quarter) }} @if ($meeting->getMeetingCouncilType() == 0)
-                    {{ config('meetings.council_types.local_level.'.$meeting->council_type) }}
-                @elseif ($meeting->getMeetingCouncilType() == 1)
-                    {{ config('meetings.council_types.university_level.'.$meeting->council_type) }}
-                    @elseif ($meeting->getMeetingCouncilType() == 2)
-                    {{ config('meetings.council_types.board_level.'.$meeting->council_type) }}
-                @endif 
-                {{ $meeting->year }}
-            </h5>
-            <div class="d-flex align-items-center gap-2">
-                <span class="text-muted fw-light">Status: </span>
-                <span class="badge bg-label-{{ $meeting->status == 0? 'success' : 'danger' }} me-1">
-                    {{ config('meetings.status.'.$meeting->status) }}
-                </span>
-            </div>
-        </div>
-        <div class="d-flex justify-content-between w-100 mt-3">
+        <div class="d-flex justify-content-between w-100">
             <div class="w-100 ">
                 <div class="d-flex justify-content-between w-100 gap-3 flex-wrap">
                     <div class="">
-                        
+                        <h5 class="m-0">
+                            {{ config('meetings.quaterly_meetings.'.$meeting->quarter) }} @if ($meeting->getMeetingCouncilType() == 0)
+                                {{ config('meetings.council_types.local_level.'.$meeting->council_type) }}
+                            @elseif ($meeting->getMeetingCouncilType() == 1)
+                                {{ config('meetings.council_types.university_level.'.$meeting->council_type) }}
+                                @elseif ($meeting->getMeetingCouncilType() == 2)
+                                {{ config('meetings.council_types.board_level.'.$meeting->council_type) }}
+                            @endif 
+                            {{ $meeting->year }}
+                            <span class="ms-2 badge bg-label-{{ $meeting->status == 0? 'success' : 'danger' }} me-1">
+                                STATUS: 
+                                {{ config('meetings.status.'.$meeting->status) }}
+                            </span>
+                        </h5>
                     </div>
                     @if (session('isSecretary'))
                         <div class="d-flex justify-content-between gap-3">
@@ -254,7 +387,12 @@
                                     {{ config('proposals.matters.'.$proposal->proposal->type) }}
                                 </span>
                             </td>
-                            <td> {{ config('proposals.requested_action.'.$proposal->proposal->action) }}</td>
+                            <td> 
+                                <span class="d-flex gap-2 align-items-center">
+                                        <i class='bx bx-up-arrow-circle text-{{ $actionColors[$proposal->proposal->action] ?? 'primary' }}'></i>
+                                        {{ config('proposals.requested_action.'.$proposal->proposal->action) }}
+                                    </span>
+                            </td>
                             <!-- <td>{{config('meetings.level.'.$proposal->proposal->getCurrentLevelAttribute())}}</td> -->
                             <td class="status-cell">
                                 <div style="width: 230px; white-space: nowrap; ">

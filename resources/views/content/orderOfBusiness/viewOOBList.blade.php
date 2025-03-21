@@ -12,65 +12,61 @@
     <i class='bx bx-chevron-right' ></i>
     <a href="#">Order of Business</a>
 </div>
-<div class="d-flex justify-content-between">
-    <div class="nav-align-top mb-6">
-        <ul class="nav nav-pills mb-4 nav-fill" role="tablist">
-            <li class="nav-item mb-1 mb-sm-0">
-                <button type="button" class="nav-link {{ in_array(auth()->user()->role, [0,1,2,3,6]) ? 'active':'' }} oob-tab" role="tab" data-bs-toggle="tab" data-bs-target="#local-meetings" aria-controls="local-meetings" aria-selected="true" data-level = "0"><span class="d-flex align-items-center gap-2">
-                    <i class='bx bx-objects-horizontal-right'></i>
-                    <span class="d-none d-sm-block">Local OOB</span> 
-                </button>
-            </li>
-            <li class="nav-item mb-1 mb-sm-0">
-                <button type="button" class="nav-link {{ auth()->user()->role == 4 ? 'active':'' }} oob-tab" role="tab" data-bs-toggle="tab" data-bs-target="#university-meeting" aria-controls="university-meeting" aria-selected="false"  data-level = "1"><span class="d-flex align-items-center gap-2">
-                    <i class='bx bx-objects-horizontal-right'></i>
-                    <span class="d-none d-sm-block">University OOB</span>
-                </button>
-            </li>            
-            <li class="nav-item mb-1 mb-sm-0">
-                <button type="button" class="nav-link {{ auth()->user()->role == 5   ? 'active':'' }} oob-tab" role="tab" data-bs-toggle="tab" data-bs-target="#board-meeting" aria-controls="board-meeting" aria-selected="false"  data-level = "2"><span class="d-flex align-items-center gap-2">
-                    <i class='bx bx-objects-horizontal-right'></i>
-                    <span class="d-none d-sm-block">Board OOB</span>
-                </button>
-            </li>
-        </ul>
-    </div>
-    <div>
-
+<div class="card mb-3">
+    <div class="d-flex justify-content-between align-items-center custom_tab_wrapper">
+        <div class="">
+            <ul class="custom_tab_list" id="filterRow" data-action="{{ route(getUserRole().'.oob.filter') }}">
+                <li class="custom_tab_item oob-tab {{ session('isProponent') || session('secretary_level') == 0 ? 'active' : '' }}" data-level="0">
+                    <div class="">
+                        <i class='bx bx-book-open'></i>
+                        <span>Local OOB</span>
+                    </div>
+                </li>
+                <li class="custom_tab_item oob-tab {{ session('secretary_level') == 1 ? 'active' : '' }}" data-level="1">
+                    <div class="">
+                        <i class='bx bx-book-reader'></i>
+                        <span>University OOB</span>
+                    </div>
+                </li>
+                <li class="custom_tab_item oob-tab {{ session('secretary_level') == 2 ? 'active' : '' }}" data-level="2">
+                    <div class="">
+                        <i class='bx bxs-book-reader'></i>
+                        <span>Board OOB</span>
+                    </div>
+                </li>
+            </ul>
+        </div>
     </div>
 </div>
 <!-- Basic Bootstrap Table -->
 <div class="card">
-    <h5 class="card-header">Order of Business List</h5>
     <div class="card-body">
-        <div class="d-flex justify-content-between">
-            <div class="d-flex gap-3 ms-4">
-                <form method="POST" action="{{ route(getUserRole().'.oob.filter') }}" class="d-flex gap-3" id="filterFrm">
-                @csrf
-                    <!-- Year Filter -->
-                    <!-- <div class="col-md-3 col-lg-auto" style="width: 120px">
-                        <select name="year" class="form-select" id="yearSelect" aria-label="Select Year">
-                            <option value="2025">2025</option>
-                            <option value="2026">2026</option>
-                        </select>
-                    </div> -->
-
-                    <input type="text" name="level" id="level" class="form-control" value="{{auth()->user()->role == 3 ? 0 : (auth()->user()->role == 2 ? 1 : 0)}}" hidden> 
-                    <!-- <div class="col-md-2 col-lg-auto">
-                        <button type="submit" id="filterButton" style="min-width: 100px;" class="btn btn-success w-100 d-md-inline-flex align-items-center gap-2">
-                            <i class='bx bx-filter-alt'></i>
-                            <span>Filter</span>
-                        </button>
-                    </div> -->
-                </form>
+        <div class="d-flex justify-content-between flex-wrap">
+            <div class="mb-3">
+                <h5 class="mb-0">Order of Business Overview</h5>
+                <small class="text-muted">List of meetings in the Order of Business.</small>
             </div>
-            <div class="d-flex  me-4">
-                <div class="">
-                
+            
+            <div class="d-flex align-items-center gap-2">
+                <div class="input-group input-group-merge">
+                    <span  class="input-group-text">
+                        <i class='bx bx-search' ></i>
+                    </span>
+                    <input type="text" class="form-control" id="oobSearch" placeholder="Search...">
+                </div>
+                <div class="input-group input-group-merge">
+                    <span  class="input-group-text">
+                        <i class='bx bx-calendar-alt'></i>
+                    </span>
+                    <select class="form-select @error('year') is-invalid @enderror" name="year" required>
+                        <option value="">All Year</option>
+                        @foreach ($orderOfBusiness->pluck('meeting.year')->unique()->sort() as $year)
+                            <option value="{{ $year }}">{{ $year }}</option>
+                        @endforeach
+                    </select>
                 </div>
             </div>
         </div>
-        
         <div class="card-datatable pt-0">
             <div class="table-responsive text-nowrap">
                 <table class="datatables-basic table table table-striped" id="oobTable">

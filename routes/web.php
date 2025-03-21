@@ -18,6 +18,11 @@ Route::get('/', function () {
     return view('content.auth.auth-login');
   });
 
+Route::get('/new-login', function () {
+  return view('content.auth.login');
+});
+
+
 Route::get('/login', [LoginController::class, 'index'])->name('login');
 Route::post('/auth/google-login', [LoginController::class, 'handleGoogleLogin'])->name('auth.google.login');
 Route::post('/logout', [LoginController::class, 'destroy'])->name('auth.logout');

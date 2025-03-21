@@ -8,7 +8,7 @@
             <img src="{{asset('assets/img/icons/brands/slsu_logo.png')}}" alt="">
           </div>
           <div>
-            <a href="/" class="m-0">PolMIS</a>
+            <a href="{{ route(getUserRole().'.dashboard') }}" class="m-0">PolMIS</a>
           </div>
         </div>
       </div>

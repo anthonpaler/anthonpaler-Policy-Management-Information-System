@@ -8,10 +8,11 @@
     object-fit: cover;
 }
 .logo-con a{
-    font-family: "Anton", serif;
-    font-weight: 400;
+    font-family: "Boldonse", system-ui;
+    font-weight: 600;
     font-style: normal;
-    font-size: 1.8em;
+    font-size: 1.3em;
     color: var(--bs-primary);
     cursor: pointer;
+    margin: 0;
 }

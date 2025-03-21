@@ -89,21 +89,36 @@ $(document).ready(function() {
 
 
     // FOR OOB LIST
-    $('#oobTable').DataTable({
+    let obbTable = $('#oobTable').DataTable({
         "paging": true,
         "searching": true,
         "ordering": true,
         "info": true,
-        "lengthMenu": [10, 25, 50, 100],
+        "pageLength": 10,
         "language": {
-            "search": "Search: ",
-            "lengthMenu": "_MENU_ entries per page",
             "paginate": {
                 "previous": "<i class='bx bx-chevrons-left'></i> Previous",
                 "next": "Next <i class='bx bx-chevrons-right'></i>"
             }
         },
-        "dom": '<"top"lf>rt<"bottom"ip><"clear">',
+        "dom": '<"top"f>rt<"bottom"ip><"clear">',
+    });
+
+    $('.dataTables_filter').hide();
+
+    $('#oobSearch').on('keyup', function () {
+        obbTable.search(this.value).draw();
+    });
+
+    // Year filter
+    $('select[name="year"]').on('change', function () {
+        let selectedYear = $(this).val(); 
+
+        if (selectedYear) {
+            obbTable.column(4).search(selectedYear).draw();
+        } else {
+            obbTable.column(4).search('').draw();
+        }
     });
 
     // FOR USER DOWNLOAD LOGS

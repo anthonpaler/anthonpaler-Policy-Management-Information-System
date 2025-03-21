@@ -171,7 +171,6 @@
                                     aria-label="Sub-type of proposal"
                                     aria-describedby="sub-type-icon"
                                     required
-                                    disabled
                                 >
                                     <option value="">Select Sub-type</option>
                                     @foreach (config('proposals.proposal_subtypes') as $key => $subType)
