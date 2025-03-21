@@ -380,8 +380,6 @@ class OrderOfBusinessController extends Controller
                 }
             }
 
-
-
             // dd($categorizedProposals, $orderOfBusiness, $meeting);
 
             return view('content.orderOfBusiness.viewOOB', compact(
@@ -770,6 +768,36 @@ class OrderOfBusinessController extends Controller
             'html' => view('content.orderOfBusiness.partials.oob_table', compact('orderOfBusiness'))->render() 
         ]);
     }
+
+    public function saveOOB(Request $request, String $level ,String $oob_id){
+        try{
+            $oobID = decrypt($oob_id);
+
+            $request->validate([
+                'preliminaries' => 'required|string',
+            ]);
+
+            $oobModel = match ($level) {
+                'Local' => LocalOob::class,
+                'University' => UniversityOob::class,
+                'BOR' => BoardOob::class,
+                default => null
+            };
+
+            $orderOfBusiness =  $oobModel::where('id', $oobID)
+            ->update( [
+                'preliminaries' => $request->input('preliminaries'),
+            ]);
+
+            return response()->json([
+                'type' => 'success',
+                'message' => 'Order of Business Save successfully!', 'title'=> "Success!"
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json(['type' => 'danger', 'message' => $th->getMessage(), 'title'=> "Something went wrong!"]);
+        }
+    }
+
 
 
 

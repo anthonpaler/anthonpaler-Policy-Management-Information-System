@@ -35,9 +35,9 @@ return [
         2 => 'Endorsement for UADCO',
 
         // UNIVERSITY SECRETARY
-        3 => 'Endorsement for BOR',
-        6 => 'Approval for UACAD',
-        7 => 'Approval for UADCO',
+        3 => 'For BOR Endorsement',
+        6 => 'For UACAD Approval',
+        7 => 'For UADCO Approval',
 
         // BOARD SECRETARY
         8 => 'BOR Approval',

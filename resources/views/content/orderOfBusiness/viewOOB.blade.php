@@ -64,7 +64,7 @@
         aria-label="Enter preliminaries."
         name="preliminaries"
         rows="5"
-        {{ $orderOfBusiness->status == 1 || getUserRole() == 'proponent' ? 'disabled' : '' }}
+        {{ session('secretary_level') !=  $meeting->getMeetingCouncilType() ? 'disabled' : '' }}
         >
         {{$orderOfBusiness->preliminaries}}</textarea>
 
@@ -184,11 +184,11 @@
                                             </td>
                                             <td>
                                                 @if ($proposal['data']->files->isNotEmpty())
-                                                    <button class="btn btn-sm btn-primary view-files" data-files="{{ json_encode($proposal['data']->files) }}" data-title="{{ $proposal['data']->proposal->title }}">
+                                                    <button class="btn btn-sm btn-primary view-files d-flex gap-2" data-files="{{ json_encode($proposal['data']->files) }}" data-title="{{ $proposal['data']->proposal->title }}">
                                                         <i class='bx bx-file'></i> VIEW FILES
                                                     </button>
                                                 @else
-                                                    <button class="btn btn-sm btn-danger" disabled>
+                                                    <button class="btn btn-sm btn-danger d-flex gap-2" disabled>
                                                         <i class='bx bx-file'></i> NO FILES
                                                     </button>
                                                 @endif
@@ -238,11 +238,11 @@
                                                 </td>
                                                 <td>
                                                     @if ($groupedProposal->files->isNotEmpty())
-                                                        <button class="btn btn-sm btn-primary view-files" data-files="{{ json_encode($groupedProposal->files) }}" data-title="{{ $groupedProposal->proposal->title  }}">
+                                                        <button class="btn btn-sm btn-primary view-files d-flex gap-2" data-files="{{ json_encode($groupedProposal->files) }}" data-title="{{ $groupedProposal->proposal->title  }}">
                                                             <i class='bx bx-file'></i> VIEW FILES
                                                         </button>
-                                                    @else
-                                                        <button class="btn btn-sm btn-danger" disabled>
+                                                    @else 
+                                                        <button class="btn btn-sm btn-danger d-flex gap-2" disabled>
                                                             <i class='bx bx-file'></i> NO FILES
                                                         </button>
                                                     @endif
@@ -267,13 +267,13 @@
         
         @if(session('isSecretary'))
             <div class="d-flex gap-3 align-items-center flex-wrap">
-                <button type="submit" class="btn btn-primary d-flex gap-2" id="saveOOBBtn" {{$orderOfBusiness->status == 1 ? 'disabled' : ''}}>
+                <button type="submit" class="btn btn-primary d-flex gap-2" id="saveOOBBtn">
                     <i class='bx bx-save' ></i>
                     <span class="text-nowrap">Save Changes</span>
                 </button> 
-                <button type="buttton" class="btn btn-success d-flex gap-2" id="disseminateOOBBtn" data-id="{{encrypt($orderOfBusiness->id)}}" data-action = "{{ route(getUserRole().'.dissemenate.order_of_business', ['level' => $meeting->getMeetingLevel(), 'oob_id' => encrypt($orderOfBusiness->id)]) }}" {{$orderOfBusiness->status == 1 ? 'disabled' : ''}}>
+                <button type="buttton" class="btn btn-success d-flex gap-2" id="disseminateOOBBtn" data-id="{{encrypt($orderOfBusiness->id)}}" data-action = "{{ route(getUserRole().'.dissemenate.order_of_business', ['level' => $meeting->getMeetingLevel(), 'oob_id' => encrypt($orderOfBusiness->id)]) }}">
                     <i class='bx bx-send'></i>
-                    <span class="text-nowrap">Disseminate OOB</span>
+                    <span class="text-nowrap">{{$orderOfBusiness->status == 1 ? 'Redisseminate OOB' : 'Disseminate OOB'}}</span>
                 </button> 
             </div>
         @endif
