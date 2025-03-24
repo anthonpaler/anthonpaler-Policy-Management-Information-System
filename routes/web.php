@@ -18,6 +18,11 @@ Route::get('/', function () {
     return view('content.auth.auth-login');
   });
 
+Route::get('/new-login', function () {
+  return view('content.auth.login');
+});
+
+
 Route::get('/login', [LoginController::class, 'index'])->name('login');
 Route::post('/auth/google-login', [LoginController::class, 'handleGoogleLogin'])->name('auth.google.login');
 Route::post('/logout', [LoginController::class, 'destroy'])->name('auth.logout');
@@ -53,6 +58,10 @@ Route::middleware(['auth', 'proponents'])->prefix('proponents')->group(function(
   Route::post('/proposal/delete', [ProposalController::class, 'deleteProposal'])->name('proponent.proposal.delete');
 
   // ORDER OF BUSINESS ROUTES
+  Route::get('/order-of-business', [OrderOfBusinessController::class, 'viewOOBList' ])->name('proponent.order-of-business');
+  Route::post('/oob/filter', [OrderOfBusinessController::class, 'filterOOB'])->name(name: 'proponent.oob.filter');
+  Route::get('/meetings/view-order-of-business/{level}/{oob_id}', [OrderOfBusinessController::class, 'viewOOB'])->name('proponent.order_of_business.view-oob');
+
 });
 
 // LOCAL SECRETARY
@@ -86,7 +95,7 @@ Route::middleware(['auth', 'local_secretary'])->prefix('local-campus-secretary')
   Route::get('/order-of-business', [OrderOfBusinessController::class, 'viewOOBList' ])->name('local_sec.order-of-business');
   Route::post('/oob/filter', [OrderOfBusinessController::class, 'filterOOB'])->name(name: 'local_sec.oob.filter');
   Route::get('/meetings/view-order-of-business/{level}/{oob_id}', [OrderOfBusinessController::class, 'viewOOB'])->name('local_sec.order_of_business.view-oob');
-  Route::post('/order-of-business/save/{oob_id}', [OrderOfBusinessController::class, 'saveOOB'])->name('local_sec.order_of_business.save');
+  Route::post('/order-of-business/save/{level}/{oob_id}', [OrderOfBusinessController::class, 'saveOOB'])->name('local_sec.order_of_business.save');
   Route::post('/order-of-business/disseminate/{level}/{oob_id}', [OrderOfBusinessController::class, 'disseminateOOB'])->name('local_sec.dissemenate.order_of_business');
 });
 
@@ -116,7 +125,7 @@ Route::middleware(['auth', 'university_secretary'])->prefix('university-secretar
   Route::post('/oob/filter', [OrderOfBusinessController::class, 'filterOOB'])->name(name: 'univ_sec.oob.filter');
   Route::get('/meetings/view-order-of-business/{level}/{oob_id}', [OrderOfBusinessController::class, 'viewOOB'])->name('univ_sec.order_of_business.view-oob');
 
-  Route::post('/order-of-business/save/{oob_id}', [OrderOfBusinessController::class, 'saveOOB'])->name('univ_sec.order_of_business.save');
+  Route::post('/order-of-business/save/{level}/{oob_id}', [OrderOfBusinessController::class, 'saveOOB'])->name('univ_sec.order_of_business.save');
   Route::post('/order-of-business/disseminate/{level}/{oob_id}', [OrderOfBusinessController::class, 'disseminateOOB'])->name('univ_sec.dissemenate.order_of_business');
 
   
@@ -154,7 +163,7 @@ Route::middleware(['auth', 'board_secretary'])->prefix('board-secretary')->group
   Route::post('/oob/filter', [OrderOfBusinessController::class, 'filterOOB'])->name(name: 'board_sec.oob.filter');
   Route::get('/meetings/view-order-of-business/{level}/{oob_id}', [OrderOfBusinessController::class, 'viewOOB'])->name('board_sec.order_of_business.view-oob');
 
-  Route::post('/order-of-business/save/{oob_id}', [OrderOfBusinessController::class, 'saveOOB'])->name('board_sec.order_of_business.save');
+  Route::post('/order-of-business/save/{level}/{oob_id}', [OrderOfBusinessController::class, 'saveOOB'])->name('board_sec.order_of_business.save');
   Route::post('/order-of-business/disseminate/{level}/{oob_id}', [OrderOfBusinessController::class, 'disseminateOOB'])->name('board_sec.dissemenate.order_of_business');
 
   Route::post('/meetings/filter', [MeetingController::class, 'filterMeetings'])->name(name: 'board_sec.meetings.filter');

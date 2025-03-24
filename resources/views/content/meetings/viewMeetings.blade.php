@@ -18,7 +18,7 @@
 <div class="card mb-3">
     <div class="d-flex justify-content-between align-items-center custom_tab_wrapper">
         <div class="">
-            <ul class="custom_tab_list">
+            <ul class="custom_tab_list" id="filterRow" data-action="{{ route(getUserRole().'.meetings.filter') }}">
                 <li class="custom_tab_item meeting-tab {{ session('isProponent') || session('secretary_level') == 0 ? 'active' : '' }}" data-level = "0">
                     <div class="">
                         <i class='bx bx-book-open' ></i>
@@ -58,33 +58,26 @@
                 <h5 class="mb-0">List of Meetings</h5>
                 <small class="text-muted">Scheduled submissions and meetings.</small>
             </div>
-            <form method="POST" action="{{ route(getUserRole().'.meetings.filter') }}" class="d-flex gap-3" id="filterFrm">
-                @csrf
-                <div class="d-flex align-items-center gap-2">
-                    <div class="input-group input-group-merge">
-                        <span  class="input-group-text">
-                            <i class='bx bx-search' ></i>
-                        </span>
-                        <input type="text" class="form-control" id="meetingSearch" placeholder="Search...">
-                    </div>
-                    <div class="input-group input-group-merge">
-                        <span  class="input-group-text">
-                            <i class='bx bx-calendar-alt'></i>
-                        </span>
-                        <select class="form-select @error('year') is-invalid @enderror" name="year" required>
-                            <option value="">All Year</option>
-                            @foreach ($meetings->pluck('year')->unique()->sort() as $year)
-                                <option value="{{ $year }}">{{ $year }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <input type="text" name="level" id="level" class="form-control" value="{{session('user_role') == 3 ? 0 : (session('user_role') == 4 ? 1 : (session('user_role') == 5 ? 2 : 0))}}" hidden>  
-                    <!-- <button class="btn btn-success d-flex gap-2" type="submit" id="filterButton" >
-                        <i class='bx bx-filter-alt' ></i>
-                        <span>Filter</span>
-                    </button> -->
+            
+            <div class="d-flex align-items-center gap-2">
+                <div class="input-group input-group-merge">
+                    <span  class="input-group-text">
+                        <i class='bx bx-search' ></i>
+                    </span>
+                    <input type="text" class="form-control" id="meetingSearch" placeholder="Search...">
                 </div>
-            </form>
+                <div class="input-group input-group-merge">
+                    <span  class="input-group-text">
+                        <i class='bx bx-calendar-alt'></i>
+                    </span>
+                    <select class="form-select @error('year') is-invalid @enderror" name="year" required>
+                        <option value="">All Year</option>
+                        @foreach ($meetings->pluck('year')->unique()->sort() as $year)
+                            <option value="{{ $year }}">{{ $year }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
         </div>
  
         <div class="pt-4">

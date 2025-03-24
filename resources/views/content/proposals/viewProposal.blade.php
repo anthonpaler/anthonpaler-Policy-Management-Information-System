@@ -171,7 +171,6 @@
                                     aria-label="Sub-type of proposal"
                                     aria-describedby="sub-type-icon"
                                     required
-                                    disabled
                                 >
                                     <option value="">Select Sub-type</option>
                                     @foreach (config('proposals.proposal_subtypes') as $key => $subType)
@@ -311,10 +310,6 @@
                                                 <tr>
                                                     <td>
                                                         <div class="d-flex gap-3">
-                                                            <input type="checkbox" class="form-check-input select-proposal-file" data-id="{{ $file->id }}" > 
-                                                            <span class="text-muted file_order_no">
-                                                                {{  $file->order_no }}
-                                                            </span>
                                                         </div>
                                                     </td>
                                                     <td>
@@ -327,7 +322,6 @@
                                                                 data-bs-target="#fileModal"
                                                                 data-file-url="/storage/proposals/{{$file->file}}">{{ $file->file }} </span>
                                                                 <div class="d-flex gap-2">
-                                                                    <span class="badge bg-label-primary">{{ config(key: 'proposals.proposal_file_status.'.$file->file_status) }}</span>
                                                                     <span class="badge bg-label-success">Version {{ $file->version }}</span>
                                                                 </div>
                                                             </div>
@@ -586,244 +580,6 @@
                 return "{{ asset('assets/img/icons/file-icons/file.png') }}";
         }
     }
-
-    // COSTUM MULTIPLE FILE UPLOAD
- 
-    const dropArea = document.getElementById("dropArea");
-    const fileUpload = document.getElementById("fileUpload");
-    const fileList = document.getElementById("fileList");
-    let uploadedProposalFiles = [];
-
-    dropArea.addEventListener("click", () => fileUpload.click());
-    dropArea.addEventListener("dragover", (e) => {
-        e.preventDefault();
-        dropArea.style.background = "#f1f1f1";
-    });
-    dropArea.addEventListener("dragleave", () => {
-        dropArea.style.background = "#fff";
-    });
-    dropArea.addEventListener("drop", (e) => {
-        e.preventDefault();
-        dropArea.style.background = "#fff";
-        handleFiles(e.dataTransfer.files);
-    });
-    fileUpload.addEventListener("change", (e) => {
-        handleFiles(e.target.files);
-    });
-
-    function handleFiles(files) {
-        Array.from(files).forEach((file) => {
-            if (!uploadedProposalFiles.some(f => f.name === file.name)) {
-                uploadedProposalFiles.push(file);
-                displayFile(file);
-                simulateUpload(file);
-            }
-        });
-    }
-
-    function displayFile(file) {
-        const listItem = document.createElement("li");
-        listItem.classList.add("file-item");    
-
-        const uploadedFilesLabel = document.getElementById("uploadedFilesLabel");
-
-        if (fileList.children.length === 0) {
-            uploadedFilesLabel.style.display = "block";
-        }
-
-        const fileType = file.name.split('.').pop().toLowerCase();
-        const iconSrc = getImageByFileType(fileType); 
-
-        listItem.innerHTML = `
-            <div class="d-flex align-items-center gap-2">
-                <div class="">
-                    <img src="${iconSrc}" class="file-icon" alt="File Icon">
-                </div>
-                <div class="file-name">
-                    <strong>${file.name}</strong>
-                    <small class="text-muted">${(file.size / 1024).toFixed(1)} KB</small>
-                </div>
-            </div>
-            <div class="d-flex gap-2">
-                <button class="delete-file-btn"><i class='bx bx-trash'></i></button>
-                <div class="progress-circle" data-progress="0">
-                    <span class="progress-text">0%</span>
-                </div>
-            </div>
-        `;
-
-        console.log(uploadedProposalFiles);
-
-        listItem.querySelector(".delete-file-btn").addEventListener("click", () => {
-            uploadedProposalFiles = uploadedProposalFiles.filter(f => f.name !== file.name);
-            listItem.remove();
-
-            if (fileList.children.length === 0) {
-                uploadedFilesLabel.style.display = "none";
-            }
-            console.log(uploadedProposalFiles);
-        });
-
-        fileList.appendChild(listItem);
-    }
-
-    // CUSTOM UPLOAD CIRCLE PROGRESS BAR
-    function simulateUpload(file) {
-        const listItem = Array.from(fileList.children).find(li => li.querySelector("strong").textContent === file.name);
-        if (!listItem) return;
-
-        const progressCircle = listItem.querySelector(".progress-circle");
-        const progressText = listItem.querySelector(".progress-text");
-        let progress = 0;
-        const interval = setInterval(() => {
-            if (progress >= 100) {
-                clearInterval(interval);
-                progressText.innerHTML  =`<i class='bx bx-check progress-check'></i>`;
-                progressCircle.style.background = "#39DA8A";
-                return;
-            }
-            progress += 10;
-            progressCircle.setAttribute("data-progress", progress);
-            progressCircle.style.background = `conic-gradient(#fd7e14 ${progress}%, #ffffff ${progress}% 100%)`;
-            progressText.textContent = `${progress}%`;
-        }, 200);
-    }
-
-    $(".resubmit-proposal").on('click', function (e) {
-        e.preventDefault();
-        
-        var file_id = $(this).data('id');
-        $("#file-upload").data("id", file_id).click(); // Store file ID and trigger file input
-        $(this).closest(".file-status").html("Revised");
-    });
-    
-    $("#file-upload").on("change", function (e) {
-        var file = e.target.files[0]; // Get selected file
-        var file_id = $(this).data("id");
-
-        if (file) {
-            reuploadedFiles.push({ file_id, file });
-        }
-
-        console.log(reuploadedFiles);
-
-        if (this.files.length > 0) {
-            var proposalRow = $("button.resubmit-proposal[data-id='" + file_id + "']").closest("tr");
-
-            // Update the status to "Revised"
-            proposalRow.find(".badge.bg-label-primary").text("Revised");
-
-            // Increment version number
-            var versionElement = proposalRow.find(".badge.bg-label-success");
-            var currentVersion = parseInt(versionElement.text().replace("Version ", "").trim());
-            var newVersion = currentVersion + 1;
-
-            // Update version badge
-            versionElement.text("Version " + newVersion);
-
-            // Update file name
-            proposalRow.find(".text-wrap").text(file.name);
-        }
-    });
-
-    
-    $(".delete-proposal-file").on("click", function (e) {
-        e.preventDefault();
-        var file_id = $(this).data("id");
-        var button = $(this); 
-
-        Swal.fire({
-            title: "Are you sure?",
-            text: "You won't be able to revert this!",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonColor: "#3085d6",
-            cancelButtonColor: "#d33",
-            confirmButtonText: "Yes, delete it!",
-        }).then((result) => {
-            if (result.isConfirmed) {
-                deletedFiles.push(file_id);
-                button.closest("tr").remove();
-                console.log(deletedFiles);
-            }
-        });
-    });
-
-
-    $("#updateProposal").on('click', function (e) {
-        e.preventDefault();
-
-        var proposalFrm = $("#editProposalFrm")[0]; // Get the raw form element
-        var formData = new FormData(proposalFrm); // Create FormData from the form
-
-        var actionUrl = $("#editProposalFrm").attr('action');
-
-
-        uploadedProposalFiles.forEach((file, index) => {
-            formData.append(`proposal_files[${index}]`, file);
-        });
-
-        // Append deleted files
-        deletedFiles.forEach((fileId) => {
-            formData.append("deleted_files[]", fileId);
-            console.log("Deleted File ID: " + fileId);
-        });
-
-        // Append reuploaded files
-        reuploadedFiles.forEach(({ file_id, file }) => {
-            formData.append(`reuploaded_files[${file_id}]`, file);
-            console.log("Reuploaded File ID: " + file_id);
-            console.log("Reuploaded File: " + file);
-            
-        });
-
-        console.log('Form Data:', formData);
-
-        // Send AJAX Request
-        $.ajax({
-            method: "POST",
-            url: actionUrl,
-            data: formData,
-            processData: false,  
-            contentType: false,  
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            beforeSend: function () {
-                $("#updateProposal").html(`<i class='bx bx-loader-alt bx-spin' ></i>
-                    <span>Saving Changes...</span>`).prop('disabled', true);
-            },
-            success: function (response) {
-                $("#updateProposal").html(`<i class='bx bx-save'></i>
-                    <span>Save Changes</span>`).prop('disabled', false);
-                console.log(response);
-                showAlert(response.type, response.title, response.message);
-                location.reload();
-            },
-            error: function (xhr, status, error) {
-                $("#updateProposal").html(`<i class='bx bx-save'></i>
-                    <span>Save Changes</span>`).prop('disabled', false);
-                console.log(xhr.responseText);
-                let response = JSON.parse(xhr.responseText);
-                showAlert("warning", response.title, response.message);
-            }
-        });
-    });
-
-    $(".file-tab").click(function() {
-        $(".file-tab").removeClass("active");
-        $(this).addClass("active");
-
-        let level = $(this).data("status");
-
-        if (level == 0) {
-            $(".latest-version-files").removeClass("d-none");
-            $(".old-version-files").addClass("d-none");
-        } else {
-            $(".latest-version-files").addClass("d-none");
-            $(".old-version-files").removeClass("d-none");
-        }
-    });
 </script>
 
 <script src="{{asset('assets/js/proposal.js')}}"></script>

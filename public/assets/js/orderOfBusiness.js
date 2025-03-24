@@ -142,46 +142,77 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 // OOB FILTERING
-var filterFrm = $("#filterFrm");
-var filterBtn = $("#filterButton");
-filterBtn.on('click', function(event){
-    filter_oob();
-});
 $(".oob-tab").on('click', function(event){
+    $(".oob-tab").removeClass("active"); 
+    $(this).addClass("active"); 
+
     var level = $(this).data('level');
-    // alert(level);
-    $("#level").val(level);
-    filter_oob();
+    filter_oob(event, level);
 });
 
-function filter_oob(){
-event.preventDefault();
-//  alert('Clicked');
-    var actionUrl = filterFrm.attr('action');
+function filter_oob(event, level){
+    if (event) event.preventDefault();    
+    var actionUrl = $('#filterRow').data('action');
+    // alert(level);
     $.ajax({
         method: "POST",
         url: actionUrl,
-        data: filterFrm.serialize(),
+        data: { level: level },
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         },
         beforeSend: function () {
-            filterBtn.html(`<i class='bx bx-loader-alt bx-spin' ></i>
-                <span>Filtering...</span> `).prop('disabled', true);
+            $("#customFilterLoader").removeClass('d-none');
         },
         success: function (response) {
-            filterBtn.html(`<i class='bx bx-filter-alt'></i>
-                <span>Filter</span> `).prop('disabled', false);
+            $("#customFilterLoader").addClass('d-none');
+        
             if(response.type == 'success'){
-                $('#oobTableBody').html(response.html);
-            //  showAlert("success", "Filtered", "Meeting filtered successfully!");
-            }else{
+                let table = $('#oobTable').DataTable();
+                table.clear().destroy();
+            
+                $('#oobTableBody').html(response.html); // Ensure backend returns proper <tr> data
+                
+                // Reinitialize DataTable
+                let newTable = $('#oobTable').DataTable({
+                    "paging": true,
+                    "searching": true,
+                    "ordering": true,
+                    "info": true,
+                    "pageLength": 10,
+                    "language": {
+                        "paginate": {
+                            "previous": "<i class='bx bx-chevrons-left'></i> Previous",
+                            "next": "Next <i class='bx bx-chevrons-right'></i>"
+                        }
+                    },
+                    "dom": '<"top"f>rt<"bottom"ip><"clear">',
+                });
+        
+                $('.dataTables_filter').hide();
+        
+                // Rebind search input event
+                $('#oobSearch').off('keyup').on('keyup', function () {
+                    newTable.search(this.value).draw();
+                });
+        
+                // Rebind year filter event
+                $('select[name="year"]').off('change').on('change', function () {
+                    let selectedYear = $(this).val(); 
+        
+                    if (selectedYear) {
+                        newTable.column(4).search(selectedYear).draw();
+                    } else {
+                        newTable.column(4).search('').draw();
+                    }
+                });
+        
+            } else {
                 showAlert("danger", "Can't Filter", "Something went wrong!");
             }
-        },            
+        },       
         error: function (xhr, status, error) {
-            filterBtn.html(`<i class='bx bx-filter-alt'></i>
-                <span>Filter</span> `).prop('disabled', false);
+            $("#customFilterLoader").addClass('d-none');
             console.log(xhr.responseText);
             let response = JSON.parse(xhr.responseText);
             showAlert("danger", response.title, response.message);

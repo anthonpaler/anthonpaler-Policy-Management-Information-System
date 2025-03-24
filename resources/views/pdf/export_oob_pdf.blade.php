@@ -46,7 +46,7 @@
         }
 
         th, td {
-            font-size: 13px;
+            font-size: 12px;
             border: 1px solid rgb(137, 180, 211);
             background-color:rgb(224, 236, 244);
             padding: 5px; /* Reduce padding to remove extra space */
@@ -61,6 +61,9 @@
             border: 1px solid rgb(30, 90, 134);
             color: white;
             text-transform: uppercase;
+        }
+        .tr-group{
+            background-color:rgb(175, 207, 228) !important;
         }
         .section-title{
             font-size: 13px;
@@ -97,6 +100,10 @@
         .time-generated{
             bottom: 1.9cm;
             left: 1cm;
+        }
+
+        .group_order_no{
+            margin-left: 20px;
         }
     </style>
 </head>
@@ -144,6 +151,7 @@
 
     @php 
         $counter = 1; 
+        $groupCounter = 1;
         $noProposals = collect($categorizedProposals)->flatten()->isEmpty();
         $allProposalIds = collect($categorizedProposals)->flatten()->pluck('id');
     @endphp
@@ -153,7 +161,34 @@
         </div>
     @else
         @foreach ($matters as $type => $title)
-            @if ($categorizedProposals[$type]->count() > 0)
+            @php 
+                // Group proposals and standalone proposals together based on order_no
+                $allProposals = collect();
+
+                // Add standalone proposals to collection
+                foreach ($categorizedProposals[$type]->whereNull('group_proposal_id') as $proposal) {
+                    $allProposals->push([
+                        'type' => 'individual',
+                        'order_no' => $proposal->order_no,
+                        'data' => $proposal
+                    ]);
+                }
+
+                // Add grouped proposals to collection
+                foreach ($categorizedProposals[$type]->whereNotNull('group_proposal_id')->groupBy('group_proposal_id') as $groupID => $proposals) {
+                    $groupOrderNo = $proposals->first()->proposal_group->order_no ?? 9999;
+                    $allProposals->push([
+                        'type' => 'group',
+                        'order_no' => $groupOrderNo,
+                        'group_id' => $groupID,
+                        'data' => $proposals
+                    ]);
+                }
+
+                // Sort by order_no
+                $allProposals = $allProposals->sortBy('order_no');
+            @endphp
+           @if ($categorizedProposals[$type]->count() > 0)
                 <div class=""><br>
                     <table>
                         <thead>
@@ -168,17 +203,17 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @if ($categorizedProposals[$type]->count() > 0)
-                                @foreach ($categorizedProposals[$type] as $proposal)
+                            @foreach ($allProposals as $proposal)
+                                @if ($proposal['type'] === 'individual')
                                     <tr>
-                                        <td style="text-align: center;">2.{{ $counter }}</td>
+                                        <td>2.<span class="order_no">{{ $counter }}</span></td>
                                         <td style="">
-                                            <span>{{ $proposal->proposal->title }}</span>
+                                            <span>{{ $proposal['data']->proposal->title }}</span>
                                         </td>
                                         <td style="">
                                             <div class="">
-                                                @if ($proposal->proponentsList->isNotEmpty())
-                                                    @foreach ($proposal->proponentsList as $proponent)
+                                                @if (isset($proposal['data']->proponentsList) && $proposal['data']->proponentsList->isNotEmpty())
+                                                    @foreach ($proposal['data']->proponentsList as $proponent)
                                                         {{ $proponent->name }}@if (!$loop->last), @endif
                                                     @endforeach
                                                 @else
@@ -188,21 +223,48 @@
                                         </td>
                                         <td>
                                             <span class="" style="text-transform: none;">
-                                                {{ config('proposals.requested_action.'.$proposal->proposal->action) ?? 'N/A' }}
+                                                {{ config('proposals.requested_action.'.$proposal['data']->proposal->action) }}
                                             </span>
                                         </td>
                                     </tr>
                                     @php $counter++; @endphp
-                                @endforeach
-                            @else
-                                <tr>
-                                    <td colspan="6" class="p-4">
-                                        <div class="alert alert-warning m-0" role="alert">
-                                            <i class="bx bx-info-circle"></i> No proposals for endorsement at the moment.
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endif
+                                @else
+                                    <tr class="" data-id="{{ $proposal['data']->first()->proposal_group->id }}">
+                                        <td class="tr-group">2.<span class="order_no">{{ $counter }}</span></td>
+                                        <td colspan="4" class="tr-group">
+                                            <strong>{{ $proposal['data']->first()->proposal_group->group_title ?? 'Group Proposal' }}</strong>
+                                        </td>
+                                    </tr>
+                                    @foreach ($proposal['data'] as $groupedProposal)
+                                        <tr>
+                                            <td class="pe-1">
+                                                <span class="group_order_no">2.{{ $counter }}.{{ $groupCounter }}</span>
+                                            </td>
+                                            <td style="">
+                                                <span>{{ $groupedProposal->proposal->title }}</span>
+                                            </td>
+                                            <td style="">
+                                                <div class="">
+                                                    @if ($groupedProposal->proponentsList->isNotEmpty())
+                                                        @foreach ($groupedProposal->proponentsList ?? [] as $proponent)
+                                                            {{ $proponent->name }}
+                                                        @endforeach
+                                                    @else
+                                                        <small class="text-muted">No presenters</small>
+                                                    @endif
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="" style="text-transform: none;">
+                                                    {{ config('proposals.requested_action.'.$groupedProposal->proposal->action) }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        @php $groupCounter++; @endphp
+                                    @endforeach
+                                    @php $counter++; $groupCounter = 1; @endphp
+                                @endif
+                            @endforeach
                         </tbody>
                     </table>
                 </div>

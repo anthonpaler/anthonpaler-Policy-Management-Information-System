@@ -22,7 +22,9 @@
         </button>
     </div>
     
+    @if (session('isSecretary'))
     <form action="{{ route(getUserRole().'.order_of_business.save', ['level' => $meeting->getMeetingLevel(), 'oob_id' => encrypt($orderOfBusiness->id)]) }}" method="post" id="oobFrm" meeting-id="{{encrypt($orderOfBusiness->meeting->id)}}">
+    @endif
         <div class="d-flex flex-column justify-content-center align-items-center">
             <h4 class="card-header p-0 mb-2 text-center">
                 {{ config('meetings.quaterly_meetings.'.$meeting->quarter) }} 
@@ -58,15 +60,18 @@
             <label class="form-label">1. Preliminaries</label>
             <div class="input-group input-group-merge">
             <textarea
-        id="preliminaries" 
-        class="form-control"
-        placeholder="Enter preliminaries."
-        aria-label="Enter preliminaries."
-        name="preliminaries"
-        rows="5"
-        {{ $orderOfBusiness->status == 1 || getUserRole() == 'proponent' ? 'disabled' : '' }}
-        >
-        {{$orderOfBusiness->preliminaries}}</textarea>
+                id="preliminaries" 
+                class="form-control"
+                placeholder="Enter preliminaries."
+                aria-label="Enter preliminaries."
+                name="preliminaries"
+                rows="6"
+                @if(session('isProponent') ||(session('isSecretary') && session('secretary_level') != $meeting->getMeetingCouncilType())) 
+                    disabled 
+                @endif
+            >    {{$orderOfBusiness->preliminaries}}
+            </textarea>
+
 
                 @error('preliminaries')
                     <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
@@ -91,19 +96,21 @@
             </div>
         </div>
         <!-- New Business Section -->
-
-        <div class="stick-buttons-group">
-            <div class="">
-                <button id="enableSelection"  class="action-btn primary">
-                    <i class='bx bx-square'></i>
-                    <span class="tooltiptext">Group Proposals</span>
-                </button>
-                <button id="cancelSelection" class="action-btn danger"> 
-                    <i class='bx bx-revision' ></i>
-                    <span class="tooltiptext">Cancel</span>
-                </button>
+        @if (session('isSecretary') && (session('secretary_level') == $meeting->getMeetingCouncilType()))
+            <div class="stick-buttons-group">
+                <div class="">
+                    <button id="enableSelection"  class="action-btn primary">
+                        <i class='bx bx-square'></i>
+                        <span class="tooltiptext">Group Proposals</span>
+                    </button>
+                    <button id="cancelSelection" class="action-btn danger"> 
+                        <i class='bx bx-revision' ></i>
+                        <span class="tooltiptext">Cancel</span>
+                    </button>
+                </div>
             </div>
-        </div>
+        @endif
+
 
         <div class="mb-3">
             <label class="form-label">2. New Business</label>
@@ -147,7 +154,7 @@
                 
                 @if ($categorizedProposals[$type]->count() > 0)
                     <div class="table-responsive text-nowrap mb-4">
-                        <table class="table table-bordered sortable" id="oobTable">
+                        <table class="table table-bordered sortable" id="{{ session('isSecretary') && (session('secretary_level') == $meeting->getMeetingCouncilType()) ? 'oobTable' :  ''}}">
                             <thead>
                                 <tr style="background-color: var(--bs-primary-bg-subtle) !important; border: 1px solid #9B9DFF !important;">
                                     <th colspan="5" class="p-4 text-primary">{{ $title }}</th>
@@ -184,11 +191,11 @@
                                             </td>
                                             <td>
                                                 @if ($proposal['data']->files->isNotEmpty())
-                                                    <button class="btn btn-sm btn-primary view-files" data-files="{{ json_encode($proposal['data']->files) }}" data-title="{{ $proposal['data']->proposal->title }}">
+                                                    <button class="btn btn-sm btn-primary view-files d-flex gap-2" data-files="{{ json_encode($proposal['data']->files) }}" data-title="{{ $proposal['data']->proposal->title }}">
                                                         <i class='bx bx-file'></i> VIEW FILES
                                                     </button>
                                                 @else
-                                                    <button class="btn btn-sm btn-danger" disabled>
+                                                    <button class="btn btn-sm btn-danger d-flex gap-2" disabled>
                                                         <i class='bx bx-file'></i> NO FILES
                                                     </button>
                                                 @endif
@@ -202,15 +209,18 @@
                                             <strong>{{ $proposal['data']->first()->proposal_group->group_title ?? 'Group Proposal' }}</strong>
 
                                             <!-- Dropdown inside the row (hidden by default) -->
-                                            <div class="dropdown position-absolute" style="right: 10px; top: 50%; transform: translateY(-50%);">
-                                                <button class="btn btn-sm btn-secondary dropdown-toggle d-none group-menu-btn" type="button" data-bs-toggle="dropdown">
-                                                    Actions
-                                                </button>
-                                                <ul class="dropdown-menu">
-                                                    <li><button class="dropdown-item ungroup-btn">Ungroup</button></li>
-                                                    <li><button class="dropdown-item edit-group-btn">Edit</button></li>
-                                                </ul>
-                                            </div>
+                                                 <!-- New Business Section -->
+                                            @if (session('isSecretary') && (session('secretary_level') == $meeting->getMeetingCouncilType()))
+                                                <div class="dropdown position-absolute" style="right: 10px; top: 50%; transform: translateY(-50%);">
+                                                    <button class="btn btn-sm btn-secondary dropdown-toggle d-none group-menu-btn" type="button" data-bs-toggle="dropdown">
+                                                        Actions
+                                                    </button>
+                                                    <ul class="dropdown-menu">
+                                                        <li><button class="dropdown-item ungroup-btn">Ungroup</button></li>
+                                                        <li><button class="dropdown-item edit-group-btn">Edit</button></li>
+                                                    </ul>
+                                                </div>
+                                            @endif
                                         </td>
                                     </tr>
 
@@ -238,11 +248,11 @@
                                                 </td>
                                                 <td>
                                                     @if ($groupedProposal->files->isNotEmpty())
-                                                        <button class="btn btn-sm btn-primary view-files" data-files="{{ json_encode($groupedProposal->files) }}" data-title="{{ $groupedProposal->proposal->title  }}">
+                                                        <button class="btn btn-sm btn-primary view-files d-flex gap-2" data-files="{{ json_encode($groupedProposal->files) }}" data-title="{{ $groupedProposal->proposal->title  }}">
                                                             <i class='bx bx-file'></i> VIEW FILES
                                                         </button>
-                                                    @else
-                                                        <button class="btn btn-sm btn-danger" disabled>
+                                                    @else 
+                                                        <button class="btn btn-sm btn-danger d-flex gap-2" disabled>
                                                             <i class='bx bx-file'></i> NO FILES
                                                         </button>
                                                     @endif
@@ -267,17 +277,19 @@
         
         @if(session('isSecretary'))
             <div class="d-flex gap-3 align-items-center flex-wrap">
-                <button type="submit" class="btn btn-primary d-flex gap-2" id="saveOOBBtn" {{$orderOfBusiness->status == 1 ? 'disabled' : ''}}>
+                <button type="submit" class="btn btn-primary d-flex gap-2" id="saveOOBBtn">
                     <i class='bx bx-save' ></i>
                     <span class="text-nowrap">Save Changes</span>
                 </button> 
-                <button type="buttton" class="btn btn-success d-flex gap-2" id="disseminateOOBBtn" data-id="{{encrypt($orderOfBusiness->id)}}" data-action = "{{ route(getUserRole().'.dissemenate.order_of_business', ['level' => $meeting->getMeetingLevel(), 'oob_id' => encrypt($orderOfBusiness->id)]) }}" {{$orderOfBusiness->status == 1 ? 'disabled' : ''}}>
+                <button type="buttton" class="btn btn-success d-flex gap-2" id="disseminateOOBBtn" data-id="{{encrypt($orderOfBusiness->id)}}" data-action = "{{ route(getUserRole().'.dissemenate.order_of_business', ['level' => $meeting->getMeetingLevel(), 'oob_id' => encrypt($orderOfBusiness->id)]) }}">
                     <i class='bx bx-send'></i>
-                    <span class="text-nowrap">Disseminate OOB</span>
+                    <span class="text-nowrap">{{$orderOfBusiness->status == 1 ? 'Redisseminate OOB' : 'Disseminate OOB'}}</span>
                 </button> 
             </div>
         @endif
+    @if (session('isSecretary'))
     </form>
+    @endif
 
     <!-- Modal Preview File -->
     <div class="modal fade" id="fileModal" tabindex="-1" aria-labelledby="fileModalLabel" aria-hidden="true">

@@ -72,7 +72,7 @@ class OrderOfBusinessController extends Controller
                 foreach ($proposalsGroup as $proposal) {
                     $proponentIds = explode(',', $proposal->proposal->employee_id);
                     $proposal->proponentsList = User::whereIn('employee_id', $proponentIds)->get();
-                    $proposal->files = ProposalFile::where('proposal_id', $proposal->proposal->id)->get();
+                    $proposal->files = ProposalFile::where('proposal_id', $proposal->proposal->id)->orderBy('order_no', 'asc')->get();
                 }
             }
             // dd($categorizedProposals);
@@ -249,7 +249,6 @@ class OrderOfBusinessController extends Controller
             ->where('status', 1)
             ->orderBy('created_at', 'desc')
             ->get();
-        
         } else{
             if(session('user_role') == 3){
                 $orderOfBusiness = $oobModel::with('meeting' )
@@ -263,7 +262,6 @@ class OrderOfBusinessController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->get();
             }
-          
         }
         // dd($orderOfBusiness);
         return view('content.orderOfBusiness.viewOOBList', compact('orderOfBusiness'));
@@ -363,7 +361,7 @@ class OrderOfBusinessController extends Controller
                                     ? User::whereIn('employee_id', $proponentIds)->get() 
                                     : collect();
 
-                                $proposal->files = ProposalFile::where('proposal_id', $proposal->proposal->id)->get() ?? collect();
+                                $proposal->files = ProposalFile::where('proposal_id', $proposal->proposal->id)->orderBy('order_no', 'asc')->get() ?? collect();
                             }
                         }
                     } elseif ($group instanceof stdClass || is_object($group)) {
@@ -374,13 +372,11 @@ class OrderOfBusinessController extends Controller
                                 ? User::whereIn('employee_id', $proponentIds)->get() 
                                 : collect();
 
-                            $group->files = ProposalFile::where('proposal_id', $group->proposal->id)->get() ?? collect();
+                            $group->files = ProposalFile::where('proposal_id', $group->proposal->id)->orderBy('order_no', 'asc')->get() ?? collect();
                         }
                     }
                 }
             }
-
-
 
             // dd($categorizedProposals, $orderOfBusiness, $meeting);
 
@@ -501,24 +497,64 @@ class OrderOfBusinessController extends Controller
             $councilType = $meeting->council_type ?? null;
             $councilTypesConfig = config('proposals.council_types');
 
+            // Initialize categorized proposals
             $categorizedProposals = [];
 
+            // Categorize proposals by type
             foreach ($matters as $type => $title) {
-                $categorizedProposals[$type] = $proposals->filter(fn($p) => $p->proposal->type === $type) ?? collect();
-            }
-
-            if (!isset($categorizedProposals[$type])) {
                 $categorizedProposals[$type] = collect();
             }
 
-            foreach ($categorizedProposals as &$proposalsGroup) {
-                foreach ($proposalsGroup as $proposal) {
-                    $proponentIds = explode(',', $proposal->proposal->employee_id);
-                    $proposal->proponentsList = User::whereIn('employee_id', $proponentIds)->get();
-                    $proposal->files = ProposalFile::where('proposal_id', $proposal->proposal->id)->get();
+            // Group proposals by type and then by group_proposal_id
+            foreach ($proposals as $proposal) {
+                $type = $proposal->proposal->type;
+                
+                if (!isset($categorizedProposals[$type])) {
+                    $categorizedProposals[$type] = collect();
+                }
+
+                $groupId = $proposal->proposal->group_proposal_id ?? null;
+
+                if ($groupId) {
+                    // If grouped, store under the corresponding group
+                    if (!isset($categorizedProposals[$type][$groupId])) {
+                        $categorizedProposals[$type][$groupId] = collect();
+                    }
+                    $categorizedProposals[$type][$groupId]->push($proposal);
+                } else {
+                    // If no group_proposal_id, store as an individual proposal
+                    $categorizedProposals[$type][] = $proposal;
                 }
             }
 
+            // Attach additional data (proponents and files)
+            foreach ($categorizedProposals as &$proposalsGroup) {
+                foreach ($proposalsGroup as &$group) {
+                    if ($group instanceof \Illuminate\Support\Collection) {
+                        foreach ($group as $proposal) {
+                            if (isset($proposal->proposal)) { // Ensure proposal exists
+                                $proponentIds = explode(',', $proposal->proposal->employee_id ?? '');
+                                $proposal->proponentsList = !empty($proponentIds) 
+                                    ? User::whereIn('employee_id', $proponentIds)->get() 
+                                    : collect();
+
+                                $proposal->files = ProposalFile::where('proposal_id', $proposal->proposal->id)->orderBy('order_no', 'asc')->get() ?? collect();
+                            }
+                        }
+                    } elseif ($group instanceof stdClass || is_object($group)) {
+                        // Handle if $group is a direct proposal object (not in a collection)
+                        if (isset($group->proposal)) {
+                            $proponentIds = explode(',', $group->proposal->employee_id ?? '');
+                            $group->proponentsList = !empty($proponentIds) 
+                                ? User::whereIn('employee_id', $proponentIds)->get() 
+                                : collect();
+
+                            $group->files = ProposalFile::where('proposal_id', $group->proposal->id)->orderBy('order_no', 'asc')->get() ?? collect();
+                        }
+                    }
+                }
+            }
+            // dd($categorizedProposals);
             
             $pdf = Pdf::loadView('pdf.export_oob_pdf', compact('orderOfBusiness', 'categorizedProposals', 'meeting', 'matters'))
             ->setPaper('A4', 'portrait');
@@ -673,6 +709,93 @@ class OrderOfBusinessController extends Controller
         }
     }
 
+
+    // FILTER MEETINGS
+    public function filterOOB(Request $request){
+        $role = session('user_role');
+        $campus_id = session('campus_id');
+
+        $request->validate([
+            'level' => 'required|integer',
+        ]);
+
+        $level = (int) $request->input('level');
+        $oobLevel = match ($level) {
+            0 => 'Local',
+            1 => 'University',
+            2 => 'BOR',
+            default => 'Local'
+        };
+        
+        $oobModel = match ($oobLevel) {
+            'Local' => LocalOob::class,
+            'University' => UniversityOob::class,
+            'BOR' => BoardOob::class,
+            default => null
+        };
+
+        if (!$oobModel) {
+            return abort(404, 'Invalid Order of Business Level');
+        }
+
+        if(session('isProponent') && $level == 0){
+            $orderOfBusiness = $oobModel::with('meeting')
+            ->whereHas('meeting', function ($query) use ($campus_id) { 
+                $query->where('campus_id', $campus_id);
+            })
+            ->where('status', 1)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        } else{
+            if((session('user_role') == 3 || session('isProponent')) && $oobLevel == 0){
+                $orderOfBusiness = $oobModel::with('meeting' )
+                ->whereHas('meeting', function ($query) use ($campus_id) { 
+                    $query->where('campus_id', $campus_id);
+                })
+                ->orderBy('created_at', 'desc')
+                ->get();
+            }else{
+                $orderOfBusiness = $oobModel::with('meeting' )
+                ->orderBy('created_at', 'desc')
+                ->get();
+            }
+        }
+
+        return response()->json([
+            'type' => 'success',
+            'html' => view('content.orderOfBusiness.partials.oob_table', compact('orderOfBusiness'))->render() 
+        ]);
+    }
+
+    public function saveOOB(Request $request, String $level ,String $oob_id){
+        try{
+            $oobID = decrypt($oob_id);
+
+            $request->validate([
+                'preliminaries' => 'required|string',
+            ]);
+
+            $oobModel = match ($level) {
+                'Local' => LocalOob::class,
+                'University' => UniversityOob::class,
+                'BOR' => BoardOob::class,
+                default => null
+            };
+
+            $orderOfBusiness =  $oobModel::where('id', $oobID)
+            ->update( [
+                'preliminaries' => $request->input('preliminaries'),
+            ]);
+
+            return response()->json([
+                'type' => 'success',
+                'message' => 'Order of Business Save successfully!', 'title'=> "Success!"
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json(['type' => 'danger', 'message' => $th->getMessage(), 'title'=> "Something went wrong!"]);
+        }
+    }
 
 
 
