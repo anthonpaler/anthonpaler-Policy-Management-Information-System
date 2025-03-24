@@ -82,7 +82,7 @@ class UniversityCouncilMeeting extends Model
             'id', 
             'id', 
             'university_proposal_id'
-        );
+        )->with('proponents');;
     }
     
     // Function to get the campus name

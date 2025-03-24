@@ -365,7 +365,7 @@
                             <td>
                                 <div class="d-flex align-items-center">
                                     <div class="d-flex flex-column gap-3">
-                                        @foreach ($proposal->proponentsList as $proponent)
+                                        @foreach ($proposal->proposal->proponents as $proponent)
                                             <div class="d-flex gap-3 align-items-center">
                                                 <div data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $proponent->name }}" class="avatar avatar-sm pull-up">
                                                     <img class="rounded-circle" src="{{ $proponent->image ?? '/default-avatar.png' }}" alt="Avatar">
@@ -404,9 +404,9 @@
                                 </div>
                             </td>
                             <td>
-                                @if($proposal->files->count() > 0)
+                                @if($proposal->proposal->files->count() > 0)
                                     <button class="btn btn-sm btn-success d-flex gap-2 view-files"
-                                            data-files="{{ json_encode($proposal->files) }}" 
+                                            data-files="{{ json_encode($proposal->proposal->files) }}" 
                                             data-title="{{ $proposal->proposal->title }}">
                                         <i class='bx bx-file'></i> VIEW FILES
                                     </button>

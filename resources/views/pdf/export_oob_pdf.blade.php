@@ -212,8 +212,8 @@
                                         </td>
                                         <td style="">
                                             <div class="">
-                                                @if (isset($proposal['data']->proponentsList) && $proposal['data']->proponentsList->isNotEmpty())
-                                                    @foreach ($proposal['data']->proponentsList as $proponent)
+                                                @if (isset($proposal['data']->proposal->proponents) && $proposal['data']->proposal->proponents->isNotEmpty())
+                                                    @foreach ($proposal['data']->proposal->proponents as $proponent)
                                                         {{ $proponent->name }}@if (!$loop->last), @endif
                                                     @endforeach
                                                 @else
@@ -245,8 +245,8 @@
                                             </td>
                                             <td style="">
                                                 <div class="">
-                                                    @if ($groupedProposal->proponentsList->isNotEmpty())
-                                                        @foreach ($groupedProposal->proponentsList ?? [] as $proponent)
+                                                    @if ($groupedProposal->proposal->proponents->isNotEmpty())
+                                                        @foreach ($groupedProposal->proposal->proponents ?? [] as $proponent)
                                                             {{ $proponent->name }}
                                                         @endforeach
                                                     @else

@@ -315,6 +315,7 @@ $(document).ready(function() {
             proposalRow.find(".text-wrap").text(file.name);
         }
     });
+    
 
     // TEMPORARILY DELETE PROPOSAL FILE
     $(".delete-proposal-file").on("click", function (e) {

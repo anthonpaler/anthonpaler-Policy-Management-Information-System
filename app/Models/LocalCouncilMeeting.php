@@ -86,12 +86,13 @@ class LocalCouncilMeeting extends Model
         return $this->hasManyThrough(
             Proposal::class, 
             LocalMeetingAgenda::class, 
-            'local_council_meeting_id', 
-            'id', 
-            'id', 
-            'local_proposal_id'
-        );
+            'local_council_meeting_id', // Foreign key on LocalMeetingAgenda table
+            'id', // Foreign key on Proposal table
+            'id', // Local key on LocalCouncilMeeting table
+            'local_proposal_id' // Local key on LocalMeetingAgenda table
+        )->with('proponents');
     }
+    
 
     // Define relationship to Campus
     public function campus()

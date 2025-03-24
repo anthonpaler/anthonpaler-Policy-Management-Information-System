@@ -68,13 +68,6 @@ class OrderOfBusinessController extends Controller
                 $categorizedProposals[$type] = collect(); 
             }
         
-            foreach ($categorizedProposals as &$proposalsGroup) {
-                foreach ($proposalsGroup as $proposal) {
-                    $proponentIds = explode(',', $proposal->proposal->employee_id);
-                    $proposal->proponentsList = User::whereIn('employee_id', $proponentIds)->get();
-                    $proposal->files = ProposalFile::where('proposal_id', $proposal->proposal->id)->orderBy('order_no', 'asc')->get();
-                }
-            }
             // dd($categorizedProposals);
             return view('content.orderOfBusiness.generateOOB', compact('meeting', 'categorizedProposals', 'matters'));
 
@@ -350,34 +343,6 @@ class OrderOfBusinessController extends Controller
                 }
             }
 
-            // Attach additional data (proponents and files)
-            foreach ($categorizedProposals as &$proposalsGroup) {
-                foreach ($proposalsGroup as &$group) {
-                    if ($group instanceof \Illuminate\Support\Collection) {
-                        foreach ($group as $proposal) {
-                            if (isset($proposal->proposal)) { // Ensure proposal exists
-                                $proponentIds = explode(',', $proposal->proposal->employee_id ?? '');
-                                $proposal->proponentsList = !empty($proponentIds) 
-                                    ? User::whereIn('employee_id', $proponentIds)->get() 
-                                    : collect();
-
-                                $proposal->files = ProposalFile::where('proposal_id', $proposal->proposal->id)->orderBy('order_no', 'asc')->get() ?? collect();
-                            }
-                        }
-                    } elseif ($group instanceof stdClass || is_object($group)) {
-                        // Handle if $group is a direct proposal object (not in a collection)
-                        if (isset($group->proposal)) {
-                            $proponentIds = explode(',', $group->proposal->employee_id ?? '');
-                            $group->proponentsList = !empty($proponentIds) 
-                                ? User::whereIn('employee_id', $proponentIds)->get() 
-                                : collect();
-
-                            $group->files = ProposalFile::where('proposal_id', $group->proposal->id)->orderBy('order_no', 'asc')->get() ?? collect();
-                        }
-                    }
-                }
-            }
-
             // dd($categorizedProposals, $orderOfBusiness, $meeting);
 
             return view('content.orderOfBusiness.viewOOB', compact(
@@ -527,33 +492,6 @@ class OrderOfBusinessController extends Controller
                 }
             }
 
-            // Attach additional data (proponents and files)
-            foreach ($categorizedProposals as &$proposalsGroup) {
-                foreach ($proposalsGroup as &$group) {
-                    if ($group instanceof \Illuminate\Support\Collection) {
-                        foreach ($group as $proposal) {
-                            if (isset($proposal->proposal)) { // Ensure proposal exists
-                                $proponentIds = explode(',', $proposal->proposal->employee_id ?? '');
-                                $proposal->proponentsList = !empty($proponentIds) 
-                                    ? User::whereIn('employee_id', $proponentIds)->get() 
-                                    : collect();
-
-                                $proposal->files = ProposalFile::where('proposal_id', $proposal->proposal->id)->orderBy('order_no', 'asc')->get() ?? collect();
-                            }
-                        }
-                    } elseif ($group instanceof stdClass || is_object($group)) {
-                        // Handle if $group is a direct proposal object (not in a collection)
-                        if (isset($group->proposal)) {
-                            $proponentIds = explode(',', $group->proposal->employee_id ?? '');
-                            $group->proponentsList = !empty($proponentIds) 
-                                ? User::whereIn('employee_id', $proponentIds)->get() 
-                                : collect();
-
-                            $group->files = ProposalFile::where('proposal_id', $group->proposal->id)->orderBy('order_no', 'asc')->get() ?? collect();
-                        }
-                    }
-                }
-            }
             // dd($categorizedProposals);
             
             $pdf = Pdf::loadView('pdf.export_oob_pdf', compact('orderOfBusiness', 'categorizedProposals', 'meeting', 'matters'))
