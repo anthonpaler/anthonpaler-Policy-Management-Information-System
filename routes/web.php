@@ -25,7 +25,7 @@ Route::get('/new-login', function () {
 
 Route::get('/login', [LoginController::class, 'index'])->name('login');
 Route::post('/auth/google-login', [LoginController::class, 'handleGoogleLogin'])->name('auth.google.login');
-Route::post('/logout', [LoginController::class, 'destroy'])->name('auth.logout');
+Route::get('/logout', [LoginController::class, 'destroy'])->name('auth.logout');
 
 
 

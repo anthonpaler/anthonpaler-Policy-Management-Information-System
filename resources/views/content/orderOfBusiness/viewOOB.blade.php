@@ -279,7 +279,7 @@
             </script>
         </div>
         
-        @if(session('isSecretary'))
+        @if(session('isSecretary') && (session('secretary_level') == $meeting->getMeetingCouncilType()))
             <div class="d-flex gap-3 align-items-center flex-wrap">
                 <button type="submit" class="btn btn-primary d-flex gap-2" id="saveOOBBtn">
                     <i class='bx bx-save' ></i>

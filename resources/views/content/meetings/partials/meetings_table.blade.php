@@ -96,7 +96,7 @@
                                 $campus_id = session('campus_id');
 
                                 $level = match ($role) {
-                                    3, 6 => 0,
+                                    3, 0 , 1 , 2 , 6 => 0,
                                     4 => 1,
                                     5 => 2,
                                     default => 0,
@@ -146,7 +146,7 @@
                                 >
                                     <i class='bx bx-right-top-arrow-circle'></i>VIEW
                                 </a>
-                                @if ($level != 2)
+                                @if ($level+1  == $meeting->getMeetingCouncilType())
                                     <a class="btn btn-sm btn-success d-flex align-items-center gap-1"
                                         id="submitProposal"
                                         data-meetingStatus="{{ $meeting->status }}"
@@ -156,7 +156,6 @@
                                     </a>
                                 @endif
                             @endif
-                    
                         @endif
                     </div>
                 </td>

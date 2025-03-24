@@ -56,7 +56,7 @@
                     <thead class="custom-tbl-header">
                         <tr>
                             <th>#</th>
-                            <th>Level</th>
+                            <!-- <th>Level</th> -->
                             <th>Campus</th>
                             <th>Quarter</th>
                             <th>Year</th>
@@ -82,9 +82,9 @@
                             @foreach($meetings as $index => $meeting)
                                 <tr>
                                     <td  class="p-4">{{ $loop->iteration }}</td>
-                                    <td>
+                                    <!-- <td>
                                         {{ config('meetings.level.'.$meeting->getMeetingCouncilType()) }}
-                                    </td>
+                                    </td> -->
                                     <td>{{ $meeting->getCampusName() }}</td></td>
                                     <td>{{ config('meetings.quaterly_meetings.'.$meeting->quarter) }}</td>
                                     <td>{{ $meeting->year }}</td>
