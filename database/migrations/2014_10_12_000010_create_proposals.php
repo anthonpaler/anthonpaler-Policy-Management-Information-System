@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('proposals', function (Blueprint $table) {
             $table->unsignedInteger('id')->autoIncrement();
-            $table->string('title', 255);
+            $table->text('title');
             $table->integer('type');
             $table->integer('sub_type')->nullable();
             $table->tinyInteger('action');

@@ -17,9 +17,10 @@ return new class extends Migration
             $table->foreign('university_council_meeting_id')->nullable()->references('id')->on('university_council_meetings')->onDelete('cascade');
             $table->tinyInteger('status');
             $table->text('preliminaries');
-
             $table->timestamps();
             $table->softdeletes();
+            $table->text('previous_minutes')->nullable();
+
 
         });
     }

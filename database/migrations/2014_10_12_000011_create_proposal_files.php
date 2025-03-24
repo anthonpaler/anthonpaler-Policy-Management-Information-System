@@ -17,7 +17,7 @@ return new class extends Migration
             $table->tinyInteger('version');
             $table->tinyInteger('file_status');
             $table->tinyInteger('is_active');
-            $table->tinyInteger('file_reference_id')->nullable();
+            $table->interger('file_reference_id', 11)->nullable();
             $table->unsignedInteger('proposal_id');
             $table->tinyInteger('order_no')->nullable();
             $table->timestamps();

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('group_proposals', function (Blueprint $table) {
             $table->id();
-            $table->string('group_title', 255);
+            $table->text('group_title');
             $table->integer( 'order_no')->nullable();
             $table->softdeletes();
             $table->timestamps();

@@ -19,6 +19,7 @@ return new class extends Migration
             $table->text('preliminaries');
             $table->timestamps();
             $table->softdeletes();
+            $table->text('previous_minutes')->nullable();
 
         });
     }

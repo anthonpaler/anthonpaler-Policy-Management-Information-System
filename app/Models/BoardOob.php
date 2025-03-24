@@ -16,6 +16,7 @@ class BoardOob extends Model
         'bor_meeting_id',
         'status',
         'preliminaries',
+        'previous_minutes',
         
     ];
 
