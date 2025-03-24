@@ -25,7 +25,7 @@ class LoginController extends Controller
         return view('content.auth.auth-login');
     }
 
-
+  
     public function handleGoogleLogin(Request $request)
     {
         $user = $this->findOrCreateUser($request);
@@ -105,35 +105,32 @@ class LoginController extends Controller
 
             // Determine the role based on the conditions
               if ($isLocalSecretary) {
-                  $role = 3;
+                   $role = 3; // Local Secretary
 
               } elseif($isUniversitySecretary){
-                  $role = 4;
+                $role = 4; // University Secretary
                    // University Campus Secretary
 
               } elseif($isBoardSecretary){
-                  $role = 5;
-                  // Board Campus Secretary
+                $role = 5; // Board Secretary
 
               }elseif ($isAcademicCouncil && $isAdministrativeCouncil) {
-                  $role = 2;
-                  // Academic Council / Administrative Council
+                $role = 2; // Academic & Administrative Council
 
               } elseif ($isAdministrativeCouncil) {
-                  $role = 1;
-                  // Administrative Council
+                $role = 1; // Administrative Council
 
                 } elseif ($isAcademicCouncil) {
-                  $role = 0;
-                   // Academic Council
+                    $role = 0; // Academic Council
 
                 }elseif ($request->email == "kortomandac@gmail.com") {
-                  $role = 7;
-                   // Super Admin
+                    $role = 7; // Super Admin
 
                 }else{
                 $role = null;
             }
+
+            
 
 
             // Check if the user already exists in the users table

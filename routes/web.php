@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\dashboard\Analytics;
 use App\Http\Controllers\Admin\AdminDashboard;
 
+use Illuminate\Support\Facades\Session;
 
 
 
@@ -97,6 +98,11 @@ Route::middleware(['auth', 'local_secretary'])->prefix('local-campus-secretary')
   Route::get('/meetings/view-order-of-business/{level}/{oob_id}', [OrderOfBusinessController::class, 'viewOOB'])->name('local_sec.order_of_business.view-oob');
   Route::post('/order-of-business/save/{level}/{oob_id}', [OrderOfBusinessController::class, 'saveOOB'])->name('local_sec.order_of_business.save');
   Route::post('/order-of-business/disseminate/{level}/{oob_id}', [OrderOfBusinessController::class, 'disseminateOOB'])->name('local_sec.dissemenate.order_of_business');
+
+  Route::get('/fetch-proponents', [ProposalController::class, 'fetchProponents'])->name('local_sec.fetchProponents');
+  Route::post('/proposals/store/{meeting_id}', [ProposalController::class, 'addProposal'])->name('local_sec.addProposal');
+
+
 });
 
 
@@ -136,6 +142,11 @@ Route::middleware(['auth', 'university_secretary'])->prefix('university-secretar
   Route::post('/meetings/submit/proposal/{level}/{meeting_id}',[ProposalController::class, 'submitProposalSecretary'])->name('univ_sec.proposal.submit');
 
   Route::post('/proposals/edit/{proposal_id}', [ProposalController::class, 'editProposal'])->name('univ_sec.proposal.edit.save');  // FINAL EDIT PROPOSAL
+
+  Route::get('/fetch-proponents', [ProposalController::class, 'fetchProponents'])->name('univ_sec.fetchProponents');
+  Route::post('/proposals/store/{meeting_id}', [ProposalController::class, 'addProposal'])->name('univ_sec.addProposal');
+
+
 });
 
 // BOARD SECRETARY ROUTES 
@@ -169,6 +180,11 @@ Route::middleware(['auth', 'board_secretary'])->prefix('board-secretary')->group
   Route::post('/meetings/filter', [MeetingController::class, 'filterMeetings'])->name(name: 'board_sec.meetings.filter');
 
   Route::post('/proposals/edit/{proposal_id}', [ProposalController::class, 'editProposal'])->name('board_sec.proposal.edit.save');  // FINAL EDIT PROPOSAL
+
+  Route::get('/fetch-proponents', [ProposalController::class, 'fetchProponents'])->name('board_sec.fetchProponents');
+  Route::post('/proposals/store/{meeting_id}', [ProposalController::class, 'addProposal'])->name('board_sec.addProposal');
+
+
 });
 
 
@@ -196,6 +212,8 @@ Route::post('/save-proposal-group/{level}', [OrderOfBusinessController::class, '
 Route::post('/ungroup-proposal/{level}', [OrderOfBusinessController::class, 'ungroupProposal'])->name('ungroup_proposal');
 
 Route::post('/update-proposal-group/{level}', [OrderOfBusinessController::class, 'updateProposalGroup'])->name('update_proposal_group');
+
+
 
 
 

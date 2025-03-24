@@ -170,6 +170,189 @@ class ProposalController extends Controller
       }
     }
 
+    public function fetchProponents(Request $request)
+    {
+      $query = $request->input('search');
+        
+      $users = User::whereIn('role', [0, 1, 2])
+                   ->where('email', 'LIKE', "%{$query}%")
+                   ->pluck('email')
+                   ->filter(function ($email) {
+                       return filter_var($email, FILTER_VALIDATE_EMAIL);
+                   })
+                   ->values(); // Ensure it returns an indexed array
+    
+      return response()->json($users);
+    }
+
+
+    public function addProposal(Request $request, String $meeting_id)
+{
+    try {
+
+
+        $proponent_email = is_array($request->proponent_email) ? $request->proponent_email[0] : $request->proponent_email;
+        $request->merge(['proponent_email' => $proponent_email]);
+
+        $meetingID = decrypt($meeting_id);
+        $user = auth()->user();
+
+        // Ensure the user is a secretary (Local = 3, University = 4, Board = 5)
+        if (!in_array($user->role, [3, 4, 5])) {
+            return response()->json(['type' => 'danger', 'message' => 'You are not authorized to submit a proposal!', 'title' => "Unauthorized"]);
+        }
+
+        // Determine meeting type
+        $meeting = $this->getMeetingModel($meetingID, $user->role);
+
+        if (!$meeting) {
+            return response()->json(['type' => 'danger', 'message' => 'Invalid meeting ID.', 'title' => "Error"]);
+        }
+
+        // if ($meeting->getIsSubmissionClosedAttribute() || ($meeting->status == 1)) {
+        //     return response()->json(['type' => 'danger', 'message' => 'The submission or the meeting is already closed!', 'title' => "Meeting Closed!"]);
+        // }
+
+        $request->validate([
+            'proponent_email' => 'required|email|exists:employees,EmailAddress',
+            'title' => 'required|string|max:255',
+            'action' => 'required|string|max:255',
+            'proposal_files' => 'required|array',
+            'proposal_files.*' => 'file|mimes:pdf,xls,xlsx,csv|max:100000',
+            'matter' => 'required|integer',
+            'sub_type' => 'nullable|integer',
+        ]);
+
+
+        $proponent = Employee::where('EmailAddress', $request->input('proponent_email'))->first();
+
+        $campus_id = session('campus_id');
+
+        // Create proposal
+        $proposal = Proposal::create([
+            'employee_id' => $proponent->id,
+            'campus_id' => $campus_id,
+            'title' => $request->input('title'),
+            'action' => $request->input('action'),
+            'type' => $request->input('matter'),
+            'sub_type' => $request->input('sub_type'),
+            'status' => 0,
+        ]);
+
+
+        
+
+        // Attach proposal to the corresponding meeting agenda
+        $this->attachProposalToAgenda($meetingID, $proposal->id, $user->role);
+
+        // Handle file uploads
+        $fileIds = [];
+        $file_order_no = 1;
+        if ($request->hasFile('proposal_files')) {
+            foreach ($request->file('proposal_files') as $file) {
+                $originalNameWithExt = $file->getClientOriginalName();
+                $extension = $file->getClientOriginalExtension();
+
+                // Extract filename without final extension
+                preg_match('/^(.*?)(\(\d+\))?(\.\w+)?$/', $originalNameWithExt, $matches);
+                $baseName = trim($matches[1]);
+                $filename = "{$baseName}.{$extension}";
+
+                $i = 1;
+                while (Storage::disk('public')->exists("proposals/{$filename}")) {
+                    $filename = "{$baseName} ({$i}).{$extension}";
+                    $i++;
+                }
+
+                // Store the file
+                $filePath = $file->storeAs('proposals', $filename, 'public');
+
+                // Save file record in DB
+                $proposalFile = ProposalFile::create([
+                    'proposal_id' => $proposal->id,
+                    'file' => $filename,
+                    'version' => 1,
+                    'file_status' => 1,
+                    'file_reference_id' => null,
+                    'is_active' => true,
+                    'order_no' => $file_order_no,
+                ]);
+
+                $fileIds[] = $proposalFile->id;
+                $file_order_no++;
+            }
+        }
+
+        // Save file IDs in proposal logs
+        $fileIdsString = implode(',', $fileIds);
+
+        ProposalLog::create([
+            'proposal_id' => $proposal->id,
+            'employee_id' => session('employee_id'),
+            'comments' => null,
+            'status' => 0,
+            'level' => 0,
+            'action' => 7,
+            'file_id' => $fileIdsString,
+        ]);
+
+
+
+        return redirect()->back()->with('toastr', [
+            'type' => 'success',
+            'message' => 'Proposal added successfully!',
+        ]);   
+        
+    } catch (\Throwable $th) {
+        return response()->json(['type' => 'danger', 'message' => $th->getMessage(), 'title' => "Something went wrong!"]);
+    }
+}
+
+/**
+ * Get the correct meeting model based on ID and role.
+ */
+private function getMeetingModel($meetingID, $roleID)
+{
+    if ($roleID == 3 && LocalCouncilMeeting::where('id', $meetingID)->exists()) {
+        return LocalCouncilMeeting::find($meetingID);
+    } elseif ($roleID == 4 && UniversityCouncilMeeting::where('id', $meetingID)->exists()) {
+        return UniversityCouncilMeeting::find($meetingID);
+    } elseif ($roleID == 5 && BorMeeting::where('id', $meetingID)->exists()) {
+        return BorMeeting::find($meetingID);
+    }
+    return null;
+}
+
+/**
+ * Attach proposal to the appropriate agenda table based on the meeting type.
+ */
+private function attachProposalToAgenda($meetingID, $proposalID, $roleID)
+{
+    if ($roleID == 3) {
+        LocalMeetingAgenda::create([
+            'local_council_meeting_id' => $meetingID,
+            'local_proposal_id' => $proposalID,
+            'status' => 0,
+        ]);
+    } elseif ($roleID == 4) {
+        UniversityMeetingAgenda::create([
+            'university_council_meeting_id' => $meetingID,
+            'university_proposal_id' => $proposalID,
+            'status' => 0,
+        ]);
+    } elseif ($roleID == 5) {
+        BorMeetingAgenda::create([
+            'bor_meeting_id' => $meetingID,
+            'bor_proposal_id' => $proposalID,
+            'status' => 0,
+        ]);
+    }
+}
+
+
+
+    
+
     // RENAME FILE
     public function renameFile(Request $request)
     {

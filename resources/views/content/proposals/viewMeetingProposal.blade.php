@@ -504,8 +504,8 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form method="POST" action="" enctype="multipart/form-data" id="proposalFrm">
-                @csrf
+                <form method="POST" action="{{ route(getUserRole().'.addProposal', ['meeting_id' => encrypt($meeting->id)]) }}" enctype="multipart/form-data" id="proposalFrm">
+                    @csrf
                     <!-- Proponent or Presenter Email -->
                     <div class="mb-3">
                         <label class="form-label" for="proponent_email">Proponent<span class="ms-1 text-danger">*</span></label>
@@ -614,7 +614,7 @@
                             <div id="dropArea" class="drop-area">
                                 <span class="upload-text">Drag & Drop files here, or <strong class="text-primary">click to upload</strong></span>
                                 <small class="text-muted">Accepted formats: .pdf, .xls, .xlsx, and .csv only</small>
-                                <input type="file" id="fileUpload" accept=".pdf,.xls,.xlsx,.csv" multiple hidden>
+                                <input type="file" id="fileUpload" name="proposal_files[]" accept=".pdf,.xls,.xlsx,.csv" multiple hidden>
                             </div>
                             <h5 id="uploadedFilesLabel" class="file-header mt-3"><i class='bx bx-file'></i> Uploaded Files</h5>
                             <ul id="fileList" class="file-list mt-3">
@@ -631,6 +631,15 @@
         </div>
     </div>
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+<script>
+    @if(session('toastr'))
+        toastr["{{ session('toastr.type') }}"]("{{ session('toastr.message') }}");
+    @endif
+</script>
+
 
 <script>
     var proposalStatus = @json(config('proposals.status'));
@@ -650,6 +659,57 @@
         }
     }
 </script>
+<script>
+ document.addEventListener("DOMContentLoaded", function () {
+        let emailInput = document.getElementById("proponent_email");
+        let tagify = new Tagify(emailInput, {
+            enforceWhitelist: false,
+            maxTags: 1,
+            whitelist: [],
+            dropdown: {
+                maxItems: 10,   // Show up to 10 results
+                enabled: 1,     // Show dropdown on input
+                closeOnSelect: false
+            }
+        });
+
+        document.querySelector("#proposalFrm").addEventListener("submit", function (e) {
+        let tagifiedEmails = tagify.value.map(tag => tag.value);
+        let emailValue = tagifiedEmails[0] || "";
+
+        // Validate email format before submitting
+        if (!emailValue.match(/^[\w\.-]+@[\w\.-]+\.\w+$/)) {
+            e.preventDefault(); // Prevent form submission
+            toastr.error("Please enter a valid email address.");
+            return;
+        }
+
+        emailInput.value = emailValue;
+    });
+
+     // Fetch proponent emails dynamically
+     function fetchProponents(query) {
+            $.ajax({
+                url: "{{route(getUserRole().'.fetchProponents')}}",
+                type: "GET",
+                data: { search: query },
+                success: function (response) {
+                    tagify.settings.whitelist = response;
+                    tagify.dropdown.show(); // Show dropdown
+                }
+            });
+        }
+    
+        // Listen for input event to fetch data
+        tagify.on("input", function (e) {
+            let value = e.detail.value;
+            if (value.length >= 2) { // Fetch only if at least 2 characters are typed
+                fetchProponents(value);
+            }
+        });
+    });
+</script>
+
 <script src="{{asset('assets/js/proposal.js')}}"></script>
 <script src="{{asset('assets/js/dataTable.js')}}"></script>
 
