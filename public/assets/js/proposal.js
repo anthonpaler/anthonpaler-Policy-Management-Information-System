@@ -123,7 +123,7 @@ $(document).ready(function() {
     
             $("#proponentListCon").append(`
             <li data-id="${userId}">
-                    <div class="d-flex justify-content-between align-items-center ms-2 me-2">
+                     <div class="d-flex justify-content-between align-items-center ms-2 me-2 flex-wrap gap-2">
                         <div class="d-flex justify-content-start align-items-center ">
                             <div class="avatar-wrapper">
                                 <div class="avatar avatar-sm me-3">

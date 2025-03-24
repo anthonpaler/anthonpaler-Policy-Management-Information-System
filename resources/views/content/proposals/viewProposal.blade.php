@@ -434,8 +434,8 @@
                         <div class="mb-3">
                             <textarea name="comment" class="form-control" id="comment" required placeholder="Add comment..." rows="3" disabled></textarea>
                         </div>
-                        <div class="d-flex justify-content-between gap-3">
-                            <div class="d-flex gap-3 w-100">
+                        <div class="d-flex justify-content-between gap-3 flex-wrap">
+                            <div class="d-flex gap-3 w-100 flex-wrap">
                                 <div class="btn-group">
                                     <button type="button" class="btn btn-primary text-nowrap">Proposal Action</button>
                                     <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">

@@ -11,6 +11,7 @@
     list-style: none;
     padding: 0;
     margin: 0;
+    flex-wrap: wrap;
 }
 .custom_tab_item.active{
     border-bottom: 5px solid var(--bs-primary);

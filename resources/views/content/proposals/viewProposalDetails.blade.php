@@ -22,7 +22,7 @@
 
 <div class="p-0">
     <div class="row">
-        <div class="col col-lg-6 mb-4">
+        <div class="col col-lg-5 mb-4">
             <div class="card">
                 <div class="card-body">
                         <div class="d-flex justify-content-between gap-2 mb-3">
@@ -61,7 +61,7 @@
                                                         <a href="" class="text-heading text-truncate m-0">
                                                             <span class="fw-medium">{{$proponent->name}}</span>
                                                         </a>
-                                                        <small>{{$proponent->email}}</small>
+                                                        <small class="text-wrap">{{$proponent->email}}</small>
                                                     </div>
                                                 </div>
                                                 <!-- @if($proponent->id === auth()->user()->id)

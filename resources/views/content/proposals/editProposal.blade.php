@@ -24,7 +24,7 @@
 
 <div class="p-0">
     <div class="row">
-        <div class="col col-lg-6 mb-4">
+        <div class="col col-lg-5 mb-4">
             <div class="card">
                 <div class="card-body">
                     <form action="{{ route(getUserRole().'.proposal.edit.save', ['proposal_id' => encrypt($proposal->id)]) }}" method="post" id="editProposalFrm">
@@ -69,7 +69,7 @@
                                 <ul class="" id="proponentListCon">
                                     @foreach ($proposal->proponents as $proponent)
                                         <li data-id="{{$proponent->employee_id}}" data-name="{{$proponent->name}}" data-email="{{$proponent->email}}" data-image="{{$proponent->image}}" id="primaryProponent">
-                                            <div class="d-flex justify-content-between align-items-center ms-2 me-2">
+                                            <div class="d-flex justify-content-between align-items-center ms-2 me-2 flex-wrap gap-2">
                                                 <div class="d-flex justify-content-start align-items-center ">
                                                     <div class="avatar-wrapper">
                                                         <div class="avatar avatar-sm me-3">
@@ -80,7 +80,7 @@
                                                         <a href="" class="text-heading text-truncate m-0">
                                                             <span class="fw-medium">{{$proponent->name}}</span>
                                                         </a>
-                                                        <small>{{$proponent->email}}</small>
+                                                        <small class="text-wrap">{{$proponent->email}}</small>
                                                     </div>
                                                 </div>
                                                 @if($proponent->employee_id === session('employee_id'))
