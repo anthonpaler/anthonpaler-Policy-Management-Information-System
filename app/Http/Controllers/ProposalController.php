@@ -199,49 +199,61 @@ class ProposalController extends Controller
     // RENAME FILE
     public function renameFile(Request $request)
     {
-        $request->validate([
-            'file_id' => 'required|exists:proposal_files,id',
-            'new_file_name' => 'required|string|max:255'       
-        ]);
-        
+        try{
+            $request->validate([
+                'file_id' => 'required|exists:proposal_files,id',
+                'new_file_name' => 'required|string|max:255'       
+            ]);
+            
 
-        $file = ProposalFile::findOrFail($request->file_id);
-        $oldPath = "proposals/{$file->file}";
+            $file = ProposalFile::findOrFail($request->file_id);
+            $oldPath = "proposals/{$file->file}";
 
-        // Extract extension
-        $extension = pathinfo($file->file, PATHINFO_EXTENSION);
-        $newFileName = "{$request->new_file_name}.{$extension}";
-        $newPath = "proposals/{$newFileName}";
+            // Extract extension
+            $extension = pathinfo($file->file, PATHINFO_EXTENSION);
+            $newFileName = "{$request->new_file_name}.{$extension}";
+            $newPath = "proposals/{$newFileName}";
 
-        // Check if the new file name already exists
-        if (Storage::disk('public')->exists($newPath)) {
-            return response()->json(['message' => 'File name already exists!'], 400);
+            // Check if the new file name already exists
+            if (Storage::disk('public')->exists($newPath)) {
+                return response()->json(['message' => 'File name already exists!'], 400);
+            }
+
+            // Rename file in storage
+            if (Storage::disk('public')->exists($oldPath)) {
+                Storage::disk('public')->move($oldPath, $newPath);
+            }
+
+            // Update the database record
+            $file->file = $newFileName;
+            $file->save();
+
+            return response()->json(['type'=>'success','title'=>'Success!','message' => 'File renamed successfully!']);
+        } catch (\Throwable $th) {
+            return response()->json(['type' => 'danger', 'message' => $th->getMessage(), 'title'=> "Something went wrong!"]);
         }
-
-        // Rename file in storage
-        if (Storage::disk('public')->exists($oldPath)) {
-            Storage::disk('public')->move($oldPath, $newPath);
-        }
-
-        // Update the database record
-        $file->file = $newFileName;
-        $file->save();
-
-        return response()->json(['type'=>'success','title'=>'Success!','message' => 'File renamed successfully!']);
     }
 
     // CHANGE PROPOSAL FILE ORDER
     public function updateOrder(Request $request)
     {
-        $files = $request->input('files');
+        try{
+            $files = $request->input('files');
 
-        foreach ($files as $file) {
-           
-            ProposalFile::where('id', $file['id'])
-                ->update(['order_no' => $file['order_no']]);
+            foreach ($files as $file) {
+            
+                ProposalFile::where('id', $file['id'])
+                    ->update(['order_no' => $file['order_no']]);
+            }
+
+            return response()->json(['message' => 'File order updated successfully']);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'type' => 'danger',
+                'message' => $th->getMessage(),
+                'title' => "Something went wrong!"
+            ]);
         }
-
-        return response()->json(['message' => 'File order updated successfully']);
     }
 
 
@@ -293,6 +305,8 @@ class ProposalController extends Controller
     // NEWEST EDIT
     public function editProposal(Request $request, String $proposal_id)
     {
+        DB::beginTransaction();
+
         try {
             $validated = $request->validate([
                 'title' => 'required|string|max:255',
@@ -418,8 +432,11 @@ class ProposalController extends Controller
                 ]);
             }
 
+            DB::commit(); 
+
             return response()->json(['type' => 'success', 'message' => 'Proposal updated successfully!', 'title' => 'Success!']);
         } catch (\Throwable $th) {
+            DB::rollBack(); 
             return response()->json(['type' => 'danger', 'message' => $th->getMessage(), 'title' => 'Something went wrong!']);
         }
     }
@@ -556,6 +573,8 @@ class ProposalController extends Controller
     // UPDATE SELECTED PROPOSALS STATUS
     public function updateSelectedProposalStatus(Request $request)
     {
+        DB::beginTransaction();
+
         try {
             $level = session('secretary_level');
             $status = $request->input('action') + 1;
@@ -608,9 +627,11 @@ class ProposalController extends Controller
                 ]);
             }
 
+            DB::commit();
             return response()->json(['type' => 'success', 'message' => 'Status updated successfully', 'title' => 'Success']);
 
         } catch (\Throwable $th) {
+            DB::rollBack();
             return response()->json(['type' => 'danger', 'message' => $th->getMessage(), 'title' => "Something went wrong!"]);
         }
     }
@@ -618,6 +639,7 @@ class ProposalController extends Controller
     // UPDATE SPECIFIC PROPOSAL STATUS - SECRETARY POV
     public function updateProposalStatus(Request $request)
     {
+        DB::beginTransaction(); 
         try {
             $level =session('secretary_level');
             $status = $request->input('action') + 1;
@@ -697,12 +719,15 @@ class ProposalController extends Controller
                         ]);
             }
             
+            DB::commit(); 
             return response()->json([
                 'type' => 'success',
                 'message' => 'Status updated successfully',
                 'title' => 'Success'
             ]);
         } catch (\Throwable $th) {
+            DB::rollBack(); 
+
             return response()->json([
                 'type' => 'danger',
                 'message' => $th->getMessage(),
@@ -792,6 +817,7 @@ class ProposalController extends Controller
 
     // SUBMIT PROPOSALS - SECRETRARY POV
     public function submitProposalSecretary(Request $request, String $level, String $meeting_id){
+        DB::beginTransaction();
         try{
             $proposal_level = 0;
             $status = 0;
@@ -864,7 +890,7 @@ class ProposalController extends Controller
                     ]);
                 }
             } 
-            
+            DB::commit();
             return response()->json([
                 'type' => 'success',
                 'message' => 'Proposals submitted successfully!',
@@ -873,6 +899,7 @@ class ProposalController extends Controller
                 ]);
             }
         } catch (\Throwable $th) {
+            DB::rollBack();
             return response()->json(['type' => 'danger', 'message' => $th->getMessage(), 'title'=> "Something went wrong!"]);
         }
     }

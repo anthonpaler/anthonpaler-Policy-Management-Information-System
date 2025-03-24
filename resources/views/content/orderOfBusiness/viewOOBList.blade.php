@@ -70,7 +70,7 @@
         <div class="card-datatable pt-0">
             <div class="table-responsive text-nowrap">
                 <table class="datatables-basic table table table-striped" id="oobTable">
-                    <thead>
+                    <thead class="custom-tbl-header">
                         <tr>
                             <th>#</th>
                             <th>Level</th>
