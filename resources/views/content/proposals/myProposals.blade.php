@@ -47,12 +47,12 @@
                         </tr>
                     @else
                         @foreach($proposals as $proposal)
-                        <tr data-proponent="{{ $proposal->proponent }}" data-title="{{ $proposal->title }}">
+                        <tr data-title="{{ $proposal->title }}">
                             <td>{{ $loop->iteration }}</td>
                             <td>
                                 <div class="d-flex align-items-center">
                                     <div class="d-flex flex-column gap-3">
-                                        @foreach ($proposal->proponentsList as $proponent)
+                                        @foreach ($proposal->proponents as $proponent)
                                             <div class="d-flex gap-3 align-items-center">
                                                 <div data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $proponent->name }}" class="avatar avatar-sm pull-up">
                                                     <img class="rounded-circle" src="{{ $proponent->image ?? '/default-avatar.png' }}" alt="Avatar">
@@ -91,7 +91,7 @@
                             <td>
                                 @if($proposal->files->count() > 0)
                                     <button class="btn btn-sm btn-success d-flex gap-2 view-files"
-                                            data-files="{{ json_encode(value: $proposal->files) }}" 
+                                            data-files="{{ json_encode($proposal->files) }}" 
                                             data-title="{{ $proposal->title }}">
                                         <i class='bx bx-file'></i> VIEW FILES
                                     </button>
@@ -161,6 +161,131 @@
         </div>
     </div>
 </div>
+<script>
+    // VIEW FILES
+     // SHOW PROPOSAL FILE
+   $(document).on('click', '.view-files', function (e) {
+        e.preventDefault();
+        var files = $(this).data("files");
+        var title = $(this).data("title");
+
+        console.log(files);
+
+        if (!files || files.length === 0) {
+            $("#modalFiles").html('<p class="text-danger">No files available.</p>');
+        } else {
+            let fileListHtml = `
+                <div class="">
+                    <div class="d-flex flex-column">
+                        <span class="form-label">Title:</span>
+                        <h6 id="modal-title">${title || 'No Title Available'}</h6>
+                    </div>
+                    <div class="">
+                        <span class="form-label">Files:</span>
+                        <div class="d-flex flex-column gap-2 mt-2">
+            `;
+
+            $.each(files, function (index, fileObj) {
+                if(fileObj.is_active == true){
+                    fileListHtml += `
+                    <a href="#" class="form-control d-flex align-items-center gap-2 view-file-preview" style="text-transform: none;"
+                    data-bs-toggle="modal" 
+                    data-bs-target="#fileModal"
+                    data-file-url="/storage/proposals/${fileObj.file}" >
+                        <span>${fileObj.order_no}. </span><i class='bx bx-file-blank'></i><span>${fileObj.file}</span>
+                    </a>`;
+                }
+            });
+
+            fileListHtml += `</div></div></div>`;
+            $("#modalFiles").html(fileListHtml);
+        }
+
+        var myModal = new bootstrap.Modal(document.getElementById('proposalFIleModal'));
+        myModal.show();
+    });
+
+    $(document).on('click', '.view-file-preview', function (e) {
+        e.preventDefault();
+        const fileUrl = $(this).data('file-url');
+        $('#fileIframe').attr('src', fileUrl);
+
+        var fileModal = new bootstrap.Modal(document.getElementById('fileModal'));
+        fileModal.show();
+    });
+
+    $('#fileModal').on('show.bs.modal', function () {
+        $('#proposalFIleModal').addClass('d-block');
+    });
+
+    $('#fileModal').on('hidden.bs.modal', function () {
+        $('#proposalFIleModal').removeClass('d-block');
+        $('#proposalFIleModal').modal('show');
+    });
+
+    $('#proposalFIleModal').on('hidden.bs.modal', function () {
+        setTimeout(function() {
+            if ($('.modal-backdrop').length > 0) {
+                $('.modal-backdrop').remove();
+                $('body').removeClass('modal-open');
+                $('body').css('padding-right', '');
+            }
+        }, 200); 
+    });
+    
+    // DELETE PROPOSAL
+    $(".delete-proposal").on('click', function(e){
+        e.preventDefault();
+        var proposal_id = $(this).data("id");
+        var is_delete_disabled = $(this).data("deletable");
+        var button = $(this); 
+
+        console.log(proposal_id);
+        if(is_delete_disabled){
+            showAlert("danger", "Can't Delete!", "You can no longer delete this proposal.");
+            return;
+        }
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You won't be able to revert this!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, delete it!"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '/proponents/proposal/delete',
+                    type: "POST",
+                    data: { proposal_id: proposal_id },
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function (response) {
+                        if(response.type == 'success'){
+                            Swal.fire({
+                                title: "Deleted!",
+                                text: "Your file has been deleted.",
+                                icon: "success"
+                            });
+                            button.closest("tr").remove(); 
+                        }else{
+                            showAlert("danger", response.title, response.message);
+                        }
+                    },            
+                    error: function (xhr, status, error) {
+                        console.log(xhr.responseText);
+                        let response = JSON.parse(xhr.responseText);
+                        showAlert("danger", response.title, response.message);
+                    }
+                });
+            }
+        });
+    });
+
+
+</script>
 <script src="{{asset('assets/js/proposal.js')}}"></script>
 <script src="{{asset('assets/js/dataTable.js')}}"></script>
 @endsection

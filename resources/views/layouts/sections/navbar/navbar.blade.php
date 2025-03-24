@@ -64,13 +64,10 @@ $navbarDetached = ($navbarDetached ?? '');
             </a>
             </li>
             <li>
-                <a class="dropdown-item" onclick="event.preventDefault(); document.getElementById('logoutForm').submit();" href="#">
+                <a class="dropdown-item" href="/logout">
                     <i class="bx bx-power-off me-2"></i>
                     <span class="align-middle">Log Out</span>
                 </a>
-                <form method="POST" id="logoutForm" action="{{ route('auth.logout') }}">
-                    @csrf
-                </form>
             </li>
         </ul>
         </li>

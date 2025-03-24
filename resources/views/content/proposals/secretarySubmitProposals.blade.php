@@ -29,7 +29,7 @@
                 @endif 
                 {{ $meeting->year }}
             </h4> 
-            <div class="d-flex align-items-center gap-2">
+            <div class="d-flex align-items-center gap-2 justify-content-center flex-wrap">
                 <span class="text-muted fw-light">{{ \Carbon\Carbon::parse($meeting->meeting_date_time)->format('F d, Y, l, h:i A') }}</span>
 
                 @if ($meeting->modality == 1 || $meeting->modality == 3)
@@ -55,11 +55,11 @@
             }
         @endphp
 
-        <div class="d-flex align-items-center justify-content-between mt-3 mb-3">
+        <div class="d-flex align-items-center justify-content-between mt-3 mb-3 flex-wrap">
             <h5>List of Endorsed Proposals</h5>
             <button type="submit" class="btn btn-primary d-flex gap-2" id="submitSecBtn" {{$noProposals ? 'disabled' : ''}}>
                 <i class='bx bx-send'></i>
-                <span>Submit to {{session('user_role') == 3 ? 'University Council' : 'BOR'}}</span>
+                <span class="text-nowrap">Submit to {{session('user_role') == 3 ? 'University Council' : 'BOR'}}</span>
             </button> 
         </div>
     
@@ -100,7 +100,7 @@
                                                 <td>
                                                     <div class="d-flex align-items-center">
                                                         <div class="d-flex flex-column gap-3">
-                                                            @foreach ($proposal->proponentsList as $proponent)
+                                                            @foreach ($proposal->proposal->proponents as $proponent)
                                                                 <div class="d-flex gap-3 align-items-center">
                                                                     <div data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $proponent->name }}" class="avatar avatar-sm pull-up">
                                                                         <img class="rounded-circle" src="{{ $proponent->image ?? '/default-avatar.png' }}" alt="Avatar">
@@ -127,9 +127,9 @@
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    @if($proposal->files->count() > 0)
+                                                    @if($proposal->proposal->files->count() > 0)
                                                         <button class="btn btn-sm btn-success d-flex gap-2 view-files"
-                                                                data-files="{{ json_encode($proposal->files) }}" 
+                                                                data-files="{{ json_encode($proposal->proposal->files) }}" 
                                                                 data-title="{{ $proposal->proposal->title }}">
                                                             <i class='bx bx-file'></i> VIEW FILES
                                                         </button>

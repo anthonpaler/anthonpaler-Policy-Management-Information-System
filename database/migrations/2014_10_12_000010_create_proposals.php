@@ -18,7 +18,6 @@ return new class extends Migration
             $table->integer('sub_type')->nullable();
             $table->tinyInteger('action');
             $table->tinyInteger('status');
-            $table->foreignId('employee_id')->constrained('employees')->onDelete('cascade');
             $table->foreignId('campus_id')->constrained('campus')->onDelete('cascade');
             $table->timestamps();
             $table->softdeletes();

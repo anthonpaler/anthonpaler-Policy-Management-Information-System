@@ -13,7 +13,6 @@ class Proposal extends Model
 
     use SoftDeletes;
     protected $fillable = [
-        'employee_id',
         'campus_id',
         'title',
         'action',
@@ -28,13 +27,12 @@ class Proposal extends Model
         return $this->hasMany(ProposalFile::class, 'proposal_id')->orderBy('order_no');
     }
 
-
-    // GET EMPLOYEE DETAILS FROM THE PROPOSAL
-    public function proponents()
-    {
-        return $this->belongsTo(Employee::class, 'employee_id');
+    // GET PROPOSAL PROPONENTS
+    public function proponents() {
+        return $this->belongsToMany(User::class, 'proposal_proponents', 'proposal_id', 'employee_id');
     }
-
+    
+    
     // GET CURRENT LEVEL OF THE PROPOSAL
     public function localAgendas()
     {

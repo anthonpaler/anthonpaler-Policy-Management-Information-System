@@ -26,7 +26,6 @@ class LocalMeetingAgenda extends Model
     {
         return $this->belongsTo(Proposal::class, 'local_proposal_id');
     }
-
     
     public function proposal_group()
     {

@@ -22,7 +22,7 @@
 
 <div class="p-0">
     <div class="row">
-        <div class="col col-lg-6 mb-4">
+        <div class="col col-lg-5 mb-4">
             <div class="card">
                 <div class="card-body">
                         <div class="d-flex justify-content-between gap-2 mb-3">
@@ -48,7 +48,7 @@
                             <div class="form-control proponent-con" style="">
                                 <input type="text" class="form-control mb-3" value="{{$proposal->employee_id}}" id="proponents" name="proponents" hidden>
                                 <ul class="" id="proponentListCon">
-                                    @foreach ($proposal->proponentsList as $proponent)
+                                    @foreach ($proposal->proponents as $proponent)
                                         <li data-id="{{$proponent->employee_id}}" data-name="{{$proponent->name}}" data-email="{{$proponent->email}}" data-image="{{$proponent->image}}" id="primaryProponent">
                                             <div class="d-flex justify-content-between align-items-center ms-2 me-2">
                                                 <div class="d-flex justify-content-start align-items-center ">
@@ -61,7 +61,7 @@
                                                         <a href="" class="text-heading text-truncate m-0">
                                                             <span class="fw-medium">{{$proponent->name}}</span>
                                                         </a>
-                                                        <small>{{$proponent->email}}</small>
+                                                        <small class="text-wrap">{{$proponent->email}}</small>
                                                     </div>
                                                 </div>
                                                 <!-- @if($proponent->id === auth()->user()->id)
@@ -78,21 +78,6 @@
                                             </div>
                                         </li>
                                     @endforeach
-
-                                    @php
-                                        $selectedProponents = $proposal->proponentsList->map(function ($proponent) {
-                                            return [
-                                                'id' => $proponent->id,
-                                                'name' => $proponent->name,
-                                                'email' => $proponent->email,
-                                                'image' => $proponent->image,
-                                            ];
-                                        })->toArray();
-                                    @endphp
-
-                                    <script>
-                                        window.selectedProponents = @json($selectedProponents); 
-                                    </script>
                                 </ul>
                             </div>
                         </div>

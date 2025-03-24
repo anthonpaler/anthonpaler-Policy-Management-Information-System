@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\LocalCouncilMeeting;
 use App\Models\UniversityCouncilMeeting;
 use App\Models\BorMeeting;
-
+use Illuminate\Support\Facades\DB;
 use App\Models\Venues;
 use App\Models\Employee;
 
@@ -31,8 +31,10 @@ class MeetingController extends Controller
             $meetings = LocalCouncilMeeting::where('campus_id', $campus_id)
             ->whereIn('council_type', $allowedCouncilTypes)
             ->withCount(['proposals' => function ($query) use ($employeeId) {
-                $query->where('employee_id', $employeeId); 
-            }])
+                $query->whereHas('proponents', function ($q) use ($employeeId) {
+                    $q->where('proposal_proponents.employee_id', $employeeId);
+                });
+            }])            
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -69,64 +71,73 @@ class MeetingController extends Controller
     // CREATE THE MEETING
     public function createMeeting(Request $request )
     {
-        $role = session('user_role');
-        $employeeId = session('employee_id');
-        $campus_id = session('campus_id');
-        $level = $role == 3 ? 0 : ($role == 4 ? 1 : ($role == 5 ? 2 : 0));
-        
+        DB::beginTransaction();
+        try{
+            $role = session('user_role');
+            $employeeId = session('employee_id');
+            $campus_id = session('campus_id');
+            $level = $role == 3 ? 0 : ($role == 4 ? 1 : ($role == 5 ? 2 : 0));
+            
+    
+            $request->validate([
+                'description' => 'nullable|string',
+                'quarter' => 'required|integer|unique_meeting_per_quarter:' . $request->input('year'). ',' . $level.','.$campus_id.','.$request->input('council_type'),
+                'year' => 'required|integer',
+                'modality' => 'nullable|integer',
+                'venue' => 'nullable|string',
+                'mode_if_online' => 'nullable|string',
+                'link' => 'nullable|url',
+                'council_type' => 'required|integer',
+                'submission_start' => 'required|date|after_or_equal:today',
+                'submission_end' => 'required|date|after:submission_start',
+            ]);
+    
+            $meetingData = [
+              'creator_id' => $employeeId,
+              'description' => $request->input('description'),
+              'meeting_date_time' => $request->input('meeting_date_time'),
+              'quarter' => $request->input('quarter'),
+              'year' => $request->input('year'),
+              'venue_id' => $request->input('venue'),
+              'status' => 0,
+              'council_type' => $request->input('council_type'),
+              'modality' => $request->input('modality') ?? 0,
+              'mode_if_online' => $request->input('mode_if_online') ?? 0,
+              'link' => $request->input(key: 'link'),
+              'submission_start' => $request->input('submission_start'),
+              'submission_end' => $request->input('submission_end'),
+            ];
+    
+            if($level == 0){
+                $meetingData['campus_id'] = $campus_id;
+                $meeting = LocalCouncilMeeting::create($meetingData);
+            }
+           
+            if($level == 1){
+                $meeting = UniversityCouncilMeeting::create($meetingData);
+            }
+    
+            if($level == 2){
+                $meeting = BorMeeting::create($meetingData);
+            }
+           
+            DB::commit();
 
-        $request->validate([
-            'description' => 'nullable|string',
-            'quarter' => 'required|integer|unique_meeting_per_quarter:' . $request->input('year'). ',' . $level.','.$campus_id.','.$request->input('council_type'),
-            'year' => 'required|integer',
-            'modality' => 'nullable|integer',
-            'venue' => 'nullable|string',
-            'mode_if_online' => 'nullable|string',
-            'link' => 'nullable|url',
-            'council_type' => 'required|integer',
-            'submission_start' => 'required|date|after_or_equal:today',
-            'submission_end' => 'required|date|after:submission_start',
-        ]);
-
-        $meetingData = [
-          'creator_id' => $employeeId,
-          'description' => $request->input('description'),
-          'meeting_date_time' => $request->input('meeting_date_time'),
-          'quarter' => $request->input('quarter'),
-          'year' => $request->input('year'),
-          'venue_id' => $request->input('venue'),
-          'status' => 0,
-          'council_type' => $request->input('council_type'),
-          'modality' => $request->input('modality') ?? 0,
-          'mode_if_online' => $request->input('mode_if_online') ?? 0,
-          'link' => $request->input(key: 'link'),
-          'submission_start' => $request->input('submission_start'),
-          'submission_end' => $request->input('submission_end'),
-        ];
-        
-        
-
-        
-        if($level == 0){
-            $meetingData['campus_id'] = $campus_id;
-            $meeting = LocalCouncilMeeting::create($meetingData);
+            return response()->json([
+                'type' => "success",
+                'title' => "Success",
+                'redirect' => route(getUserRole().'.meetings'),
+                'message' => 'Meeting created successfully.',
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack(); // Rollback transaction if something fails
+    
+            return response()->json([
+                'type' => 'danger',
+                'message' => $th->getMessage(),
+                'title' => "Something went wrong!"
+            ]);
         }
-       
-        if($level == 1){
-            $meeting = UniversityCouncilMeeting::create($meetingData);
-        }
-
-        if($level == 2){
-            $meeting = BorMeeting::create($meetingData);
-        }
-       
-       
-        return response()->json([
-            'type' => "success",
-            'title' => "Success",
-            'redirect' => route(getUserRole().'.meetings'),
-            'message' => 'Meeting created successfully.',
-        ]);
     }
 
     // VIEW EDIT MEETING
@@ -155,52 +166,61 @@ class MeetingController extends Controller
     // EDIT MEETING
     public function EditMeeting(Request $request, String $level, String $meeting_id)
     {
-        $request->validate([
-            'description' => 'nullable|string',
-            'modality' => 'nullable|integer|min:0|max:2',
-            'venue' => 'nullable|string',
-            'link' => 'nullable|url',
-            'status' => 'required|integer',
-            'mode_if_online' => 'nullable|string',
-            'council_type' => 'required|integer', 
-            'year' => 'required',
-            'submission_start' => 'required|date',
-            'submission_end' => 'required|date|after_or_equal:submission_start',
-        ]);
-
-        $meetingID = decrypt($meeting_id);
-
-        if($level == 'Local'){
-            $meeting = LocalCouncilMeeting::find($meetingID);
+        try{
+            $request->validate([
+                'description' => 'nullable|string',
+                'modality' => 'nullable|integer|min:0|max:2',
+                'venue' => 'nullable|string',
+                'link' => 'nullable|url',
+                'status' => 'required|integer',
+                'mode_if_online' => 'nullable|string',
+                'council_type' => 'required|integer', 
+                'year' => 'required',
+                'submission_start' => 'required|date',
+                'submission_end' => 'required|date|after_or_equal:submission_start',
+            ]);
+    
+            $meetingID = decrypt($meeting_id);
+    
+            if($level == 'Local'){
+                $meeting = LocalCouncilMeeting::find($meetingID);
+            }
+            if($level == 'University'){
+                $meeting = UniversityCouncilMeeting::find($meetingID);
+            }
+            if($level == 'BOR'){
+                $meeting = BorMeeting::find($meetingID);
+            }
+    
+            $meetingData = [
+                'description' => $request->input('description'),
+                'meeting_date_time' => $request->input('meeting_date_time'),
+                'venue_id' => $request->input('venue'),
+                'council_type' => $request->input('council_type'),
+                'modality' => $request->input('modality')?? 0 ,
+                'mode_if_online' => $request->input('mode_if_online'),
+                'status' => $request->input('status'),
+                'submission_start' => $request->input('submission_start'),
+                'submission_end' => $request->input('submission_end'),
+                'link' => $request->input('link'),
+                'year' => $request->input('year'),
+            ];
+    
+            $meeting->update($meetingData);
+    
+            return response()->json([
+                'type' => "success",
+                'title' => "Success",
+                'message' => 'Meeting updated successfully.',
+            ]);
+        } catch (\Throwable $th) {
+       
+            return response()->json([
+                'type' => 'danger',
+                'message' => $th->getMessage(),
+                'title' => "Something went wrong!"
+            ]);
         }
-        if($level == 'University'){
-            $meeting = UniversityCouncilMeeting::find($meetingID);
-        }
-        if($level == 'BOR'){
-            $meeting = BorMeeting::find($meetingID);
-        }
-
-        $meetingData = [
-            'description' => $request->input('description'),
-            'meeting_date_time' => $request->input('meeting_date_time'),
-            'venue_id' => $request->input('venue'),
-            'council_type' => $request->input('council_type'),
-            'modality' => $request->input('modality')?? 0 ,
-            'mode_if_online' => $request->input('mode_if_online'),
-            'status' => $request->input('status'),
-            'submission_start' => $request->input('submission_start'),
-            'submission_end' => $request->input('submission_end'),
-            'link' => $request->input('link'),
-            'year' => $request->input('year'),
-        ];
-
-        $meeting->update($meetingData);
-
-        return response()->json([
-            'type' => "success",
-            'title' => "Success",
-            'message' => 'Meeting updated successfully.',
-        ]);
     }
 
     // VIEW MEETING DETAILS
@@ -225,72 +245,88 @@ class MeetingController extends Controller
 
     // FILTER MEETINGS
     public function filterMeetings(Request $request){
-        $role = session('user_role');
-        $employeeId = session('employee_id');
-        $campus_id = session('campus_id');
-        // $level = $role == 3 ? 0 : ($role == 4 ? 1 : ($role == 5 ? 2 : 0));
-
-        $request->validate([
-            // 'year' => 'required|string',
-            'level' => 'required|integer',
-        ]);
-
-        $meetingLevel = $request->input('level');
-
-        if (session('isProponent')) {
-
-            if($meetingLevel == 0){
-                // $meetings = LocalCouncilMeeting::where('campus_id', $campus_id)
-                // ->orderBy('created_at', 'desc')
-                // ->get();
-
-                $allowedCouncilTypes = [1];
-                if ($role == 0) {
-                    $allowedCouncilTypes = [1, 2];
-                } elseif ($role == 1) {
-                    $allowedCouncilTypes = [1, 3];
-                } elseif ($role == 2) {
-                    $allowedCouncilTypes = [1, 2, 3];
+        try{
+            $role = session('user_role');
+            $employeeId = session('employee_id');
+            $campus_id = session('campus_id');
+            
+    
+            $request->validate([
+                'level' => 'required|integer',
+            ]);
+    
+            $meetingLevel = $request->input('level');
+    
+            if (session('isProponent')) {
+    
+                if($meetingLevel == 0){
+                    $allowedCouncilTypes = [1];
+                    if ($role == 0) {
+                        $allowedCouncilTypes = [1, 2];
+                    } elseif ($role == 1) {
+                        $allowedCouncilTypes = [1, 3];
+                    } elseif ($role == 2) {
+                        $allowedCouncilTypes = [1, 2, 3];
+                    }
+                    $meetings = LocalCouncilMeeting::where('campus_id', $campus_id)
+                    ->whereIn('council_type', $allowedCouncilTypes)
+                    ->withCount(['proposals' => function ($query) use ($employeeId) {
+                        $query->whereHas('proponents', function ($q) use ($employeeId) {
+                            $q->where('proposal_proponents.employee_id', $employeeId);
+                        });
+                    }])    
+                    ->orderBy('created_at', 'desc')
+                    ->get();
                 }
-                $meetings = LocalCouncilMeeting::where('campus_id', $campus_id)
-                ->whereIn('council_type', $allowedCouncilTypes)
-                ->withCount(['proposals' => function ($query) use ($employeeId) {
-                    $query->where('employee_id', $employeeId); 
-                }])
-                ->orderBy('created_at', 'desc')
-                ->get();
+               
+                if($meetingLevel == 1){
+                    $meetings = UniversityCouncilMeeting::withCount(['proposals' => function ($query) use ($employeeId) {
+                        $query->whereHas('proponents', function ($q) use ($employeeId) {
+                            $q->where('proposal_proponents.employee_id', $employeeId);
+                        });
+                    }])    
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+                }
+        
+                if($meetingLevel == 2){
+                    $meetings = BorMeeting::withCount(['proposals' => function ($query) use ($employeeId) {
+                        $query->whereHas('proponents', function ($q) use ($employeeId) {
+                            $q->where('proposal_proponents.employee_id', $employeeId);
+                        });
+                    }])    
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+                }
+            }else{
+                if($meetingLevel == 0){
+                    $meetings = LocalCouncilMeeting::where('campus_id', $campus_id)
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+                }
+               
+                if($meetingLevel == 1){
+                    $meetings = UniversityCouncilMeeting::orderBy('created_at', 'desc')->get();
+                }
+        
+                if($meetingLevel == 2){
+                    $meetings = BorMeeting::orderBy('created_at', 'desc')->get();
+                }
             }
            
-            if($meetingLevel == 1){
-                $meetings = UniversityCouncilMeeting::orderBy('created_at', 'desc')->get();
-            }
     
-            if($meetingLevel == 2){
-                $meetings = BorMeeting::orderBy('created_at', 'desc')->get();
-            }
-
-        }else{
-            if($meetingLevel == 0){
-                $meetings = LocalCouncilMeeting::where('campus_id', $campus_id)
-                ->orderBy('created_at', 'desc')
-                ->get();
-            }
-           
-            if($meetingLevel == 1){
-                $meetings = UniversityCouncilMeeting::orderBy('created_at', 'desc')->get();
-            }
-    
-            if($meetingLevel == 2){
-                $meetings = BorMeeting::orderBy('created_at', 'desc')->get();
-            }
+            // dd($meetings);
+            return response()->json([
+                'type' => 'success',
+                'html' => view('content.meetings.partials.meetings_table', compact('meetings'))->render()
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'type' => 'danger',
+                'message' => $th->getMessage(),
+                'title' => "Something went wrong!"
+            ]);
         }
-       
-
-        // dd($meetings);
-        return response()->json([
-            'type' => 'success',
-            'html' => view('content.meetings.partials.meetings_table', compact('meetings'))->render()
-        ]);
     }
 }
 

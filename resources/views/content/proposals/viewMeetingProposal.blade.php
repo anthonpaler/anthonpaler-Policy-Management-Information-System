@@ -18,7 +18,7 @@
 
 </div>
 @php 
-    $actionColors = [ 'secondary', 'primary', 'success', 'warning', 'info', 'danger']; 
+    $actionColors = ['secondary', 'primary', 'success', 'warning', 'info', 'danger']; 
     $statusCounts = [
         'For Endorsement' => 0,
         'Posted to Agenda' => 0,
@@ -173,10 +173,9 @@
                                 {{ config('meetings.council_types.board_level.'.$meeting->council_type) }}
                             @endif 
                             {{ $meeting->year }}
-                            <span class="ms-2 badge bg-label-{{ $meeting->status == 0? 'success' : 'danger' }} me-1">
-                                STATUS: 
+                            <!-- <span class="ms-2 badge bg-label-{{ $meeting->status == 0? 'success' : 'danger' }} me-1">
                                 {{ config('meetings.status.'.$meeting->status) }}
-                            </span>
+                            </span> -->
                         </h5>
                     </div>
                     @if (session('isSecretary'))
@@ -188,10 +187,7 @@
 
                                 <div>
                                     <div class="btn-group">
-                                        <button type="button" class="btn btn-primary text-nowrap">Proposal Action</button>
-                                        <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <span class="visually-hidden">Toggle Dropdown</span>
-                                        </button>
+                                        <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">Proposal Actions</button>
 
                                         @php
                                             $currentDateTime = now();
@@ -248,7 +244,7 @@
                                             <i class='bx bxs-lock-alt' ></i>
                                         </button>
                                     @else
-                                        <button type="button" id="okActionButton" class="btn btn-success d-flex gap-2" {{ $meeting->status == 1 ? 'disabled': '' }}>
+                                        <button type="button" id="okActionButton" class="btn btn-icon btn-success" {{ $meeting->status == 1 ? 'disabled': '' }}>
                                             <i class="fa-regular fa-circle-check"></i>
                                         </button>
                                     @endif
@@ -264,56 +260,60 @@
 <!-- Basic Bootstrap Table -->
 <div class="card">
     <div class="card-body">
-        <div class="d-flex justify-content-between">
-            <div class="">
+        <div class="d-flex justify-content-between flex-wrap">
+            <div class="mb-2">
                 <h5 class="mb-0">List of Meeting's Proposal</h5>
                 <small class="text-muted">Proposals submitted for the scheduled meeting.</small>
             </div>
             <div class="d-flex gap-2">
-                <div class="input-group input-group-merge">
-                    <span  class="input-group-text">
-                        <i class='bx bx-search' ></i>
-                    </span>
-                    <input type="text" class="form-control" id="proposalSearch" placeholder="Search...">
+                <div>
+                    <div class="input-group input-group-merge">
+                        <input type="text" class="form-control" id="proposalSearch" placeholder="Search...">    
+                        <span  class="input-group-text">
+                            <i class='bx bx-search' ></i>
+                        </span>
+                    </div>
                 </div>
-                <div class="input-group input-group-merge">
-                    <span  class="input-group-text">
-                        <i class='bx bx-notepad'></i>
-                    </span>
-                    <select class="form-select" name="proposalStatus" required>
-                        <option value="">All Status</option>
-                        @foreach (config('proposals.status') as $key => $value)
-                            <option value="{{ $value }}" >
-                                {{ $value }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="input-group input-group-merge">
-                    <span  class="input-group-text">
-                        <i class="bx bx-briefcase"></i></span>
-                    </span>
-                    <select class="form-select" name="proposalMatter" required>
-                        <option value="">All Type of Matter</option>
-                        @foreach (config('proposals.matters') as $key => $value)
-                            <option value="{{ $value }}" >
-                                {{ $value }}
-                            </option>
-                        @endforeach  
-                    </select>
-                </div>
-                <div class="input-group input-group-merge">
-                    <span  class="input-group-text">
-                        <i class="bx bx-task"></i>
-                    </span>
-                    <select class="form-select" name="proposalAction" required>
-                        <option value="">All Requested Action</option>
-                        @foreach (config('proposals.requested_action') as $key => $value)
-                            <option value="{{ $value }}" >
-                                {{ $value }}
-                            </option>
-                        @endforeach                       
-                    </select>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary btn-icon dropdown-toggle  hide-arrow" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i class='bx bx-filter-alt'></i></button>
+                    <ul class="dropdown-menu p-4" style="width: 300px;">
+                        <h5 class="m-0">Filter</h5>
+                        <div class="mb-2 mt-2">
+                            <small class="form-label">Status</small>
+                            <select class="form-select" name="proposalStatus" required>
+                                <option value="">All Status</option>
+                                @foreach (config('proposals.status') as $key => $value)
+                                    <option value="{{ $value }}" >
+                                        {{ $value }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="mb-2 mt-2">
+                            <small class="form-label">Type of Matter</small>
+                            <select class="form-select" name="proposalMatter" required>
+                                <option value="">All Type of Matter</option>
+                                @foreach (config('proposals.matters') as $key => $value)
+                                    <option value="{{ $value }}" >
+                                        {{ $value }}
+                                    </option>
+                                @endforeach  
+                            </select>
+                        </div>
+
+                        <div class="mb-2 mt-2">
+                            <small class="form-label">Requested Action</small>
+                            <select class="form-select" name="proposalAction" required>
+                                <option value="">All Requested Action</option>
+                                @foreach (config('proposals.requested_action') as $key => $value)
+                                    <option value="{{ $value }}" >
+                                        {{ $value }}
+                                    </option>
+                                @endforeach                       
+                            </select>
+                        </div>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -368,7 +368,7 @@
                             <td>
                                 <div class="d-flex align-items-center">
                                     <div class="d-flex flex-column gap-3">
-                                        @foreach ($proposal->proponentsList as $proponent)
+                                        @foreach ($proposal->proposal->proponents as $proponent)
                                             <div class="d-flex gap-3 align-items-center">
                                                 <div data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $proponent->name }}" class="avatar avatar-sm pull-up">
                                                     <img class="rounded-circle" src="{{ $proponent->image ?? '/default-avatar.png' }}" alt="Avatar">
@@ -407,9 +407,9 @@
                                 </div>
                             </td>
                             <td>
-                                @if($proposal->files->count() > 0)
+                                @if($proposal->proposal->files->count() > 0)
                                     <button class="btn btn-sm btn-success d-flex gap-2 view-files"
-                                            data-files="{{ json_encode($proposal->files) }}" 
+                                            data-files="{{ json_encode($proposal->proposal->files) }}" 
                                             data-title="{{ $proposal->proposal->title }}">
                                         <i class='bx bx-file'></i> VIEW FILES
                                     </button>
@@ -521,15 +521,6 @@
                             >
                         </div>
                         @error('proponent_email')
-                            <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <!-- Title -->
-                    <div class="mb-3">
-                        <label class="form-label" for="title">Title <span class="ms-1 text-danger">*</span></label>
-                        <textarea id="title" name="title" class="form-control" placeholder="Enter title" required rows="3"></textarea>
-                        @error('title')
                             <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
                         @enderror
                     </div>

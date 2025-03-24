@@ -67,7 +67,7 @@
                             <div class="form-control proponent-con" style="">
                                 <input type="text" class="form-control mb-3" value="{{$proposal->employee_id}}" id="proponents" name="proponents" hidden>
                                 <ul class="" id="proponentListCon">
-                                    @foreach ($proposal->proponentsList as $proponent)
+                                    @foreach ($proposal->proponents as $proponent)
                                         <li data-id="{{$proponent->employee_id}}" data-name="{{$proponent->name}}" data-email="{{$proponent->email}}" data-image="{{$proponent->image}}" id="primaryProponent">
                                             <div class="d-flex justify-content-between align-items-center ms-2 me-2">
                                                 <div class="d-flex justify-content-start align-items-center ">
@@ -99,7 +99,7 @@
                                     @endforeach
 <!-- 
                                     @php
-                                        $selectedProponents = $proposal->proponentsList->map(function ($proponent) {
+                                        $selectedProponents = $proposal->proponents->map(function ($proponent) {
                                             return [
                                                 'id' => $proponent->employee_id,
                                                 'name' => $proponent->name,
@@ -434,8 +434,8 @@
                         <div class="mb-3">
                             <textarea name="comment" class="form-control" id="comment" required placeholder="Add comment..." rows="3" disabled></textarea>
                         </div>
-                        <div class="d-flex justify-content-between gap-3">
-                            <div class="d-flex gap-3 w-100">
+                        <div class="d-flex justify-content-between gap-3 flex-wrap">
+                            <div class="d-flex gap-3 w-100 flex-wrap">
                                 <div class="btn-group">
                                     <button type="button" class="btn btn-primary text-nowrap">Proposal Action</button>
                                     <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">

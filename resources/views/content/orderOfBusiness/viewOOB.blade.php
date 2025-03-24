@@ -16,7 +16,7 @@
 </div>
 <div class="card p-4">
 
-    <div class="mt-3">
+    <div class="mt-3 mb-3">
         <button type="button" id="exportOOB" class="btn btn-secondary d-flex gap-2 {{$orderOfBusiness->status == 0 ? 'd-none' : ''}}">
             <a href="{{ route('oob.export.pdf', ['level' => $orderOfBusiness->meeting->getMeetingLevel(), 'oob_id' => encrypt($orderOfBusiness->id)]) }}" class="text-white d-flex align-items-center gap-2" target="_blank"><i class='bx bx-export'></i> Export OOB</a>
         </button>
@@ -176,12 +176,14 @@
                                                 <a href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal['data']->proposal->id)]) }}">{{ $proposal['data']->proposal->title }}</a>
                                             </td>
                                             <td>
-                                                @foreach ($proposal['data']->proponentsList ?? [] as $proponent)
-                                                    <div class="d-flex align-items-center gap-3">
-                                                        <img class="rounded-circle avatar-sm" src="{{ $proponent->image ?? '/default-avatar.png' }}" alt="Avatar">
-                                                        <span>{{ $proponent->name }}</span>
-                                                    </div>
-                                                @endforeach
+                                                <div class="d-flex flex-column gap-3">
+                                                    @foreach ($proposal['data']->proposal->proponents ?? [] as $proponent)
+                                                        <div class="d-flex align-items-center gap-3">
+                                                            <img class="rounded-circle avatar-sm" src="{{ $proponent->image ?? '/default-avatar.png' }}" alt="Avatar">
+                                                            <span>{{ $proponent->name }}</span>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
                                             </td>
                                             <td>
                                                 <span class="d-flex gap-2 align-items-center">
@@ -190,8 +192,8 @@
                                                 </span>
                                             </td>
                                             <td>
-                                                @if ($proposal['data']->files->isNotEmpty())
-                                                    <button class="btn btn-sm btn-primary view-files d-flex gap-2" data-files="{{ json_encode($proposal['data']->files) }}" data-title="{{ $proposal['data']->proposal->title }}">
+                                                @if ($proposal['data']->proposal->files->isNotEmpty())
+                                                    <button class="btn btn-sm btn-primary view-files d-flex gap-2" data-files="{{ json_encode($proposal['data']->proposal->files) }}" data-title="{{ $proposal['data']->proposal->title }}">
                                                         <i class='bx bx-file'></i> VIEW FILES
                                                     </button>
                                                 @else
@@ -232,13 +234,15 @@
                                                 <td>
                                                     <a href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($groupedProposal->proposal->id)]) }}">{{ $groupedProposal->proposal->title }}</a>
                                                 </td>
-                                                <td>
-                                                    @foreach ($groupedProposal->proponentsList ?? [] as $proponent)
-                                                        <div class="d-flex align-items-center gap-3">
-                                                            <img class="rounded-circle avatar-sm" src="{{ $proponent->image ?? '/default-avatar.png' }}" alt="Avatar">
-                                                            <span>{{ $proponent->name }}</span>
-                                                        </div>
-                                                    @endforeach
+                                                <td>  
+                                                    <div class="d-flex flex-column gap-3">
+                                                        @foreach ($groupedProposal->proposal->proponents ?? [] as $proponent)
+                                                            <div class="d-flex align-items-center gap-3">
+                                                                <img class="rounded-circle avatar-sm" src="{{ $proponent->image ?? '/default-avatar.png' }}" alt="Avatar">
+                                                                <span>{{ $proponent->name }}</span>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
                                                 </td>
                                                 <td>
                                                     <span class="d-flex gap-2 align-items-center">
@@ -247,8 +251,8 @@
                                                     </span>
                                                 </td>
                                                 <td>
-                                                    @if ($groupedProposal->files->isNotEmpty())
-                                                        <button class="btn btn-sm btn-primary view-files d-flex gap-2" data-files="{{ json_encode($groupedProposal->files) }}" data-title="{{ $groupedProposal->proposal->title  }}">
+                                                    @if ($groupedProposal->proposal->files->isNotEmpty())
+                                                        <button class="btn btn-sm btn-primary view-files d-flex gap-2" data-files="{{ json_encode($groupedProposal->proposal->files) }}" data-title="{{ $groupedProposal->proposal->title  }}">
                                                             <i class='bx bx-file'></i> VIEW FILES
                                                         </button>
                                                     @else 
@@ -275,7 +279,7 @@
             </script>
         </div>
         
-        @if(session('isSecretary'))
+        @if(session('isSecretary') && (session('secretary_level') == $meeting->getMeetingCouncilType()))
             <div class="d-flex gap-3 align-items-center flex-wrap">
                 <button type="submit" class="btn btn-primary d-flex gap-2" id="saveOOBBtn">
                     <i class='bx bx-save' ></i>
@@ -350,6 +354,78 @@
     </div>
 </div>
 <script>
+     // SHOW PROPOSAL FILE
+   $(document).on('click', '.view-files', function (e) {
+        e.preventDefault();
+        var files = $(this).data("files");
+        var title = $(this).data("title");
+
+        console.log(files);
+
+        if (!files || files.length === 0) {
+            $("#modalFiles").html('<p class="text-danger">No files available.</p>');
+        } else {
+            let fileListHtml = `
+                <div class="">
+                    <div class="d-flex flex-column">
+                        <span class="form-label">Title:</span>
+                        <h6 id="modal-title">${title || 'No Title Available'}</h6>
+                    </div>
+                    <div class="">
+                        <span class="form-label">Files:</span>
+                        <div class="d-flex flex-column gap-2 mt-2">
+            `;
+
+            $.each(files, function (index, fileObj) {
+                if(fileObj.is_active == true){
+                    fileListHtml += `
+                    <a href="#" class="form-control d-flex align-items-center gap-2 view-file-preview" style="text-transform: none;"
+                    data-bs-toggle="modal" 
+                    data-bs-target="#fileModal"
+                    data-file-url="/storage/proposals/${fileObj.file}" >
+                        <span>${fileObj.order_no}. </span><i class='bx bx-file-blank'></i><span>${fileObj.file}</span>
+                    </a>`;
+                }
+            });
+
+            fileListHtml += `</div></div></div>`;
+            $("#modalFiles").html(fileListHtml);
+        }
+
+        var myModal = new bootstrap.Modal(document.getElementById('proposalFIleModal'));
+        myModal.show();
+    });
+
+    $(document).on('click', '.view-file-preview', function (e) {
+        e.preventDefault();
+        const fileUrl = $(this).data('file-url');
+        $('#fileIframe').attr('src', fileUrl);
+
+        var fileModal = new bootstrap.Modal(document.getElementById('fileModal'));
+        fileModal.show();
+    });
+
+    $('#fileModal').on('show.bs.modal', function () {
+        $('#proposalFIleModal').addClass('d-block');
+    });
+
+    $('#fileModal').on('hidden.bs.modal', function () {
+        $('#proposalFIleModal').removeClass('d-block');
+        $('#proposalFIleModal').modal('show');
+    });
+
+    $('#proposalFIleModal').on('hidden.bs.modal', function () {
+        setTimeout(function() {
+            if ($('.modal-backdrop').length > 0) {
+                $('.modal-backdrop').remove();
+                $('body').removeClass('modal-open');
+                $('body').css('padding-right', '');
+            }
+        }, 200); 
+    });
+
+
+    
     $(document).ready(function () {
         // Right-click event for group rows
         $(document).on("contextmenu", ".tr-group", function (event) {

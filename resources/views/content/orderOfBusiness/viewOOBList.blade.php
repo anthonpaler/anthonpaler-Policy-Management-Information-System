@@ -41,36 +41,40 @@
 <!-- Basic Bootstrap Table -->
 <div class="card">
     <div class="card-body">
-        <div class="d-flex justify-content-between flex-wrap">
+        <div class="d-flex justify-content-between flex-wrap mb-3">
             <div class="mb-3">
                 <h5 class="mb-0">Order of Business Overview</h5>
                 <small class="text-muted">List of meetings in the Order of Business.</small>
             </div>
             
-            <div class="d-flex align-items-center gap-2">
-                <div class="input-group input-group-merge">
-                    <span  class="input-group-text">
-                        <i class='bx bx-search' ></i>
-                    </span>
-                    <input type="text" class="form-control" id="oobSearch" placeholder="Search...">
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+                <div class="flex-grow-1">
+                    <div class="input-group input-group-merge">
+                        <span  class="input-group-text">
+                            <i class='bx bx-search' ></i>
+                        </span>
+                        <input type="text" class="form-control" id="oobSearch" placeholder="Search...">
+                    </div>
                 </div>
-                <div class="input-group input-group-merge">
-                    <span  class="input-group-text">
-                        <i class='bx bx-calendar-alt'></i>
-                    </span>
-                    <select class="form-select @error('year') is-invalid @enderror" name="year" required>
-                        <option value="">All Year</option>
-                        @foreach ($orderOfBusiness->pluck('meeting.year')->unique()->sort() as $year)
-                            <option value="{{ $year }}">{{ $year }}</option>
-                        @endforeach
-                    </select>
+                <div class="flex-grow-1">
+                    <div class="input-group input-group-merge">
+                        <span  class="input-group-text">
+                            <i class='bx bx-calendar-alt'></i>
+                        </span>
+                        <select class="form-select @error('year') is-invalid @enderror" name="year" required>
+                            <option value="">All Year</option>
+                            @foreach ($orderOfBusiness->pluck('meeting.year')->unique()->sort() as $year)
+                                <option value="{{ $year }}">{{ $year }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>
         <div class="card-datatable pt-0">
             <div class="table-responsive text-nowrap">
                 <table class="datatables-basic table table table-striped" id="oobTable">
-                    <thead>
+                    <thead class="custom-tbl-header">
                         <tr>
                             <th>#</th>
                             <th>Level</th>

@@ -83,7 +83,7 @@ class BorMeeting extends Model
             'id', 
             'id', 
             'board_proposal_id'
-        );
+        )->with('proponents');
     }
 
     // Function to get the campus name

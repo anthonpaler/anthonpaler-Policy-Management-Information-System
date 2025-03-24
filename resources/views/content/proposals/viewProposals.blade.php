@@ -18,19 +18,20 @@
 @endphp 
     <div class="card-body">
         <div class="d-flex justify-content-between flex-wrap">
-            <div class="">
+            <div class="mb-2">
                 <h5 class="mb-0">List of Meetings</h5>
                 <small class="text-muted">Scheduled submissions and meetings with its proposals.</small>
             </div>
-            <form method="POST" action="{{ route(getUserRole().'.meetings.filter') }}" class="d-flex gap-3" id="filterFrm">
-                @csrf
-                <div class="d-flex align-items-center gap-2">
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+                <div class="flex-grow-1">
                     <div class="input-group input-group-merge">
                         <span  class="input-group-text">
                             <i class='bx bx-search' ></i>
                         </span>
                         <input type="text" class="form-control" id="meetingSearch" placeholder="Search...">
                     </div>
+                </div>
+                <div class="flex-grow-1">
                     <div class="input-group input-group-merge">
                         <span  class="input-group-text">
                             <i class='bx bx-calendar-alt'></i>
@@ -42,13 +43,8 @@
                             @endforeach
                         </select>
                     </div>
-                    <input type="text" name="level" id="level" class="form-control" value="{{session('user_role') == 3 ? 0 : (session('user_role') == 4 ? 1 : (session('user_role') == 5 ? 2 : 0))}}" hidden>  
-                    <!-- <button class="btn btn-success d-flex gap-2" type="submit" id="filterButton" >
-                        <i class='bx bx-filter-alt' ></i>
-                        <span>Filter</span>
-                    </button> -->
                 </div>
-            </form>
+            </div>
         </div>
         <div class="pt-4">
             <div class="table-responsive text-nowrap border-top">
