@@ -18,7 +18,7 @@
 
 </div>
 @php 
-    $actionColors = [ 'secondary', 'primary', 'success', 'warning', 'info', 'danger']; 
+    $actionColors = ['secondary', 'primary', 'success', 'warning', 'info', 'danger']; 
     $statusCounts = [
         'For Endorsement' => 0,
         'Posted to Agenda' => 0,
@@ -188,10 +188,7 @@
 
                                 <div>
                                     <div class="btn-group">
-                                        <button type="button" class="btn btn-primary text-nowrap">Proposal Action</button>
-                                        <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <span class="visually-hidden">Toggle Dropdown</span>
-                                        </button>
+                                        <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">Proposal Actions</button>
 
                                         @php
                                             $currentDateTime = now();
@@ -248,7 +245,7 @@
                                             <i class='bx bxs-lock-alt' ></i>
                                         </button>
                                     @else
-                                        <button type="button" id="okActionButton" class="btn btn-success d-flex gap-2" {{ $meeting->status == 1 ? 'disabled': '' }}>
+                                        <button type="button" id="okActionButton" class="btn btn-success" {{ $meeting->status == 1 ? 'disabled': '' }}>
                                             <i class="fa-regular fa-circle-check"></i>
                                         </button>
                                     @endif
@@ -506,6 +503,15 @@
             <div class="modal-body">
                 <form method="POST" action="" enctype="multipart/form-data" id="proposalFrm">
                 @csrf
+                    <!-- Title -->
+                    <div class="mb-3">
+                        <label class="form-label" for="title">Title <span class="ms-1 text-danger">*</span></label>
+                        <textarea id="title" name="title" class="form-control" placeholder="Enter title" required rows="3"></textarea>
+                        @error('title')
+                            <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
+                        @enderror
+                    </div>
+
                     <!-- Proponent or Presenter Email -->
                     <div class="mb-3">
                         <label class="form-label" for="proponent_email">Proponent<span class="ms-1 text-danger">*</span></label>
@@ -521,15 +527,6 @@
                             >
                         </div>
                         @error('proponent_email')
-                            <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <!-- Title -->
-                    <div class="mb-3">
-                        <label class="form-label" for="title">Title <span class="ms-1 text-danger">*</span></label>
-                        <textarea id="title" name="title" class="form-control" placeholder="Enter title" required rows="3"></textarea>
-                        @error('title')
                             <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
                         @enderror
                     </div>

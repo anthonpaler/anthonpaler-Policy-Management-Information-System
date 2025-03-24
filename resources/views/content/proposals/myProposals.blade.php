@@ -161,6 +161,60 @@
         </div>
     </div>
 </div>
+<script>
+    // DELETE PROPOSAL
+    $(".delete-proposal").on('click', function(e){
+        e.preventDefault();
+        var proposal_id = $(this).data("id");
+        var is_delete_disabled = $(this).data("deletable");
+        var button = $(this); 
+
+        console.log(proposal_id);
+        if(is_delete_disabled){
+            showAlert("danger", "Can't Delete!", "You can no longer delete this proposal.");
+            return;
+        }
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You won't be able to revert this!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, delete it!"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '/proponents/proposal/delete',
+                    type: "POST",
+                    data: { proposal_id: proposal_id },
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function (response) {
+                        if(response.type == 'success'){
+                            Swal.fire({
+                                title: "Deleted!",
+                                text: "Your file has been deleted.",
+                                icon: "success"
+                            });
+                            button.closest("tr").remove(); 
+                        }else{
+                            showAlert("danger", response.title, response.message);
+                        }
+                    },            
+                    error: function (xhr, status, error) {
+                        console.log(xhr.responseText);
+                        let response = JSON.parse(xhr.responseText);
+                        showAlert("danger", response.title, response.message);
+                    }
+                });
+            }
+        });
+    });
+
+
+</script>
 <script src="{{asset('assets/js/proposal.js')}}"></script>
 <script src="{{asset('assets/js/dataTable.js')}}"></script>
 @endsection
