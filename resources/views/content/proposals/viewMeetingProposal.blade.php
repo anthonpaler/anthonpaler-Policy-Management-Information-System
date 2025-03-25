@@ -45,7 +45,7 @@
             <p class="text-heading mb-1">For Endorsment</p>
             <div class="d-flex align-items-center mb-1">
                 <h4 class="card-title mb-0 me-2">{{ $statusCounts['For Endorsement'] }}</h4>
-                <span class="text-success"> proposals</span>
+                <span class="text-primary"> proposals</span>
             </div>
           </div>
           <div class="card-icon">
@@ -145,7 +145,7 @@
             <p class="text-heading mb-1">Deffered</p>
             <div class="d-flex align-items-center mb-1">
                 <h4 class="card-title mb-0 me-2">{{ $statusCounts['Deferred'] }}</h4>
-                <span class="text-danger">proposal</span>
+                <span class="text-danger">proposals</span>
             </div>
           </div>
           <div class="card-icon">

@@ -36,7 +36,16 @@
 }
 
 .custom-tbl-header{
-    background-color: var(--bs-secondary-bg-subtle);
+    background-color: #9B9DFF;
+    /* color: var(--bs-white); */
+}
+
+.custom-tbl-header th,
+.custom-tbl-header tr{
+    color: var(--bs-white) !important;
+}
+tr{
+    border-bottom: 1px solid #e8e8e8 ;
 }
 
 /* TD AND TH CUSTOM CSS */

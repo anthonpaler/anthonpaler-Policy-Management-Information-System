@@ -45,8 +45,8 @@
                                 rows="2"
                             >{{$proposal->title}}</textarea>
                         </div>
-                        <!-- <div class="col-md-6 c-field-p w-100">
-                            <div class="mb-3" id="subTypeContainer" style="">
+                        <div class="col-md-6 c-field-p w-100">
+                            <div class="mb-3" id="" style="">
                                 <label class="form-label" for="addProponent">Add Proponents (Optional)</label>
                                 <div class="input-group input-group-merge">
                                     <span id="title-icon" class="input-group-text"><i class='bx bx-user'></i></span>
@@ -61,7 +61,7 @@
                                     <ul class=""></ul>
                                 </div>
                             </div>
-                        </div> -->
+                        </div>
                         <div class="mb-3" id="" style="">
                             <label class="form-label" for="proponents">Proponent/s <span class="ms-1 text-danger">*</span></label>
                             <div class="form-control proponent-con" style="">
@@ -69,7 +69,7 @@
                                 <ul class="" id="proponentListCon">
                                     @foreach ($proposal->proponents as $proponent)
                                         <li data-id="{{$proponent->employee_id}}" data-name="{{$proponent->name}}" data-email="{{$proponent->email}}" data-image="{{$proponent->image}}" id="primaryProponent">
-                                            <div class="d-flex justify-content-between align-items-center ms-2 me-2">
+                                            <div class="d-flex justify-content-between align-items-center ms-2 me-2 flex-wrap gap-2">
                                                 <div class="d-flex justify-content-start align-items-center ">
                                                     <div class="avatar-wrapper">
                                                         <div class="avatar avatar-sm me-3">
@@ -80,24 +80,24 @@
                                                         <a href="" class="text-heading text-truncate m-0">
                                                             <span class="fw-medium">{{$proponent->name}}</span>
                                                         </a>
-                                                        <small>{{$proponent->email}}</small>
+                                                        <small class="text-wrap">{{$proponent->email}}</small>
                                                     </div>
                                                 </div>
-                                                <!-- @if($proponent->employee_id === session('employee_id'))
+                                                @if($proponent->employee_id === session('employee_id'))
                                                     <div class="">
                                                         <small class="badge bg-label-secondary d-flex align-items-center gap-2">
-                                                            <i class='bx bx-user-check'></i>Submitter
+                                                            <i class='bx bx-user-check'></i>( Me )
                                                         </small>
                                                     </div>
                                                 @else
                                                     <div class="">
                                                         <small class="badge bg-label-danger d-flex align-items-center gap-2 remove" data-id="{{$proponent->employee_id}}"><i class='bx bx-trash'></i>Remove</small>
                                                     </div> 
-                                                @endif -->
+                                                @endif
                                             </div>
                                         </li>
                                     @endforeach
-<!-- 
+
                                     @php
                                         $selectedProponents = $proposal->proponents->map(function ($proponent) {
                                             return [
@@ -111,7 +111,7 @@
 
                                     <script>
                                         window.selectedProponents = @json($selectedProponents); 
-                                    </script> -->
+                                    </script>
                                 </ul>
                             </div>
                         </div>
@@ -238,7 +238,7 @@
                                                                 <img src="{{ asset('assets/img/icons/document/folder_3.png') }}" alt="">
                                                             </div>
                                                             <div class="d-flex flex-column gap-2">
-                                                                <span class="text-wrap"  data-bs-toggle="modal" 
+                                                                <span class="text-wrap view-file-preview" data-bs-toggle="modal" 
                                                                 data-bs-target="#fileModal"
                                                                 data-file-url="/storage/proposals/{{$file->file}}">{{ $file->file }} </span>
                                                                 <div class="d-flex gap-2">
@@ -318,7 +318,7 @@
                                                                 <img src="{{ asset('assets/img/icons/document/folder_3.png') }}" alt="">
                                                             </div>
                                                             <div class="d-flex flex-column gap-2">
-                                                                <span class="text-wrap"  data-bs-toggle="modal" 
+                                                                <span class="text-wrap view-file-preview"   data-bs-toggle="modal" 
                                                                 data-bs-target="#fileModal"
                                                                 data-file-url="/storage/proposals/{{$file->file}}">{{ $file->file }} </span>
                                                                 <div class="d-flex gap-2">
@@ -434,7 +434,7 @@
                         <div class="mb-3">
                             <textarea name="comment" class="form-control" id="comment" required placeholder="Add comment..." rows="3" disabled></textarea>
                         </div>
-                        <div class="d-flex justify-content-between gap-3 flex-wrap">
+                        <div class="d-flex justify-content-between gap-3">
                             <div class="d-flex gap-3 w-100 flex-wrap">
                                 <div class="btn-group">
                                     <button type="button" class="btn btn-primary text-nowrap">Proposal Action</button>
@@ -451,7 +451,7 @@
                                         @foreach (array_slice(config('proposals.proposal_action'), 0, 7, true) as $index => $item)
                                             @php
                                                
-                                                if(auth()->user()->role == 5 ){
+                                                if(session('user_role') == 5 ){
                                                     if (in_array($index, [3,5])) {
                                                         continue;
                                                     }
@@ -487,7 +487,7 @@
                                     </ul>
 
                                 </div>
-                                <div class=" flex-grow-1">
+                                <div class="flex-grow-1">
                                     <input type="text" class="form-control flex-grow-1" data-id="" value="Select Action" id="proposalStatusInput"  disabled>
                                 </div>
                             </div>
@@ -562,9 +562,69 @@
 </div>
 <script>
     var proposalStatus = @json(config('proposals.status'));
+    $('#matter').on('change', function() {
+        var matter = $(this).val();
+        var subType = $('#sub_type');
+        var actionSelect = $('#action');
+
+        actionSelect.empty();
+
+        if (matter == 1) {
+            actionSelect.append(`
+                @if (session('user_role') == 3)
+                    <option value="4">Endorsement for Local ACAD</option>
+                    <option value="1">Endorsement for UACAD</option>
+                @endif
+                @if (session('user_role') == 4)
+                    <option value="6">Approval for UACAD</option>
+                    <option value="3">Endorsement for BOR</option>
+                @endif
+                @if (session('user_role') == 5)
+                    <option value="8">BOR Approval</option>
+                @endif
+            `);
+            subType.prop('disabled', true);
+            $('#subTypeContainer').css('display', 'none');
+        } else if (matter == 2) {
+            subType.prop('disabled', false);
+            $('#subTypeContainer').css('display', 'block');
+
+            actionSelect.append(`
+                @if (session('user_role') == 3)
+                    <option value="5">Endorsement for Local ADCO</option>
+                    <option value="2">Endorsement for UADCO</option>
+                @endif
+                @if (session('user_role') == 4)
+                    <option value="7">Approval for UADCO</option>
+                    <option value="3">Endorsement for BOR</option>
+                @endif
+                @if (session('user_role') == 5)
+                    <option value="8">BOR Approval</option>
+                @endif
+            `);
+        }else if (matter == 3) {
+            subType.prop('disabled', true);
+            $('#subTypeContainer').css('display', 'none');
+
+            actionSelect.append(`
+                <option value="3">Endorsement for BOR</option>
+                <option value="9">BOR Confirmation</option>
+            `);
+        }
+        else if (matter == 4) {
+            subType.prop('disabled', true);
+            $('#subTypeContainer').css('display', 'none');
+
+            actionSelect.append(`
+                <option value="3">Endorsement for BOR</option>
+                <option value="10">BOR Information</option>
+            `);
+        }
+    });
 
     let deletedFiles = [];
     let reuploadedFiles = [];
+    
 
     function getImageByFileType(fileType) {
         switch (fileType) {

@@ -86,7 +86,7 @@
                                                 @if($proponent->employee_id === session('employee_id'))
                                                     <div class="">
                                                         <small class="badge bg-label-secondary d-flex align-items-center gap-2">
-                                                            <i class='bx bx-user-check'></i>Submitter
+                                                            <i class='bx bx-user-check'></i>( Me )
                                                         </small>
                                                     </div>
                                                 @else
@@ -239,7 +239,7 @@
                                                                 <img src="{{ asset('assets/img/icons/document/folder_3.png') }}" alt="">
                                                             </div>
                                                             <div class="d-flex flex-column gap-2">
-                                                                <span class="text-wrap"  data-bs-toggle="modal" 
+                                                                <span class="text-wrap view-file-preview"   data-bs-toggle="modal" 
                                                                 data-bs-target="#fileModal"
                                                                 data-file-url="/storage/proposals/{{$file->file}}">{{ $file->file }} </span>
                                                                 <div class="d-flex gap-2">
@@ -319,7 +319,7 @@
                                                                 <img src="{{ asset('assets/img/icons/document/folder_3.png') }}" alt="">
                                                             </div>
                                                             <div class="d-flex flex-column gap-2">
-                                                                <span class="text-wrap"  data-bs-toggle="modal" 
+                                                                <span class="text-wrap view-file-preview"   data-bs-toggle="modal" 
                                                                 data-bs-target="#fileModal"
                                                                 data-file-url="/storage/proposals/{{$file->file}}">{{ $file->file }} </span>
                                                                 <div class="d-flex gap-2">

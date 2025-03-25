@@ -205,7 +205,7 @@
                                                                 <img src="{{ asset('assets/img/icons/document/folder_3.png') }}" alt="">
                                                             </div>
                                                             <div class="d-flex flex-column gap-2">
-                                                                <span class="text-wrap"  data-bs-toggle="modal" 
+                                                                <span class="text-wrap view-file-preview"   data-bs-toggle="modal" 
                                                                 data-bs-target="#fileModal"
                                                                 data-file-url="/storage/proposals/{{$file->file}}">{{ $file->file }} </span>
                                                                 <div class="d-flex gap-2">
@@ -259,7 +259,7 @@
                                                                 <img src="{{ asset('assets/img/icons/document/folder_3.png') }}" alt="">
                                                             </div>
                                                             <div class="d-flex flex-column gap-2">
-                                                                <span class="text-wrap"  data-bs-toggle="modal" 
+                                                                <span class="text-wrap view-file-preview"  data-bs-toggle="modal" 
                                                                 data-bs-target="#fileModal"
                                                                 data-file-url="/storage/proposals/{{$file->file}}">{{ $file->file }} </span>
                                                                 <div class="d-flex gap-2">

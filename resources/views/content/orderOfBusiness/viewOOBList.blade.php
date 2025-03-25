@@ -123,7 +123,7 @@
                             </td>
                             <td>
                                 <a href="{{ route(getUserRole().'.order_of_business.view-oob', ['level' => $oob->meeting->getMeetingLevel(), 'oob_id'=> encrypt( $oob->id)]) }}" 
-                                class="btn btn-sm btn-primary d-flex gap-2">
+                                class="btn btn-sm btn-primary d-flex gap-2" style="max-width: 100px;">
                                     <i class="fa-regular fa-eye"></i> VIEW OOB
                                 </a>
                             </td>

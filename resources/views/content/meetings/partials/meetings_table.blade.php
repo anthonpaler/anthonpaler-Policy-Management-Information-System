@@ -54,7 +54,7 @@
                 </td>
                 @if(session('isProponent'))
                     <td>
-                        <a href="" class="text-primary">
+                        <a href="{{ session('isProponent') ? route(getUserRole().'.meetings.myProposals', ['level' => $meeting->getMeetingLevel(), 'meeting_id'=> encrypt($meeting->id)]) : '#' }}" class="text-primary">
                             <span>
                                 <i class='bx bx-file-blank' ></i>
                                 {{ $meeting->proposals_count }} Proposals
@@ -69,7 +69,7 @@
                             @if ($meeting->getMeetingCouncilType() == 0)
                                 @if ($meeting->getIsSubmissionClosedAttribute() || $meeting->status == 1)
                                     <a class="btn btn-sm btn-danger d-flex gap-2 disabled">
-                                        <i class='bx bx-lock'></i>Closed
+                                        <i class='bx bx-lock'></i>CLOSED
                                     </a>
                                 @else
                                     <a class="btn btn-sm btn-primary d-flex align-items-center gap-1"
@@ -103,7 +103,7 @@
                                 };
                             @endphp
 
-                            @if ($level == $meeting->getMeetingCouncilType() && ($campus_id == $meeting->campus_id))
+                            @if ($level == $meeting->getMeetingCouncilType())
                                 <a class="btn btn-sm btn-primary d-flex align-items-center gap-1"
                                     href="{{ route(getUserRole().'.meetings.details', ['level' => $meeting->getMeetingLevel(), 'meeting_id'=> encrypt($meeting->id)]) }}" 
                                 >

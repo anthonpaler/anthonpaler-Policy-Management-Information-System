@@ -122,7 +122,7 @@
                                         </span>  
                                     </td>
                                     <td>
-                                        <a href="" class="text-primary">
+                                        <a  href="{{ route(getUserRole().'.meetings.proposals', ['level' => $meeting->getMeetingLevel(), 'meeting_id' => encrypt($meeting->id)]) }}" class="text-primary">
                                             <span>
                                                 <i class='bx bx-file-blank' ></i>
                                                 {{ $meeting->proposals_count }} Proposals
@@ -130,7 +130,8 @@
                                         </a>
                                     </td>
                                     <td>
-                                        <a href="{{ route(getUserRole().'.meetings.proposals', ['level' => $meeting->getMeetingLevel(), 'meeting_id' => encrypt($meeting->id)]) }}" class="btn btn-sm btn-primary d-flex gap-2"><i class="fa-regular fa-eye"></i>VIEW PROPOSALS</a>
+                                        <a href="{{ route(getUserRole().'.meetings.proposals', ['level' => $meeting->getMeetingLevel(), 'meeting_id' => encrypt($meeting->id)]) }}" class="btn btn-sm btn-primary d-flex gap-2" style="max-width: 150px;">
+                                            <i class="fa-regular fa-eye"></i>VIEW PROPOSALS</a>
                                     </td>
                                 </tr>
                             @endforeach

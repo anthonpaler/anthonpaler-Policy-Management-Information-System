@@ -8,6 +8,9 @@ use App\Models\UniversityCouncilMeeting;
 use App\Models\BorMeeting;
 use Illuminate\Support\Facades\DB;
 use App\Models\Venues;
+use App\Models\UniversityMeetingAgenda;
+use App\Models\BoardMeetingAgenda;
+use App\Models\LocalMeetingAgenda;
 use App\Models\Employee;
 
 class MeetingController extends Controller
@@ -243,6 +246,42 @@ class MeetingController extends Controller
         return view('content.meetings.viewMeetingDetails', compact('meeting'));
     }
 
+    // MY PROPOSALS IN MEETINGS - PROPONENT
+    public function viewMyProposalsInMeeting($level, $meeting_id)
+    {
+        $meetingID = decrypt($meeting_id);
+        $proposals = collect(); // Initialize as an empty collection
+        $meeting = null; // Initialize the meeting variable
+    
+        if ($level == 'Local') {
+            $meeting = LocalCouncilMeeting::find($meetingID);
+            $proposals = LocalMeetingAgenda::where("local_council_meeting_id", $meetingID)
+                ->whereHas('proposal.proponents', function ($query) {
+                    $query->where('proposal_proponents.employee_id', session('employee_id'));
+                })
+                ->orderBy('created_at', 'desc')
+                ->get();
+        } elseif ($level == 'University') {
+            $meeting = UniversityCouncilMeeting::find($meetingID);
+            $proposals = UniversityMeetingAgenda::where("university_meeting_id", $meetingID)
+                ->whereHas('proposal.proponents', function ($query) {
+                    $query->where('proposal_proponents.employee_id', session('employee_id'));
+                })
+                ->orderBy('created_at', 'desc')
+                ->get();
+        } elseif ($level == 'BOR') {
+            $meeting = BorMeeting::find($meetingID);
+            $proposals = BoardMeetingAgenda::where("bor_meeting_id", $meetingID)
+                ->whereHas('proposal.proponents', function ($query) {
+                    $query->where('proposal_proponents.employee_id', session('employee_id'));
+                })
+                ->orderBy('created_at', 'desc')
+                ->get();
+        }
+        // dd($proposals);
+        return view('content.proposals.myProposalsInMeeting', compact('proposals', 'meeting'));
+    }
+    
     // FILTER MEETINGS
     public function filterMeetings(Request $request){
         try{

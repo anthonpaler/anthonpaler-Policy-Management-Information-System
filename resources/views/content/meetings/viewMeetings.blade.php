@@ -159,7 +159,7 @@
                                     </td>
                                     @if(session('isProponent'))
                                         <td>
-                                            <a href="" class="text-primary">
+                                            <a href="{{ session('isProponent') ? route(getUserRole().'.meetings.myProposals', ['level' => $meeting->getMeetingLevel(), 'meeting_id'=> encrypt($meeting->id)]) : '#' }}" class="text-primary">
                                                 <span>
                                                     <i class='bx bx-file-blank' ></i>
                                                     {{ $meeting->proposals_count }} Proposals

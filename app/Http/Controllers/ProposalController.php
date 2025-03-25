@@ -41,34 +41,50 @@ class ProposalController extends Controller
         $query = trim($request->input('query'));
     
         $campus_id = session('campus_id');
-    
-        if (!$campus_id) {
-            return response()->json([]); 
-        }
-    
+
         $userRole = session('user_role'); 
         $roles = match ($userRole) {
             0 => [0, 2, 6],
             1 => [1, 2, 6],
             2 => [0, 1, 2, 6],
+            3 => [0, 1, 2, 6],
+            4 => [0, 1, 2, 6],
+            5 => [0, 1, 2, 6],
+            6 => [0, 1, 2, 6],
             default => [],
         };
     
         if (empty($roles)) {
             return response()->json([]);
         }
-    
-        // dd($roles);
+
+
+        if(session('isProponent')){
+            if (!$campus_id) {
+                return response()->json([]); 
+            }
+
+            $users = User::whereIn('role', $roles)
+                ->whereHas('employee', function ($q) use ($campus_id) {
+                    $q->where('campus', $campus_id);
+                })
+                ->where(function ($q) use ($query) {
+                    $q->where('name', 'LIKE', "%{$query}%")
+                    ->orWhere('email', 'LIKE', "%{$query}%");
+                })
+                ->get();
+        }
         
-        $users = User::whereIn('role', $roles)
-            ->whereHas('employee', function ($q) use ($campus_id) {
-                $q->where('campus', $campus_id);
-            })
+        if(session('isSecretary')){
+            $users = User::whereIn('role', $roles)
             ->where(function ($q) use ($query) {
                 $q->where('name', 'LIKE', "%{$query}%")
-                  ->orWhere('email', 'LIKE', "%{$query}%");
+                ->orWhere('email', 'LIKE', "%{$query}%");
             })
-            ->get();
+                    ->get();
+        }
+        
+      
     
         return response()->json($users);
     }
@@ -449,7 +465,12 @@ private function attachProposalToAgenda($meetingID, $proposalID, $roleID)
             ->orderBy('created_at', 'desc')
             ->get();
     
-        return view('content.proposals.myProposals', compact('proposals'));
+        $employeeId = session('employee_id'); 
+        $proposalCounts = Proposal::proposalsCountByEmployeeInLevel($employeeId);
+            
+
+
+        return view('content.proposals.myProposals', compact('proposals', 'proposalCounts'));
     }
     
     

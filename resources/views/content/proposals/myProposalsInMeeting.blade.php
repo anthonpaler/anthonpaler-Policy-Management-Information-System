@@ -10,101 +10,54 @@
         <i class='bx bx-home-alt' ></i>
     </a>
     <i class='bx bx-chevron-right' ></i>
+    <a href="{{ route(getUserRole().'.meetings') }}">Meetings</a>
+    <i class='bx bx-chevron-right' ></i>
     <a href="#">My Proposals</a>
 </div>
 @php 
     $actionColors = [ 'secondary', 'primary', 'success', 'warning', 'info', 'danger']; 
 @endphp 
+
 <div class="row">
-  <!-- Single Card: Local Proposals -->
-  <div class="col-lg-3  col-md-6 col-sm-6 mb-3">
-    <div class="card" style="height: 100%;">
-      <div class="card-body">
-        <div class="d-flex justify-content-between">
-          <div class="card-info">
-            <p class="text-heading mb-1">Proposals Submitted Locally</p>
-            <div class="d-flex align-items-center mb-1">
-              <h4 class="card-title mb-0 me-2">{{ $proposalCounts['local'] }}</h4>
-              <span class="text-primary">Total Proposals</span>
-            </div>
+    <div class="col-xl">
+      <div class="card mb-4">
+        <div class="card-content fade-bg-wrapper">
+          <div class="fade-bg-con">
+            <img src="{{asset('assets/img/backgrounds/slsu_bg_2.jpeg') }}"  class="img-fluid rounded-top user-timeline-image" alt="user timeline image">
           </div>
-          <div class="card-icon">
-            <span class="badge bg-label-primary rounded p-2">
-                <i class='bx bx-book-open' ></i>
-            </span>
+          <div class="meeting-head-text">
+            <div class="d-flex justify-content-between gap-2">
+              <h4 class="">{{ config('meetings.quaterly_meetings.'.$meeting->quarter) }} {{ config("meetings.council_types." . ['local_level', 'university_level', 'board_level'][$meeting->getMeetingCouncilType()] . ".{$meeting->council_type}") }}
+              {{$meeting->year}}</h4>
+              <div class="">
+                  <span class="btn btn-sm btn-{{$meeting->status == 0 ? 'primary' : "danger" }} d-flex gap-1">
+                    {!! $meeting->status == 0 ? "<i class='bx bxs-lock-open-alt' ></i>" : "<i class='bx bxs-lock-alt' ></i>" !!}
+                    {{ config('meetings.status.'.$meeting->status) }}
+                  </span>
+              </div>
+            </div>
+            <p>
+              @if(!empty($meeting) && !empty($meeting->description))
+                  {{ $meeting->description }}
+              @else
+                  <span class="text-muted">No Description Available</span>
+              @endif
+            </p>
+          </div>
+          <div class="p-4">
+
           </div>
         </div>
       </div>
-    </div>
-  </div>
-
-  <!-- Single Card: University Proposals -->
-  <div class="col-lg-3 col-md-6 col-sm-6 mb-3">
-    <div class="card" style="height: 100%;">
-      <div class="card-body">
-        <div class="d-flex justify-content-between">
-          <div class="card-info">
-            <p class="text-heading mb-1">Proposals Submitted to the University</p>
-            <div class="d-flex align-items-center mb-1">
-              <h4 class="card-title mb-0 me-2">{{ $proposalCounts['university'] }}</h4>
-              <span class="text-info">Total Proposals</span>
-            </div>
-          </div>
-          <div class="card-icon">
-            <span class="badge bg-label-info rounded p-2">
-                <i class='bx bx-book-reader'></i>
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-    <!-- Single Card: Board of Regents Proposals -->
-    <div class="col-lg-3 col-md-6 col-sm-6 mb-3">
-        <div class="card" style="height: 100%;">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <div class="card-info">
-                        <p class="text-heading mb-1">Proposals Submitted to the BOR</p>
-                        <div class="d-flex align-items-center mb-1">
-                        <h4 class="card-title mb-0 me-2">{{ $proposalCounts['board'] }}</h4>
-                        <span class="text-success">Total Proposals</span>
-                        </div>
-                    </div>
-                    <div class="card-icon">
-                        <span class="badge bg-label-success rounded p-2">
-                            <i class='bx bxs-book-reader' ></i>
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-lg-3 col-md-6 col-sm-6 mb-3">
-        <div class="card" style="height: 100%;">
-            <div class="card-body d-flex flex-column justify-content-between">
-                <div class="d-flex gap-2">
-                    <div class="">
-                        <p class="text-muted mb-2">Need to submit proposal? Click below to proceed.  <a href="{{route(    getUserRole().'.meetings')}}" class="">
-                            Go to meetings <i class='bx bx-right-arrow-alt'></i>
-                        </a></p>
-                    </div>
-                    <div class="" style="height: 60px; min-width: 130px; ">
-                        <img src="{{ asset('assets/img/illustrations/illust_1.jpg') }}" style="height:100%; width:  100%; object-fit: cover; "alt="">
-                    </div>
-                </div>
-             
-            </div>
-        </div>
     </div>
 </div>
+
 <div class="card">
-    <h5 class="card-header">My Proposals List</h5>
+    <h5 class="card-header">My Proposals for This Meeting</h5>
     <div class="card-body">
         <div class="card-datatable pt-0">
             <div class="table-responsive text-nowrap">
-                <table id="proposalTable" class="datatables-basic table table-striped">
+                <table id="" class="datatables-basic table table-striped">
                     <thead class="custom-tbl-header">
                         <tr>
                             <th>#</th>
@@ -123,9 +76,9 @@
                     <tbody class="">
                     @if ($proposals->isEmpty())
                         <tr>
-                            <td colspan="8">
+                            <td colspan="9">
                                 <div class="alert alert-warning mt-3" role="alert">
-                                    <i class="bx bx-info-circle"></i> You dont have proposal at the moment.
+                                    <i class="bx bx-info-circle"></i> You dont have proposal for this meeting at the moment.
                                 </div>
                             </td>
                         </tr>
@@ -136,7 +89,7 @@
                             <td>
                                 <div class="d-flex align-items-center">
                                     <div class="d-flex flex-column gap-3">
-                                        @foreach ($proposal->proponents as $proponent)
+                                        @foreach ($proposal->proposal->proponents as $proponent)
                                             <div class="d-flex gap-3 align-items-center">
                                                 <div data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $proponent->name }}" class="avatar avatar-sm pull-up">
                                                     <img class="rounded-circle" src="{{ $proponent->image ?? '/default-avatar.png' }}" alt="Avatar">
@@ -149,7 +102,7 @@
                             </td>
                             <td>
                                 <div style="min-width: 300px; max-width: 500px; white-space: wrap; ">
-                                    <a href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->id)]) }}" >{{ $proposal->title }}</a>
+                                    <a href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->proposal->id)]) }}" >{{ $proposal->proposal->title }}</a>
                                 </div>
                             </td>
                             <td>
@@ -157,13 +110,13 @@
                                     {{ config('proposals.matters.'.$proposal->type) }}
                                 </span> -->
                                 <span class="align-items-center d-flex gap-2"> 
-                                    {!! $proposal->type == 1 ? "<i class='bx bx-book-content text-primary'></i> " : "<i class='bx bxs-book-content text-danger' ></i>" !!}
+                                    {!! $proposal->proposal->type == 1 ? "<i class='bx bx-book-content text-primary'></i> " : "<i class='bx bxs-book-content text-danger' ></i>" !!}
 
-                                    {{ config('proposals.matters.'.$proposal->type) }}
+                                    {{ config('proposals.matters.'.$proposal->proposal->type) }}
                                 </span>
                             </td>
-                            <td> {{ config('proposals.requested_action.'.$proposal->action) }}</td>
-                            <td>{{config('meetings.level.'.$proposal->getCurrentLevelAttribute())}}</td>
+                            <td> {{ config('proposals.requested_action.'.$proposal->proposal->action) }}</td>
+                            <td>{{config('meetings.level.'.$proposal->proposal->getCurrentLevelAttribute())}}</td>
                             <td>
                                 <div style="min-width: 200px; ">
                                     <span class="mb-0 align-items-center d-flex w-100 text-wrap gap-2">
@@ -173,9 +126,9 @@
                                 </div>
                             </td>
                             <td>
-                                @if($proposal->files->count() > 0)
+                                @if($proposal->proposal->files->count() > 0)
                                     <button class="btn btn-sm btn-success d-flex gap-2 view-files"
-                                            data-files="{{ json_encode($proposal->files) }}" 
+                                            data-files="{{ json_encode($proposal->proposal->files) }}" 
                                             data-title="{{ $proposal->title }}">
                                         <i class='bx bx-file'></i> VIEW FILES
                                     </button>
@@ -187,15 +140,15 @@
                             </td>
                             <td>
                                 <div class="d-flex align-items-center gap-2">
-                                    <a class="action-btn success" href="{{ route(getUserRole().'.proposal.edit', ['proposal_id' => encrypt($proposal->id)]) }}">
+                                    <a class="action-btn success" href="{{ route(getUserRole().'.proposal.edit', ['proposal_id' => encrypt($proposal->proposal->id)]) }}">
                                         <i class='bx bxs-edit' ></i>
                                         <span class="tooltiptext">Edit</span>
                                     </a>
-                                    <button class="action-btn danger delete-proposal" data-id="{{ encrypt($proposal->id) }}">
+                                    <button class="action-btn danger delete-proposal" data-id="{{ encrypt($proposal->proposal->id) }}">
                                         <i class='bx bx-trash-alt' ></i>
                                         <span class="tooltiptext">Delete</span>
                                     </button>
-                                    <a class="action-btn primary" href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->id)])}}">
+                                    <a class="action-btn primary" href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->proposal->id)])}}">
                                         <i class='bx bx-right-top-arrow-circle' ></i>
                                         <span class="tooltiptext">View</span>
                                     </a>

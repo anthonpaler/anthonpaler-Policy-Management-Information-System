@@ -29,9 +29,10 @@ class Proposal extends Model
 
     // GET PROPOSAL PROPONENTS
     public function proponents() {
-        return $this->belongsToMany(User::class, 'proposal_proponents', 'proposal_id', 'employee_id');
+        return $this->belongsToMany(User::class, 'proposal_proponents', 'proposal_id', 'employee_id', 
+        'id', 
+        'employee_id');
     }
-    
     
     // GET CURRENT LEVEL OF THE PROPOSAL
     public function localAgendas()
@@ -115,5 +116,22 @@ class Proposal extends Model
         return null;
     }
 
+    // GET PROPOSAL COUNT IN EACH LEVEL
+    public function scopeProposalsCountByEmployeeInLevel($query, $employeeId): array
+    {
+        return [
+            'local' => $query->whereHas('proponents', function ($q) use ($employeeId) {
+                $q->where('users.employee_id', $employeeId);
+            })->whereHas('localAgendas')->count(),
+
+            'university' => $query->whereHas('proponents', function ($q) use ($employeeId) {
+                $q->where('users.employee_id', $employeeId);
+            })->whereHas('universityAgendas')->count(),
+
+            'board' => $query->whereHas('proponents', function ($q) use ($employeeId) {
+                $q->where('users.employee_id', $employeeId);
+            })->whereHas('boardAgendas')->count(),
+        ];
+    }
 
 }

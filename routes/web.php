@@ -43,6 +43,8 @@ Route::middleware(['auth', 'proponents'])->prefix('proponents')->group(function(
   Route::get('/meetings', [MeetingController::class, 'viewMeetings'])->name('proponent.meetings');
   Route::get('/meetings/meeting-details/{level}/{meeting_id}', [MeetingController::class, 'viewMeetingDetails']
     )->name('proponent.meetings.details');
+  Route::get('/meetings/my-proposals/{level}/{meeting_id}', [MeetingController::class, 'viewMyProposalsInMeeting']
+    )->name('proponent.meetings.myProposals');
   Route::get('/meetings/submit-proposal/{level}/{meeting_id}', [ProposalController::class, 'viewSubmitProposal'])->name('proponent.meetings.submit-proposal');
   Route::post('/meetings/filter', [MeetingController::class, 'filterMeetings'])->name(name: 'proponent.meetings.filter');
 
@@ -50,7 +52,6 @@ Route::middleware(['auth', 'proponents'])->prefix('proponents')->group(function(
   Route::post('/proposals/store/{meeting_id}', [ProposalController::class, 'submitProposal'])->name('proponent.proposals.store');
   Route::post('/projects/media', [ProposalController::class, 'storeMedia'])->name('proponent.projects.storeMedia');
   Route::post('/projects/media/delete', [ProposalController::class, 'deleteMedia'])->name('proponent.media.delete');
-  Route::get('/search-users', [ProposalController::class, 'searchUsers'])->name('proponent.search-users');
   Route::get('/my-proposals', [ProposalController::class, 'viewMyProposals'])->name('proponent.proposals');
   Route::get('/my-proposal/edit-proposal/{proposal_id}', [ProposalController::class, 'viewEditProposal'])->name('proponent.proposal.edit');
   Route::get('/my-proposals', [ProposalController::class, 'viewMyProposals'])->name('proponent.proposals');
@@ -193,6 +194,7 @@ Route::get('/sample', function () {
 });
 
 // TO BE ARANGED ROUTES
+Route::get('/search-users', [ProposalController::class, 'searchUsers'])->name('proponent.search-users');
 Route::post('/proposals/update-selected-proposal-status', [ProposalController::class, 'updateSelectedProposalStatus'])->name('proposals.update_selected_proposal_status');
 
 Route::post('/proposals/update-proposal-status', [ProposalController::class, 'updateProposalStatus'])->name('proposals.update_proposal_status');

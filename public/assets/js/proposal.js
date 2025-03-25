@@ -15,31 +15,31 @@ $(document).ready(function() {
         }
     });
 
-    $('#matter').on('change', function() {
-        var matter = $(this).val();
-        var subType = $('#sub_type');
-        var actionSelect = $('#action');
+    // $('#matter').on('change', function() {
+    //     var matter = $(this).val();
+    //     var subType = $('#sub_type');
+    //     var actionSelect = $('#action');
     
-        actionSelect.empty();
+    //     actionSelect.empty();
     
-        if (matter == 1) {
-            actionSelect.append(`
-                <option value="1">Endorsement for UACAD</option>
-                <option value="3">Endorsement for BOR</option>
-            `);
-            subType.prop('disabled', true);
-            $('#subTypeContainer').css('display', 'none');
-        } else if (matter == 2) {
-            subType.prop('disabled', false);
-            $('#subTypeContainer').css('display', 'block');
+    //     if (matter == 1) {
+    //         actionSelect.append(`
+    //             <option value="1">Endorsement for UACAD</option>
+    //             <option value="3">Endorsement for BOR</option>
+    //         `);
+    //         subType.prop('disabled', true);
+    //         $('#subTypeContainer').css('display', 'none');
+    //     } else if (matter == 2) {
+    //         subType.prop('disabled', false);
+    //         $('#subTypeContainer').css('display', 'block');
     
-            actionSelect.append(`
-                <option value="2">Endorsement for UADCO</option>
-                <option value="3">Endorsement for BOR</option>
-            `);
-        }
+    //         actionSelect.append(`
+    //             <option value="2">Endorsement for UADCO</option>
+    //             <option value="3">Endorsement for BOR</option>
+    //         `);
+    //     }
     
-    });
+    // });
     
     let selectedProponents = window.selectedProponents || [];
     let proponentInput = $("#proponents");
@@ -51,10 +51,15 @@ $(document).ready(function() {
         email: $("#primaryProponent").data("email"),
         image: $("#primaryProponent").data("image"),
     };
-    // Ensure the primary proponent is added only once
-    if (!selectedProponents.some(p => p.id === primaryProponent.id)) {
+
+    // Check if the primary proponent is valid (id and name must not be empty/null)
+    if (primaryProponent.id && primaryProponent.name) {
+        // Ensure the primary proponent is added only once
+        if (!selectedProponents.some(p => p.id === primaryProponent.id)) {
             selectedProponents.push(primaryProponent);
+        }
     }
+
     console.log(selectedProponents);
     
     let proponentIds = selectedProponents.map(selectedProponents => selectedProponents.id);
@@ -64,7 +69,7 @@ $(document).ready(function() {
         let query = $(this).val();
         if (query.length > 1) {
             $.ajax({
-                url: "/proponents/search-users",
+                url: "/search-users",
                 type: "GET",
                 data: { query: query },
                 success: function (data) {
