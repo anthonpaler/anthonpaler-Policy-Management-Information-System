@@ -7,6 +7,7 @@ use App\Http\Controllers\ProposalController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\dashboard\Analytics;
 use App\Http\Controllers\Admin\AdminDashboard;
+use App\Http\Controllers\PdfController;
 
 use Illuminate\Support\Facades\Session;
 
@@ -197,9 +198,15 @@ Route::get('/sample', function () {
 Route::get('/search-users', [ProposalController::class, 'searchUsers'])->name('proponent.search-users');
 Route::post('/proposals/update-selected-proposal-status', [ProposalController::class, 'updateSelectedProposalStatus'])->name('proposals.update_selected_proposal_status');
 
+Route::get('/pdf', [PdfController::class, 'generatePDF']);
+
+
 Route::post('/proposals/update-proposal-status', [ProposalController::class, 'updateProposalStatus'])->name('proposals.update_proposal_status');
 
-Route::get('/order-of-business/pdf/{level}/{oob_id}', [OrderOfBusinessController::class, 'exportOOB_PDF'])->name('oob.export.pdf');
+Route::get('/order-of-business/pdf/{level}/{oob_id}', [PdfController::class, 'exportOOB_PDF'])->name('oob.export.pdf');
+
+// Route::get('/order-of-business/pdf/{level}/{oob_id}', [OrderOfBusinessController::class, 'exportOOB_PDF'])->name('oob.export.pdf');
+
 
 Route::post('/delete-proposal-file', [ProposalController::class, 'deleteFile']);
 

@@ -77,13 +77,12 @@
                     <thead class="custom-tbl-header">
                         <tr>
                             <th>#</th>
-                            <th>Level</th>
                             <th>Campus</th>
                             <th>Quarter</th>
                             <th>Year</th>
                             <th>Meeting Title</th>
-                            <th>Status</th>
                             <th>Meeting Date & Time</th>
+                            <th>Status</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -91,9 +90,6 @@
                     @forelse ($orderOfBusiness as $index => $oob)
                         <tr>
                             <td>{{ $index + 1 }}</td>
-                            <td>
-                                {{ config('meetings.level.'.$oob->meeting->getMeetingCouncilType()) }}
-                            </td>
                             <td>{{ $oob->meeting->getCampusName() }}</td>
                             <td>{{ config('meetings.quaterly_meetings.'.$oob->meeting->quarter) ?? 'N/A' }}</td>
                             <td>{{ $oob->meeting->year }}</td>
@@ -111,15 +107,14 @@
                                     @endif
                             </td>
                             <td>
-                                <span class="badge 
-                                    {{ $oob->status == 0 ? 'bg-label-warning' : 'bg-label-success' }} me-1">
-                                    {{ $oob->status == 0 ? 'Draft' : 'Disseminated' }}
-                                </span>
-                            </td>
-                            <td>
                                 <span>
                                     {{ $oob->meeting->meeting_date_time ? \Carbon\Carbon::parse($oob->meeting->meeting_date_time)->format('F d, Y, h:i A') : 'Not yet set' }}
                                 </span>  
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2 text-{{$oob->status == 0 ? 'warning' : 'primary'}}">
+                                    {!! $oob->status == 0 ? "<i class='bx bx-down-arrow-circle' ></i> Draft" : "<i class='bx bx-mail-send' ></i> Disseminated" !!}
+                                </div>
                             </td>
                             <td>
                                 <a href="{{ route(getUserRole().'.order_of_business.view-oob', ['level' => $oob->meeting->getMeetingLevel(), 'oob_id'=> encrypt( $oob->id)]) }}" 
@@ -130,7 +125,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8">
+                            <td colspan="7">
                                 <div class="alert alert-warning mt-3" role="alert">
                                     <i class="bx bx-info-circle"></i> No meetings found in the Order of Business.
                                 </div>

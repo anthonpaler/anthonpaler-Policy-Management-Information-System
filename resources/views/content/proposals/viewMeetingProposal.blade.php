@@ -318,7 +318,7 @@
             </div>
         </div>
         <div class="pt-4">
-            <div class="table-responsive text-nowrap border-top">
+            <div class="table-responsive text-nowrap">
                 <table id="proposalTable" class="table table-striped w-100">
                     <thead class="custom-tbl-header">
                         <tr>
@@ -381,7 +381,7 @@
                             </td>
                             <td>
                                 <div style="min-width: 300px; max-width: 500px; white-space: wrap; ">
-                                    <a href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->proposal->id)]) }}" >{{ $proposal->proposal->title }}</a>
+                                    <a style="color: #697A8D;" href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->proposal->id)]) }}" >{{ $proposal->proposal->title }}</a>
                                 </div>
                             </td>
                             <td>
@@ -408,10 +408,10 @@
                             </td>
                             <td>
                                 @if($proposal->proposal->files->count() > 0)
-                                    <button class="btn btn-sm btn-success d-flex gap-2 view-files"
+                                    <button class="btn btn-sm btn-secondary d-flex gap-2 view-files"
                                             data-files="{{ json_encode($proposal->proposal->files) }}" 
                                             data-title="{{ $proposal->proposal->title }}">
-                                        <i class='bx bx-file'></i> VIEW FILES
+                                        <i class='bx bx-file'></i> {{ $proposal->proposal->files->count() }} FILES
                                     </button>
                                 @else
                                     <button class="btn btn-sm btn-danger d-flex gap-2">
@@ -421,33 +421,7 @@
                             </td>
 
                             <td>
-                                <div class="d-flex gap-2 align-items-center">
-                                    @if(in_array(session('user_role'), [0,1,2,6]))
-                                        <div class="dropdown">
-                                            <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                                                <i class="bx bx-dots-vertical-rounded"></i>
-                                            </button>
-                                            <div class="dropdown-menu">
-                                                <a class="dropdown-item" href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->proposal->id)]) }} ">
-                                                    <i class="fa-regular fa-eye me-3"></i>View Details
-                                                </a>
-                                                
-                                                @if(in_array($proposal->status, [2,5,6]))
-                                                    <a class="dropdown-item" href="{{ route(getUserRole().'.proposal.edit', ['proposal_id' => encrypt($proposal->proposal->id)]) }}">
-                                                        <i class='bx bx-right-arrow-circle me-3'></i>Resubmit Proposal
-                                                    </a>
-                                                @endif
-                                                @if(!$proposal->is_edit_disabled)
-                                                    <a class="dropdown-item" href="{{ route(getUserRole().'.proposal.edit', ['proposal_id' => encrypt($proposal->proposal->id)]) }}">
-                                                        <i class="bx bx-edit-alt me-3"></i>Edit Proposal
-                                                    </a>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    @else
-                                        <a href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->proposal->id)]) }} "  class="btn btn-sm btn-primary d-flex gap-2"><i class="fa-regular fa-eye" disabled></i>VIEW DETAILS</a>
-                                    @endif
-                                </div>
+                                <a href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->proposal->id)]) }} "  class="btn btn-sm btn-primary d-flex gap-2"><i class="fa-regular fa-eye" disabled></i>VIEW DETAILS</a>
                             </td>
                         </tr>
                         @endforeach

@@ -10,7 +10,7 @@
 @section('content')
 <style>
      .auth-con {
-        background-image: url('{{ asset('assets/img/backgrounds/login_main_bg.jpg') }}');
+        background-image: url('{{ asset('assets/img/backgrounds/login_main_bg_3.jpg') }}');
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
@@ -47,7 +47,7 @@
             </div>
         </div>
         <div class="auth-bg-con">
-            <img src="{{ asset('assets/img/backgrounds/login_bg_3.png') }}" alt="">
+            <img src="{{ asset('assets/img/backgrounds/login_bg_4.png') }}" alt="">
         </div>
     </div>
 </div>

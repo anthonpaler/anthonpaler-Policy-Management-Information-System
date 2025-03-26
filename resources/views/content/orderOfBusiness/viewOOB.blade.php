@@ -156,8 +156,8 @@
                     <div class="table-responsive text-nowrap mb-4">
                         <table class="table table-bordered sortable" id="{{ session('isSecretary') && (session('secretary_level') == $meeting->getMeetingCouncilType()) ? 'oobTable' :  ''}}">
                             <thead>
-                                <tr style="background-color: var(--bs-primary-bg-subtle) !important; border: 1px solid #9B9DFF !important;">
-                                    <th colspan="5" class="p-4 text-primary">{{ $title }}</th>
+                                <tr style="background-color: var(--bs-primary) !important; border-color: var(--bs-primary)  !important;">
+                                    <th colspan="5" class="p-4 text-white">{{ $title }}</th>
                                 </tr>
                                 <tr>
                                     <th style="width: 50px;">No.</th>
@@ -173,7 +173,7 @@
                                         <tr class="selectable-row" data-id="{{ $proposal['data']->proposal->id }}">
                                             <td>2.<span class="order_no">{{ $counter }}</span></td>
                                             <td>
-                                                <a href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal['data']->proposal->id)]) }}">{{ $proposal['data']->proposal->title }}</a>
+                                                <span>{{ $proposal['data']->proposal->title }}</span>
                                             </td>
                                             <td>
                                                 <div class="d-flex flex-column gap-3">
@@ -193,7 +193,7 @@
                                             </td>
                                             <td>
                                                 @if ($proposal['data']->proposal->files->isNotEmpty())
-                                                    <button class="btn btn-sm btn-primary view-files d-flex gap-2" data-files="{{ json_encode($proposal['data']->proposal->files) }}" data-title="{{ $proposal['data']->proposal->title }}">
+                                                    <button class="btn btn-sm btn-secondary view-files d-flex gap-2" data-files="{{ json_encode($proposal['data']->proposal->files) }}" data-title="{{ $proposal['data']->proposal->title }}">
                                                         <i class='bx bx-file'></i> VIEW FILES
                                                     </button>
                                                 @else
@@ -214,7 +214,7 @@
                                                  <!-- New Business Section -->
                                             @if (session('isSecretary') && (session('secretary_level') == $meeting->getMeetingCouncilType()))
                                                 <div class="dropdown position-absolute" style="right: 10px; top: 50%; transform: translateY(-50%);">
-                                                    <button class="btn btn-sm btn-secondary dropdown-toggle d-none group-menu-btn" type="button" data-bs-toggle="dropdown">
+                                                    <button class="btn btn-sm btn-warning dropdown-toggle d-none group-menu-btn" type="button" data-bs-toggle="dropdown">
                                                         Actions
                                                     </button>
                                                     <ul class="dropdown-menu">
@@ -232,7 +232,7 @@
                                                     <span class="order_no">2.{{ $counter }}.{{ $groupCounter }}</span>
                                                 </td>
                                                 <td>
-                                                    <a href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($groupedProposal->proposal->id)]) }}">{{ $groupedProposal->proposal->title }}</a>
+                                                    <span>{{ $groupedProposal->proposal->title }}</span>
                                                 </td>
                                                 <td>  
                                                     <div class="d-flex flex-column gap-3">
@@ -252,7 +252,7 @@
                                                 </td>
                                                 <td>
                                                     @if ($groupedProposal->proposal->files->isNotEmpty())
-                                                        <button class="btn btn-sm btn-primary view-files d-flex gap-2" data-files="{{ json_encode($groupedProposal->proposal->files) }}" data-title="{{ $groupedProposal->proposal->title  }}">
+                                                        <button class="btn btn-sm btn-secondary view-files d-flex gap-2" data-files="{{ json_encode($groupedProposal->proposal->files) }}" data-title="{{ $groupedProposal->proposal->title  }}">
                                                             <i class='bx bx-file'></i> VIEW FILES
                                                         </button>
                                                     @else 

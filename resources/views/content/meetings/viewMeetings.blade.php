@@ -84,30 +84,30 @@
             </div>
         </div>
  
-        <div class="pt-4">
-            <div class="table-responsive text-nowrap border-top">
+        <div class="card-datatable pt-4">
+            <div class="table-responsive text-nowrap">
                 <table id="meetingTable" class="table table-striped">
                     <thead class="custom-tbl-header">
                         <tr>
                             <th>#</th>
-                            <th>Level</th>
-                            <th>Campus</th>
+                            <th>Actions</th>
                             <th>Quarter</th>
                             <th>Year</th>
-                            <th>Status</th>
-                            <th>Has OOB?</th>
                             <th>Council Type</th>
+                            <th>Campus</th>
                             <th>Submission</th>
                             <th>Meeting Date</th>
+                            <th>Has OOB?</th>
+                            <th>Status</th>
                             @if(session('isProponent'))
                                 <th>My Proposals</th>
                             @endif
-                            <th>Actions</th>
+                            <!-- <th>Actions</th> -->
                         </tr>
                     </thead>
                     <tbody id="meetingsTableBody" class="table-border-bottom-0">
                         @if ($meetings->isEmpty())
-                            <td valign="top" colspan="11" class="dataTables_empty">
+                            <td valign="top" colspan="10" class="dataTables_empty">
                                 No data available in table
                             </td>
                         @else
@@ -115,23 +115,59 @@
                                 <tr>
                                     <td  class="">{{ $loop->iteration }}</td>
                                     <td>
-                                        {{ config('meetings.level.'.$meeting->getMeetingCouncilType()) }}
+                                        <div class="d-flex align-items-center gap-2">
+                                            @if(session('isProponent'))
+                                                @if ($meeting->getIsSubmissionClosedAttribute() || $meeting->status == 1)
+                                                    <a class="action-btn danger active">
+                                                        <i class='bx bx-lock' ></i>
+                                                        <span class="tooltiptext">Submission Closed</span>
+                                                    </a>
+                                                @else
+                                                    <a class="action-btn success"  href="{{ route(getUserRole().'.meetings.submit-proposal', ['level' => $meeting->getMeetingLevel(), 'meeting_id'=> encrypt($meeting->id)]) }}">
+                                                        <i class='bx bx-send'></i>
+                                                        <span class="tooltiptext">Submit Proposal</span>
+                                                    </a>
+                                                @endif
+                                            @endif
+                                            @if(session('isSecretary'))
+                                                @if ($meeting->status == 1)
+                                                    <a class="action-btn danger active">
+                                                        <i class='bx bx-lock' ></i>
+                                                        <span class="tooltiptext">Meeting Closed</span>
+                                                    </a>
+                                                @else
+                                                    @if(!$meeting->has_order_of_business)
+                                                        @if($meeting->meeting_date_time) 
+                                                            <a class="action-btn warning" href="{{ route(getUserRole().'.order_of_business.view-generate', ['level' => $meeting->getMeetingLevel(), 'meeting_id'=> encrypt($meeting->id)]) }}">
+                                                                <i class='bx bx-up-arrow-circle'></i> 
+                                                                <span class="tooltiptext">Generate OOB</span>
+                                                            </a>
+                                                        @else
+                                                            <a class="action-btn warning" onclick="showCantGenerateOOBWarning()">
+                                                                <i class='bx bx-up-arrow-circle'></i> 
+                                                                <span class="tooltiptext">Generate OOB</span>
+                                                            </a>
+                                                        @endif
+                                                    @else
+                                                        <a class="action-btn danger" onclick="showhasOOBWarning()">
+                                                            <i class='bx bx-up-arrow-circle'></i> 
+                                                            <span class="tooltiptext">Generate OOB</span>
+                                                        </a>
+                                                    @endif
+                                                @endif
+                                                <a class="action-btn success"   href="{{ route(getUserRole().'.meeting.edit_meeting', ['level' => $meeting->getMeetingLevel(), 'meeting_id' => Crypt::encrypt($meeting->id)])}}">
+                                                    <i class='bx bx-edit'></i>
+                                                    <span class="tooltiptext">Edit</span>
+                                                </a>
+                                            @endif
+                                            <a class="action-btn primary"  href="{{ route(getUserRole().'.meetings.details', ['level' => $meeting->getMeetingLevel(), 'meeting_id'=> encrypt($meeting->id)]) }}">
+                                                <i class="fa-regular fa-eye" style="font-size: .9em;"></i>
+                                                <span class="tooltiptext">View Meeting Details</span>
+                                            </a>
+                                        </div>
                                     </td>
-                                    <td>{{ $meeting->getCampusName() }}</td>
                                     <td>{{ config('meetings.quaterly_meetings.'.$meeting->quarter) }}</td>
                                     <td>{{ $meeting->year }}</td>
-                                    <td>
-                                        <div class="d-flex align-items-center gap-1 text-{{$meeting->status == 0 ? 'primary' : 'danger'}}">
-                                            {!! $meeting->status == 0 ? "<i class='bx bxs-lock-open-alt' ></i>" : "<i class='bx bxs-lock-alt' ></i>" !!}
-                                            {{ config('meetings.status.'.$meeting->status) }}
-                                        </div>
-
-                                    </td>
-                                    <td>
-                                        <div class="d-flex align-items-center gap-1 text-{{$meeting->has_order_of_business  ? 'primary' : 'danger'}}">
-                                            {!! $meeting->has_order_of_business  ?  "<i class='bx bxs-like' ></i> Yes"  : "<i class='bx bxs-dislike' ></i> No" !!}
-                                        </div>
-                                    </td>
                                     <td>
                                         <div style="min-width: 200px">
                                             <span class="mb-0 align-items-center d-flex w-100 text-wrap gap-2">
@@ -146,6 +182,7 @@
                                             </span>
                                         </div>
                                     </td>
+                                    <td>{{ $meeting->getCampusName() }}</td>
                                     <td>
                                         <div class="d-flex flex-column gap-1">
                                             <span class="">Start: {{ \Carbon\Carbon::parse($meeting->submission_start)->format('F d, Y') }}</span>
@@ -168,6 +205,18 @@
                                         </td>
                                     @endif
                                     <td>
+                                        <div class="d-flex align-items-center gap-1 text-{{$meeting->has_order_of_business  ? 'primary' : 'danger'}}">
+                                            {!! $meeting->has_order_of_business  ?  "<i class='bx bx-like' ></i> Yes"  : "<i class='bx bx-dislike' ></i> No" !!}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-1 text-{{$meeting->status == 0 ? 'primary' : 'danger'}}">
+                                            {!! $meeting->status == 0 ? "<i class='bx bx-lock-open'></i>" : "<i class='bx bx-lock' ></i>" !!}
+                                            {{ config('meetings.status.'.$meeting->status) }}
+                                        </div>
+
+                                    </td>
+                                    <!-- <td>
                                         <div class="d-flex align-items-center gap-2">
                                             @if(session('isProponent'))
                                                 @if ($meeting->getIsSubmissionClosedAttribute() || $meeting->status == 1)
@@ -232,7 +281,7 @@
                                                 @endif
                                             @endif
                                         </div>
-                                    </td>
+                                    </td> -->
                                 </tr>
                             @endforeach
                         @endif
@@ -246,8 +295,11 @@
 <script src="{{asset('assets/js/dataTable.js')}}"></script>
 
 <script>
-    function showToastrWarning() {
+    function showCantGenerateOOBWarning() {
         toastr.warning("Cannot generate an OOB because the meeting date is not yet set!");
+    }
+    function showhasOOBWarning() {
+        toastr.warning("This meeting has already an OOB!");
     }
 </script>
 @endsection

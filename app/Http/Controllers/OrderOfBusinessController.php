@@ -429,111 +429,111 @@ class OrderOfBusinessController extends Controller
     }
 
 
-    public function exportOOB_PDF(Request $request, String $level, String $oob_id)
-    {
-        try {
-            $oobID = decrypt($oob_id);
-            $proposals = collect();
-            $matters = [0 => 'Financial Matters'] + config('proposals.matters');
-            $orderOfBusiness = null;
-            $meeting = null;
+    // public function exportOOB_PDF(Request $request, String $level, String $oob_id)
+    // {
+    //     try {
+    //         $oobID = decrypt($oob_id);
+    //         $proposals = collect();
+    //         $matters = [0 => 'Financial Matters'] + config('proposals.matters');
+    //         $orderOfBusiness = null;
+    //         $meeting = null;
 
-            if ($level == 'Local') {
-                $orderOfBusiness = LocalOob::with('meeting')->findOrFail($oobID);
-            } elseif ($level == 'University') {
-                $orderOfBusiness = UniversityOob::with('meeting')->findOrFail($oobID);
-            } elseif ($level == 'BOR') {
-                $orderOfBusiness = BoardOob::with('meeting')->findOrFail($oobID);
-            } else {
-                throw new \Exception("Invalid council level provided.");
-            }
+    //         if ($level == 'Local') {
+    //             $orderOfBusiness = LocalOob::with('meeting')->findOrFail($oobID);
+    //         } elseif ($level == 'University') {
+    //             $orderOfBusiness = UniversityOob::with('meeting')->findOrFail($oobID);
+    //         } elseif ($level == 'BOR') {
+    //             $orderOfBusiness = BoardOob::with('meeting')->findOrFail($oobID);
+    //         } else {
+    //             throw new \Exception("Invalid council level provided.");
+    //         }
 
-            $meeting = $orderOfBusiness->meeting;
+    //         $meeting = $orderOfBusiness->meeting;
 
-            if (!$meeting) {
-                throw new \Exception("Meeting not found for the given Order of Business.");
-            }
+    //         if (!$meeting) {
+    //             throw new \Exception("Meeting not found for the given Order of Business.");
+    //         }
 
-            $meetingTypes = [
-                'Local' => ['model' => LocalMeetingAgenda::class, 'meeting_key' => 'local_council_meeting_id', 'oob_key' => 'local_oob_id'],
-                'University' => ['model' => UniversityMeetingAgenda::class, 'meeting_key' => 'university_meeting_id', 'oob_key' => 'university_oob_id'],
-                'BOR' => ['model' => BoardMeetingAgenda::class, 'meeting_key' => 'bor_meeting_id', 'oob_key' => 'board_oob_id'],
-            ];
+    //         $meetingTypes = [
+    //             'Local' => ['model' => LocalMeetingAgenda::class, 'meeting_key' => 'local_council_meeting_id', 'oob_key' => 'local_oob_id'],
+    //             'University' => ['model' => UniversityMeetingAgenda::class, 'meeting_key' => 'university_meeting_id', 'oob_key' => 'university_oob_id'],
+    //             'BOR' => ['model' => BoardMeetingAgenda::class, 'meeting_key' => 'bor_meeting_id', 'oob_key' => 'board_oob_id'],
+    //         ];
             
-            if (isset($meetingTypes[$level])) {
-                $model = $meetingTypes[$level]['model'];
-                $meetingKey = $meetingTypes[$level]['meeting_key'];
-                $oobKey = $meetingTypes[$level]['oob_key'];
+    //         if (isset($meetingTypes[$level])) {
+    //             $model = $meetingTypes[$level]['model'];
+    //             $meetingKey = $meetingTypes[$level]['meeting_key'];
+    //             $oobKey = $meetingTypes[$level]['oob_key'];
             
-                $query = $model::where($meetingKey, $meeting->id)->with('proposal')
-                ->where($oobKey, $orderOfBusiness->id)
-                ->orderBy('created_at', 'desc');
+    //             $query = $model::where($meetingKey, $meeting->id)->with('proposal')
+    //             ->where($oobKey, $orderOfBusiness->id)
+    //             ->orderBy('created_at', 'desc');
             
-                $proposals = $query->get();
-            }            
+    //             $proposals = $query->get();
+    //         }            
 
-            // Get meeting type
-            $councilType = $meeting->council_type ?? null;
-            $councilTypesConfig = config('proposals.council_types');
+    //         // Get meeting type
+    //         $councilType = $meeting->council_type ?? null;
+    //         $councilTypesConfig = config('proposals.council_types');
 
-            // Initialize categorized proposals
-            $categorizedProposals = [];
+    //         // Initialize categorized proposals
+    //         $categorizedProposals = [];
 
-            // Categorize proposals by type
-            foreach ($matters as $type => $title) {
-                $categorizedProposals[$type] = collect();
-            }
+    //         // Categorize proposals by type
+    //         foreach ($matters as $type => $title) {
+    //             $categorizedProposals[$type] = collect();
+    //         }
 
-            // Group proposals by type and then by group_proposal_id
-            foreach ($proposals as $proposal) {
-                $type = $proposal->proposal->type;
-                $subType = $proposal->proposal->sub_type;
+    //         // Group proposals by type and then by group_proposal_id
+    //         foreach ($proposals as $proposal) {
+    //             $type = $proposal->proposal->type;
+    //             $subType = $proposal->proposal->sub_type;
 
-                if (!isset($categorizedProposals[$type])) {
-                    $categorizedProposals[$type] = collect();
-                }
+    //             if (!isset($categorizedProposals[$type])) {
+    //                 $categorizedProposals[$type] = collect();
+    //             }
 
-                // Separate Financial Matters from Administrative Matters
-                if ($type == 2 && $subType == 0) {
-                    $type = 0; 
-                }
+    //             // Separate Financial Matters from Administrative Matters
+    //             if ($type == 2 && $subType == 0) {
+    //                 $type = 0; 
+    //             }
 
-                $groupId = $proposal->proposal->group_proposal_id ?? null;
+    //             $groupId = $proposal->proposal->group_proposal_id ?? null;
 
-                if ($groupId) {
-                    if (!isset($categorizedProposals[$type][$groupId])) {
-                        $categorizedProposals[$type][$groupId] = collect();
-                    }
-                    $categorizedProposals[$type][$groupId]->push($proposal);
-                } else {
-                    $categorizedProposals[$type][] = $proposal;
-                }
-            }
+    //             if ($groupId) {
+    //                 if (!isset($categorizedProposals[$type][$groupId])) {
+    //                     $categorizedProposals[$type][$groupId] = collect();
+    //                 }
+    //                 $categorizedProposals[$type][$groupId]->push($proposal);
+    //             } else {
+    //                 $categorizedProposals[$type][] = $proposal;
+    //             }
+    //         }
 
-            // dd($categorizedProposals);
+    //         // dd($categorizedProposals);
             
-            $pdf = Pdf::loadView('pdf.export_oob_pdf', compact('orderOfBusiness', 'categorizedProposals', 'meeting', 'matters'))
-            ->setPaper('A4', 'portrait');
+    //         $pdf = Pdf::loadView('pdf.export_oob_pdf', compact('orderOfBusiness', 'categorizedProposals', 'meeting', 'matters'))
+    //         ->setPaper('A4', 'portrait');
             
-            $oob_filename = "";
-            if($meeting->getMeetingCouncilType() == 0){
-                $oob_filename = config('meetings.quaterly_meetings.'.$meeting->quarter)." ".config('meetings.council_types.local_level.'.$meeting->council_type)." ".$meeting->year.'.pdf';
-            } else  if($meeting->getMeetingCouncilType() == 1){
-                $oob_filename = config('meetings.quaterly_meetings.'.$meeting->quarter)." ".config('meetings.council_types.university_level.'.$meeting->council_type)." ".$meeting->year.'.pdf';
-            }
-            else  if($meeting->getMeetingCouncilType() == 2){
-                $oob_filename = config('meetings.quaterly_meetings.'.$meeting->quarter)." ".config('meetings.council_types.board_level.'.$meeting->council_type)." ".$meeting->year.'.pdf';
-            }
+    //         $oob_filename = "";
+    //         if($meeting->getMeetingCouncilType() == 0){
+    //             $oob_filename = config('meetings.quaterly_meetings.'.$meeting->quarter)." ".config('meetings.council_types.local_level.'.$meeting->council_type)." ".$meeting->year.'.pdf';
+    //         } else  if($meeting->getMeetingCouncilType() == 1){
+    //             $oob_filename = config('meetings.quaterly_meetings.'.$meeting->quarter)." ".config('meetings.council_types.university_level.'.$meeting->council_type)." ".$meeting->year.'.pdf';
+    //         }
+    //         else  if($meeting->getMeetingCouncilType() == 2){
+    //             $oob_filename = config('meetings.quaterly_meetings.'.$meeting->quarter)." ".config('meetings.council_types.board_level.'.$meeting->council_type)." ".$meeting->year.'.pdf';
+    //         }
         
-            return $pdf->stream($oob_filename);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'type' => 'danger',
-                'message' => $th->getMessage(),
-                'title' => "Something went wrong!"
-            ]);
-        }
-    }
+    //         return $pdf->stream($oob_filename);
+    //     } catch (\Throwable $th) {
+    //         return response()->json([
+    //             'type' => 'danger',
+    //             'message' => $th->getMessage(),
+    //             'title' => "Something went wrong!"
+    //         ]);
+    //     }
+    // }
 
     // UPDATE PROPOSAL ORDER NUMBER
     public function updateProposalOrder(Request $request, String $level)

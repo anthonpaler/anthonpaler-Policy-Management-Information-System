@@ -47,25 +47,24 @@
             </div>
         </div>
         <div class="pt-4">
-            <div class="table-responsive text-nowrap border-top">
+            <div class="table-responsive text-nowrap">
                 <table id="meetingTable" class="table table-striped">
                     <thead class="custom-tbl-header">
                         <tr>
                             <th>#</th>
-                            <th>Level</th>
-                            <th>Campus</th>
+                            <th style="max-width: 60px">Actions</th>
                             <th>Quarter</th>
                             <th>Year</th>
-                            <th>Status</th>
-                            <th>Has OOB?</th>
                             <th>Council Type</th>
+                            <th>Campus</th>
                             <th>Submission</th>
                             <th>Meeting Date</th>
+                            <th>Has OOB?</th>
+                            <th>Status</th>
                             <th>Proposals</th>
-                            <th>Actions</th>
                         </tr>
                     </thead>
-                    <tbody id="meetingsTableBody" class="table-border-bottom-0">
+                    <tbody id="meetingsTableBody" class="">
                         @if ($meetings->isEmpty())
                             <tr>
                                 <td colspan="10">
@@ -79,23 +78,15 @@
                                 <tr>
                                     <td  class="p-4">{{ $loop->iteration }}</td>
                                     <td>
-                                        {{ config('meetings.level.'.$meeting->getMeetingCouncilType()) }}
+                                        <div class="d-flex align-items-center gap-2" style="max-width: 60px">
+                                            <a class="action-btn primary"   href="{{ route(getUserRole().'.meetings.proposals', ['level' => $meeting->getMeetingLevel(), 'meeting_id' => encrypt($meeting->id)]) }}">
+                                                <i class="fa-regular fa-eye" style="font-size: .9em;"></i>
+                                                <span class="tooltiptext">View Proposals</span>
+                                            </a>
+                                        </div>
                                     </td>
-                                    <td>{{ $meeting->getCampusName() }}</td></td>
                                     <td>{{ config('meetings.quaterly_meetings.'.$meeting->quarter) }}</td>
                                     <td>{{ $meeting->year }}</td>
-                                    <td>
-                                        <div class="d-flex align-items-center gap-1 text-{{$meeting->status == 0 ? 'primary' : 'danger'}}">
-                                            {!! $meeting->status == 0 ? "<i class='bx bxs-lock-open-alt' ></i>" : "<i class='bx bxs-lock-alt' ></i>" !!}
-                                            {{ config('meetings.status.'.$meeting->status) }}
-                                        </div>
-
-                                    </td>
-                                    <td>
-                                        <div class="d-flex align-items-center gap-1 text-{{$meeting->has_order_of_business  ? 'primary' : 'danger'}}">
-                                            {!! $meeting->has_order_of_business  ?  "<i class='bx bxs-like' ></i> Yes"  : "<i class='bx bxs-dislike' ></i> No" !!}
-                                        </div>
-                                    </td>
                                     <td>
                                         <div style="min-width: 200px">
                                             <span class="mb-0 align-items-center d-flex w-100 text-wrap gap-2">
@@ -110,6 +101,7 @@
                                             </span>
                                         </div>
                                     </td>
+                                    <td>{{ $meeting->getCampusName() }}</td>
                                     <td>
                                         <div class="d-flex flex-column gap-1">
                                             <span class="">Start: {{ \Carbon\Carbon::parse($meeting->submission_start)->format('F d, Y') }}</span>
@@ -121,6 +113,28 @@
                                             {{ $meeting->meeting_date_time ? \Carbon\Carbon::parse($meeting->meeting_date_time)->format('F d, Y, h:i A') : 'Not yet set' }}
                                         </span>  
                                     </td>
+                                    @if(session('isProponent'))
+                                        <td>
+                                            <a href="{{ session('isProponent') ? route(getUserRole().'.meetings.myProposals', ['level' => $meeting->getMeetingLevel(), 'meeting_id'=> encrypt($meeting->id)]) : '#' }}" class="text-primary">
+                                                <span>
+                                                    <i class='bx bx-file-blank' ></i>
+                                                    {{ $meeting->proposals_count }} Proposals
+                                                </span>
+                                            </a>
+                                        </td>
+                                    @endif
+                                    <td>
+                                        <div class="d-flex align-items-center gap-1 text-{{$meeting->has_order_of_business  ? 'primary' : 'danger'}}">
+                                            {!! $meeting->has_order_of_business  ?  "<i class='bx bx-like' ></i> Yes"  : "<i class='bx bx-dislike' ></i> No" !!}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-1 text-{{$meeting->status == 0 ? 'primary' : 'danger'}}">
+                                            {!! $meeting->status == 0 ? "<i class='bx bx-lock-open'></i>" : "<i class='bx bx-lock' ></i>" !!}
+                                            {{ config('meetings.status.'.$meeting->status) }}
+                                        </div>
+
+                                    </td>
                                     <td>
                                         <a  href="{{ route(getUserRole().'.meetings.proposals', ['level' => $meeting->getMeetingLevel(), 'meeting_id' => encrypt($meeting->id)]) }}" class="text-primary">
                                             <span>
@@ -128,10 +142,6 @@
                                                 {{ $meeting->proposals_count }} Proposals
                                             </span>
                                         </a>
-                                    </td>
-                                    <td>
-                                        <a href="{{ route(getUserRole().'.meetings.proposals', ['level' => $meeting->getMeetingLevel(), 'meeting_id' => encrypt($meeting->id)]) }}" class="btn btn-sm btn-primary d-flex gap-2" style="max-width: 150px;">
-                                            <i class="fa-regular fa-eye"></i>VIEW PROPOSALS</a>
                                     </td>
                                 </tr>
                             @endforeach
