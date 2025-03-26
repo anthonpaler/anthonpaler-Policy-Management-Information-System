@@ -33,6 +33,12 @@
     color: var(--bs-success);
     transition: .3s;
 }
+.action-btn.warning:hover,
+.action-btn.warning.active{
+    background-color: var(--bs-warning-bg-subtle);
+    color: var(--bs-warning);
+    transition: .3s;
+}
 
 .action-btn .tooltiptext{
     visibility: hidden;

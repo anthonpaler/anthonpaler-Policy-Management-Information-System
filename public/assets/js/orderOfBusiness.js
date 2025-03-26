@@ -201,9 +201,9 @@ function filter_oob(event, level){
                     let selectedYear = $(this).val(); 
         
                     if (selectedYear) {
-                        newTable.column(4).search(selectedYear).draw();
+                        newTable.column(3).search(selectedYear).draw();
                     } else {
-                        newTable.column(4).search('').draw();
+                        newTable.column(3).search('').draw();
                     }
                 });
         

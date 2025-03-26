@@ -18,7 +18,10 @@
 @import "layout/sidebar.css";
 @import "layout/navbar.css";
 
-
+/* CUSTOM LAYOUT CSS */
+.layout-wrapper{
+  background-color: #F2F4F4 !important;
+}
 
 /* MEETING DETAILS CSS */
 .fade-bg-con{

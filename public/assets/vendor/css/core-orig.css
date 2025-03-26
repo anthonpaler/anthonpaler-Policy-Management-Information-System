@@ -8,7 +8,7 @@
 [data-bs-theme=light] {
   --bs-blue: #007bff;
   --bs-indigo: #6610f2;
-  --bs-purple: #5A8DEE;
+  --bs-purple: #696cff;
   --bs-pink: #e83e8c;
   --bs-red: #ff3e1d;
   --bs-orange: #fd7e14;
@@ -22,7 +22,7 @@
   --bs-gray-dark: rgba(67, 89, 113, 0.8);
   --bs-gray-25: rgba(67, 89, 113, 0.025);
   --bs-gray-50: rgba(67, 89, 113, 0.05);
-  --bs-primary: #5A8DEE;
+  --bs-primary: #696cff;
   --bs-secondary: #8592a3;
   --bs-success: #39DA8A;
   --bs-info: #03c3ec;
@@ -89,7 +89,7 @@
   --bs-tertiary-bg: rgba(67, 89, 113, 0.1);
   --bs-tertiary-bg-rgb: 67, 89, 113;
   --bs-heading-color: #566a7f;
-  --bs-link-color: #5A8DEE;
+  --bs-link-color: #696cff;
   --bs-link-color-rgb: 105, 108, 255;
   --bs-link-decoration: none;
   --bs-link-hover-color: #5f61e6;
@@ -4737,7 +4737,7 @@ textarea.form-control-lg {
   --bs-progress-border-radius: 10rem;
   --bs-progress-box-shadow: var(--bs-box-shadow-inset);
   --bs-progress-bar-color: #fff;
-  --bs-progress-bar-bg: #5A8DEE;
+  --bs-progress-bar-bg: #696cff;
   --bs-progress-bar-transition: width 0.6s ease;
   display: -ms-flexbox;
   display: flex;
@@ -10663,7 +10663,7 @@ button.list-group-item-gray.active {
 }
 
 .border-primary {
-  border-color: #5A8DEE !important;
+  border-color: #696cff !important;
 }
 
 .border-secondary {

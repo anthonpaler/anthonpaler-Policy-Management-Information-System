@@ -26,9 +26,9 @@ $(document).ready(function() {
         let selectedYear = $(this).val(); 
 
         if (selectedYear) {
-            table.column(4).search(selectedYear).draw();
+            table.column(3).search(selectedYear).draw();
         } else {
-            table.column(4).search('').draw();
+            table.column(3).search('').draw();
         }
     });
 
@@ -115,9 +115,9 @@ $(document).ready(function() {
         let selectedYear = $(this).val(); 
 
         if (selectedYear) {
-            obbTable.column(4).search(selectedYear).draw();
+            obbTable.column(3).search(selectedYear).draw();
         } else {
-            obbTable.column(4).search('').draw();
+            obbTable.column(3).search('').draw();
         }
     });
 

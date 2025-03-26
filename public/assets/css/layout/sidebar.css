@@ -16,3 +16,18 @@
     cursor: pointer;
     margin: 0;
 }
+
+.menu-link{
+    gap: 8px !important;
+}
+
+/* CUSTOM COLOR FOR ACTIVE MENU ITEM IN SIDEBAR */
+.layout-wrapper:not(.layout-horizontal) .bg-menu-theme .menu-inner .menu-item.active .menu-link {
+    background-color: #E4ECFB !important;
+}
+
+/* .bg-menu-theme.menu-vertical{
+    background-color: transparent !important;
+    border-right: 1px solid #DFE3E7 !important;
+    box-shadow: none    !important;
+} */
