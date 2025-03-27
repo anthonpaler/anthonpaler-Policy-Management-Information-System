@@ -327,5 +327,6 @@ $('#matter').on('change', function() {
         }
     }
 </script>
+<script src="{{asset('assets/js/customFileUplaod.js')}}"></script>
 <script src="{{asset('assets/js/proposal.js')}}"></script>
 @endsection

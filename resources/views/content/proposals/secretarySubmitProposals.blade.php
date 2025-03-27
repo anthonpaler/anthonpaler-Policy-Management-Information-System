@@ -75,8 +75,8 @@
 
                             <table class="table table-bordered">
                                 <thead>
-                                    <tr class="" style="background-color: #E5EDFC; !important">
-                                        <th colspan="6" class="p-4 text-primary">{{ $title }}</th>
+                                    <tr style="background-color: var(--bs-primary) !important; border-color: var(--bs-primary)  !important;">
+                                        <th colspan="6" class="p-4 text-white">{{ $title }}</th>
                                     </tr>
                                     <tr>
                                         <th style="width: 50px;">No.</th>

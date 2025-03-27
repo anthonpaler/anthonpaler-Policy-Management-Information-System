@@ -19,6 +19,17 @@
         <a href="#">Proposal Information</a>
     </div>
 </div>
+@php
+    // Define proposal status classes dynamically
+    $statusClass = match ($proposal->status) {
+        2, 7 => 'danger',
+        5, 6 => 'warning',
+        1, 8, 9 => 'primary',
+        3, 10 => 'success',
+        4 => 'info',
+        default => 'secondary'
+    };
+@endphp
 
 <div class="p-0">
     <div class="row">
@@ -27,7 +38,7 @@
                 <div class="card-body">
                         <div class="d-flex justify-content-between gap-2 mb-3">
                             <h6 class="m-0">PROPOSAL DETAILS </h6>                       
-                            <span class="badge bg-label-primary">{{ config('proposals.status.'.$proposal->status) }}</span>
+                            <span class="badge bg-label-{{ $statusClass}}">{{ config('proposals.status.'.$proposal->status) }}</span>
                         </div>
                         <div class="mb-3">
                             <label class="form-label" for="title">Proposal Title</label>
@@ -58,7 +69,7 @@
                                                         </div>
                                                     </div>
                                                     <div class="d-flex flex-column">
-                                                        <a href="" class="text-heading text-truncate m-0">
+                                                        <a class="text-heading text-truncate m-0">
                                                             <span class="fw-medium">{{$proponent->name}}</span>
                                                         </a>
                                                         <small class="text-wrap">{{$proponent->email}}</small>
@@ -177,7 +188,7 @@
                             @php
                                 $countLatestVersion = 0;
                             @endphp
-                            <div class="table-responsive text-nowrap latest-version-files">
+                            <div class="table-responsive text-nowrap latest-version-files files-table">
                                 <table id="proposalFilesTable" class="table table-bordered">
                                     <thead>
                                         <tr>
@@ -234,7 +245,7 @@
                             @php
                                 $countOldVersion = 0;
                             @endphp
-                            <div class="table-responsive text-nowrap old-version-files d-none">
+                            <div class="table-responsive text-nowrap old-version-files d-none files-table">
                                 <table id="" class="table table-bordered">
                                     <thead>
                                         <tr>
@@ -351,7 +362,7 @@
                                                     {{ \Carbon\Carbon::parse($log->created_at)->format('F j, Y') }}
                                                 </small>
                                                 @if($log->comments)
-                                                    <div class="alert alert-danger" role="alert">
+                                                    <div class="alert alert-{{ $logStatusClass }}" role="alert">
                                                         <p class="card-text">
                                                             <strong class="fst-italic">Comment: </strong>{{ $log->comments }}
                                                         </p>

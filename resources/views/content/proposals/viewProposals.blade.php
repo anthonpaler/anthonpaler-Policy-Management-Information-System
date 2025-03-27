@@ -79,7 +79,7 @@
                                     <td  class="p-4">{{ $loop->iteration }}</td>
                                     <td>
                                         <div class="d-flex align-items-center gap-2" style="max-width: 60px">
-                                            <a class="action-btn primary"   href="{{ route(getUserRole().'.meetings.proposals', ['level' => $meeting->getMeetingLevel(), 'meeting_id' => encrypt($meeting->id)]) }}">
+                                            <a class="action-btn primary"   href="{{ route(getUserRole().'.proposals.meetingProposals', ['level' => $meeting->getMeetingLevel(), 'meeting_id' => encrypt($meeting->id)]) }}">
                                                 <i class="fa-regular fa-eye" style="font-size: .9em;"></i>
                                                 <span class="tooltiptext">View Proposals</span>
                                             </a>
@@ -136,7 +136,7 @@
 
                                     </td>
                                     <td>
-                                        <a  href="{{ route(getUserRole().'.meetings.proposals', ['level' => $meeting->getMeetingLevel(), 'meeting_id' => encrypt($meeting->id)]) }}" class="text-primary">
+                                        <a  href="{{ route(getUserRole().'.proposals.meetingProposals', ['level' => $meeting->getMeetingLevel(), 'meeting_id' => encrypt($meeting->id)]) }}" class="text-primary">
                                             <span>
                                                 <i class='bx bx-file-blank' ></i>
                                                 {{ $meeting->proposals_count }} Proposals

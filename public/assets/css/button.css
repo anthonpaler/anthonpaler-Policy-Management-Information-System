@@ -30,7 +30,7 @@
 .action-btn.success:hover,
 .action-btn.success.active{
     background-color: var(--bs-success-bg-subtle);
-    color: var(--bs-success);
+    color: var(--bs-success) !important;
     transition: .3s;
 }
 .action-btn.warning:hover,

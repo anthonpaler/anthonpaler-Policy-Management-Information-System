@@ -140,11 +140,11 @@
                             </td>
                             <td>
                                 <div class="d-flex align-items-center gap-2">
-                                    <a class="action-btn success" href="{{ route(getUserRole().'.proposal.edit', ['proposal_id' => encrypt($proposal->proposal->id)]) }}">
+                                    <a class="action-btn success"   href="{{ $proposal->proposal->is_editable ? route(getUserRole().'.proposal.edit', ['proposal_id' => encrypt($proposal->proposal->id)]) : 'javascript:void(0);' }}" onclick="{{ $proposal->proposal->is_editable ? '' : 'cantEditWarning()' }}">
                                         <i class='bx bxs-edit' ></i>
                                         <span class="tooltiptext">Edit</span>
                                     </a>
-                                    <button class="action-btn danger delete-proposal" data-id="{{ encrypt($proposal->proposal->id) }}">
+                                    <button class="action-btn danger {{ $proposal->proposal->is_editable ? 'delete-proposal' : 'cantDeleteWarning()' }}" data-id="{{ encrypt($proposal->proposal->id) }}"  onclick="{{ $proposal->proposal->is_editable ? '' : 'cantDeleteWarning()' }}">
                                         <i class='bx bx-trash-alt' ></i>
                                         <span class="tooltiptext">Delete</span>
                                     </button>
@@ -199,77 +199,14 @@
     </div>
 </div>
 <script>
-    // VIEW FILES
-     // SHOW PROPOSAL FILE
-   $(document).on('click', '.view-files', function (e) {
-        e.preventDefault();
-        var files = $(this).data("files");
-        var title = $(this).data("title");
+    function cantEditWarning() {
+        showAlert("warning", "Can't Edit!", "You can no longer edit this proposal.");
+    }
 
-        console.log(files);
-
-        if (!files || files.length === 0) {
-            $("#modalFiles").html('<p class="text-danger">No files available.</p>');
-        } else {
-            let fileListHtml = `
-                <div class="">
-                    <div class="d-flex flex-column">
-                        <span class="form-label">Title:</span>
-                        <h6 id="modal-title">${title || 'No Title Available'}</h6>
-                    </div>
-                    <div class="">
-                        <span class="form-label">Files:</span>
-                        <div class="d-flex flex-column gap-2 mt-2">
-            `;
-
-            $.each(files, function (index, fileObj) {
-                if(fileObj.is_active == true){
-                    fileListHtml += `
-                    <a href="#" class="form-control d-flex align-items-center gap-2 view-file-preview" style="text-transform: none;"
-                    data-bs-toggle="modal" 
-                    data-bs-target="#fileModal"
-                    data-file-url="/storage/proposals/${fileObj.file}" >
-                        <span>${fileObj.order_no}. </span><i class='bx bx-file-blank'></i><span>${fileObj.file}</span>
-                    </a>`;
-                }
-            });
-
-            fileListHtml += `</div></div></div>`;
-            $("#modalFiles").html(fileListHtml);
-        }
-
-        var myModal = new bootstrap.Modal(document.getElementById('proposalFIleModal'));
-        myModal.show();
-    });
-
-    $(document).on('click', '.view-file-preview', function (e) {
-        e.preventDefault();
-        const fileUrl = $(this).data('file-url');
-        $('#fileIframe').attr('src', fileUrl);
-
-        var fileModal = new bootstrap.Modal(document.getElementById('fileModal'));
-        fileModal.show();
-    });
-
-    $('#fileModal').on('show.bs.modal', function () {
-        $('#proposalFIleModal').addClass('d-block');
-    });
-
-    $('#fileModal').on('hidden.bs.modal', function () {
-        $('#proposalFIleModal').removeClass('d-block');
-        $('#proposalFIleModal').modal('show');
-    });
-
-    $('#proposalFIleModal').on('hidden.bs.modal', function () {
-        setTimeout(function() {
-            if ($('.modal-backdrop').length > 0) {
-                $('.modal-backdrop').remove();
-                $('body').removeClass('modal-open');
-                $('body').css('padding-right', '');
-            }
-        }, 200); 
-    });
-    
+    function cantDeleteWarning() {
+        showAlert("warning", "Can't Delete!", "You can no longer delete this proposal.");
+    }
+   
     // DELETE PROPOSAL
     $(".delete-proposal").on('click', function(e){
         e.preventDefault();
