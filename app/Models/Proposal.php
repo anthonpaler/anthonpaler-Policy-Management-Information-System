@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Carbon\Carbon;
 
 
 class Proposal extends Model
@@ -132,6 +133,22 @@ class Proposal extends Model
                 $q->where('users.employee_id', $employeeId);
             })->whereHas('boardAgendas')->count(),
         ];
+    }
+
+    // DETERMINE IF THE PROPOSAL IS EDITABLE
+
+    public function getIsEditableAttribute()
+    {
+        $editableStatuses = [0, 2, 5, 6];
+
+        // Check if the proposal's status is editable
+        $isStatusEditable = in_array($this->status, $editableStatuses);
+
+        // Check if the local submission period is ongoing
+        $isSubmissionOngoing = $this->localMeeting &&
+            Carbon::now()->between($this->localMeeting->submission_start, $this->localMeeting->submission_end);
+
+        return $isStatusEditable || $isSubmissionOngoing;
     }
 
 }

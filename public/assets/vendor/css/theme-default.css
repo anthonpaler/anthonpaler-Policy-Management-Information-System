@@ -218,7 +218,7 @@ button.list-group-item-primary.active {
   color: #fff;
   background-color: #5A8DEE;
   border-color: #5A8DEE;
-  box-shadow: 0 0.125rem 0.25rem 0 rgba(105, 138, 255, 0.4);
+  box-shadow: 0 0.125rem 0.25rem 0 rgba(73, 100, 196, 0.4);
 }
 .btn-primary:hover {
   color: #fff !important;

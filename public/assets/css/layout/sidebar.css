@@ -25,7 +25,9 @@
 .layout-wrapper:not(.layout-horizontal) .bg-menu-theme .menu-inner .menu-item.active .menu-link {
     background-color: #E4ECFB !important;
 }
-
+.bg-menu-theme.menu-vertical{
+    box-shadow: -8px 20px 28px 6px rgba(25, 42, 70, 0.13) !important;
+}
 /* .bg-menu-theme.menu-vertical{
     background-color: transparent !important;
     border-right: 1px solid #DFE3E7 !important;

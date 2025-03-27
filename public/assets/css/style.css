@@ -455,6 +455,10 @@ box-shadow: 3px -7.5px 18px -1.5px #ddd;
 small{
   text-wrap: wrap !important;
 }
+a:hover{
+  color: var(--bs-primary) !important;
+  transition: .1s;
+}
 /* RESPONSICE MEDIA QUERY */
 @media only screen and (max-width: 1000px) {
   .auth-form-con,

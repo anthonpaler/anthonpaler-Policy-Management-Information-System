@@ -402,7 +402,7 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <div class="mb-3">
+                        <!-- <div class="mb-3">
                             <label class="form-label" for="orderNo">Order No:<span class="ms-1 text-danger">*</span></label>
                             <div class="input-group input-group-merge">
                                 <span id="" class="input-group-text">
@@ -410,7 +410,7 @@
                                 </span>
                                 <input type="number" id="orderNo" name="order_no" class="form-control" placeholder="Order number (ex: 2.1)" required />
                             </div>
-                        </div>
+                        </div> -->
                         <div class="">
                             <label class="form-label" for="orderNo">Enter Group Proposal Title<span class="ms-1 text-danger">*</span></label>
                             <div class="input-group input-group-merge">
@@ -430,78 +430,6 @@
     </div>
 </div>
 <script>
-     // SHOW PROPOSAL FILE
-   $(document).on('click', '.view-files', function (e) {
-        e.preventDefault();
-        var files = $(this).data("files");
-        var title = $(this).data("title");
-
-        console.log(files);
-
-        if (!files || files.length === 0) {
-            $("#modalFiles").html('<p class="text-danger">No files available.</p>');
-        } else {
-            let fileListHtml = `
-                <div class="">
-                    <div class="d-flex flex-column">
-                        <span class="form-label">Title:</span>
-                        <h6 id="modal-title">${title || 'No Title Available'}</h6>
-                    </div>
-                    <div class="">
-                        <span class="form-label">Files:</span>
-                        <div class="d-flex flex-column gap-2 mt-2">
-            `;
-
-            $.each(files, function (index, fileObj) {
-                if(fileObj.is_active == true){
-                    fileListHtml += `
-                    <a href="#" class="form-control d-flex align-items-center gap-2 view-file-preview" style="text-transform: none;"
-                    data-bs-toggle="modal" 
-                    data-bs-target="#fileModal"
-                    data-file-url="/storage/proposals/${fileObj.file}" >
-                        <span>${fileObj.order_no}. </span><i class='bx bx-file-blank'></i><span>${fileObj.file}</span>
-                    </a>`;
-                }
-            });
-
-            fileListHtml += `</div></div></div>`;
-            $("#modalFiles").html(fileListHtml);
-        }
-
-        var myModal = new bootstrap.Modal(document.getElementById('proposalFIleModal'));
-        myModal.show();
-    });
-
-    $(document).on('click', '.view-file-preview', function (e) {
-        e.preventDefault();
-        const fileUrl = $(this).data('file-url');
-        $('#fileIframe').attr('src', fileUrl);
-
-        var fileModal = new bootstrap.Modal(document.getElementById('fileModal'));
-        fileModal.show();
-    });
-
-    $('#fileModal').on('show.bs.modal', function () {
-        $('#proposalFIleModal').addClass('d-block');
-    });
-
-    $('#fileModal').on('hidden.bs.modal', function () {
-        $('#proposalFIleModal').removeClass('d-block');
-        $('#proposalFIleModal').modal('show');
-    });
-
-    $('#proposalFIleModal').on('hidden.bs.modal', function () {
-        setTimeout(function() {
-            if ($('.modal-backdrop').length > 0) {
-                $('.modal-backdrop').remove();
-                $('body').removeClass('modal-open');
-                $('body').css('padding-right', '');
-            }
-        }, 200); 
-    });
-
-
-    
     $(document).ready(function () {
         // Right-click event for group rows
         $(document).on("contextmenu", ".tr-group", function (event) {
@@ -722,36 +650,36 @@
 
         checkPreviousMinutes();
 
-            function checkPreviousMinutes() {
-                let meetingId = $("input[name='meeting_id']").val();
+        function checkPreviousMinutes() {
+            let meetingId = $("input[name='meeting_id']").val();
 
-                $.ajax({
-                    url: "{{ route('get.previous.minutes', ':meeting_id') }}".replace(':meeting_id', meetingId),
-                    type: "GET",
-                    success: function(response) {
-                        if (response.success && response.previous_minutes) {
-                            console.log("Previous Minutes Found:", response.previous_minutes);
-                            $("#openMinutesModal").hide();
-                            $("#viewButton").attr("href", "/storage/previous_minutes/" + response.previous_minutes).show();
-                            $("#editMinutesButton").show();
+            $.ajax({
+                url: "{{ route('get.previous.minutes', ':meeting_id') }}".replace(':meeting_id', meetingId),
+                type: "GET",
+                success: function(response) {
+                    if (response.success && response.previous_minutes) {
+                        console.log("Previous Minutes Found:", response.previous_minutes);
+                        $("#openMinutesModal").hide();
+                        $("#viewButton").attr("href", "/storage/previous_minutes/" + response.previous_minutes).show();
+                        $("#editMinutesButton").show();
 
-                        } else {
-                            console.log("No Previous Minutes Found");
+                    } else {
+                        console.log("No Previous Minutes Found");
 
-                            // Show upload button & hide view button
-                            $("#openMinutesModal").show();
-                            $("#viewButton").hide();
-                            $("#editMinutesButton").hide();
+                        // Show upload button & hide view button
+                        $("#openMinutesModal").show();
+                        $("#viewButton").hide();
+                        $("#editMinutesButton").hide();
 
-                        }
                     }
-                });
-            }
+                }
+            });
+        }
 
-                $("#editMinutesButton").click(function(e) {
-                e.preventDefault();
-                $("#editMinutesModal").modal("show");
-                });
+        $("#editMinutesButton").click(function(e) {
+            e.preventDefault();
+            $("#editMinutesModal").modal("show");
+        });
 
         $('#editMinutesForm').on('submit', function(e) {
                 e.preventDefault();

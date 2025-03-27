@@ -42,24 +42,23 @@
     border: none !important;
 }
 
-.custom-tbl-header th,
-.custom-tbl-header tr{
+/* .custom-tbl-header th,
+.custom-tbl-header tr{ */
     /* color: var(--bs-primary) !important; */
      /* color: var(--bs-white) !important; */
-}
+/* } */
 /* .custom-tbl-header th{
     padding: 15px 10px !important;
 } */
 tr{
     border-bottom: 1px solid #e8e8e8 ;
 }
-td{
+.table-striped td{
     color: #646E78 !important;
     font-weight: 400 !important;
     padding-top: 15px !important;
     padding-bottom: 15px !important;
 }
-
 
 /* CREATE GROUP IN ORDER BUSSINESS CSS*/
 .selected-row {
@@ -71,3 +70,8 @@ td{
 /* .tr-group{
     background-color: var(--bs-secondary-bg-subtle);
 } */
+
+.files-table{
+    max-height: 400px;
+    overflow: auto;
+}

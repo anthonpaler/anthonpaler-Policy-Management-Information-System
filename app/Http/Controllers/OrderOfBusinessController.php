@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\DB;
 use App\Mail\OOBNotification;
 use Illuminate\Support\Facades\Mail;
 use App\Http\Controllers\SMSController;
+use Illuminate\Support\Facades\Storage;
 use App\Models\Employee;
 use App\Models\HrmisEmployee;
 
@@ -34,29 +35,34 @@ class OrderOfBusinessController extends Controller
         try {
             $meetingID = decrypt($meeting_id);
             $proposals = collect();
-            $matters = config('proposals.matters');
+            $matters = [0 => 'Financial Matters'] + config('proposals.matters');
             $meeting = null;
 
-            if ($level == 'Local') {
-                $meeting = LocalCouncilMeeting::find($meetingID);
-                $proposals = LocalMeetingAgenda::where("local_council_meeting_id", $meetingID)
+            
+            $meetingTypes = [
+                'Local' => ['agendaModel' => LocalMeetingAgenda::class, 
+                            'meeting_key' => 'local_council_meeting_id',
+                            'meetingModel' => LocalCouncilMeeting::class],
+                'University' => ['agendaModel' => UniversityMeetingAgenda::class, 
+                            'meeting_key' => 'university_meeting_id',
+                            'meetingModel' => UniversityCouncilMeeting::class],
+                'BOR' => ['agendaModel' => BoardMeetingAgenda::class,
+                            'meeting_key' => 'bor_meeting_id',
+                            'meetingModel' => BorMeeting::class],
+            ];
+            
+
+            if (isset($meetingTypes[$level])) {
+                $agendaModel = $meetingTypes[$level]['agendaModel'];
+                $meetingKey = $meetingTypes[$level]['meeting_key'];
+                $meetingModel = $meetingTypes[$level]['meetingModel'];
+
+                $meeting = $meetingModel::find($meetingID);
+
+                $proposals = $agendaModel::where($meetingKey, $meeting->id)
                     ->with('proposal')
+                    ->orderBy('order_no', 'asc')
                     ->where('status', 1)
-                    ->orderBy('created_at', 'desc')
-                    ->get();
-            } elseif ($level == 'University') {
-                $meeting = UniversityCouncilMeeting::find($meetingID);
-                $proposals = UniversityMeetingAgenda::where("university_meeting_id", $meetingID)
-                    ->with('proposal')
-                    ->where('status', 1)
-                    ->orderBy('created_at', 'desc')
-                    ->get();
-            } elseif ($level == 'BOR') {
-                $meeting = BorMeeting::find($meetingID);
-                $proposals = BoardMeetingAgenda::where("bor_meeting_id", $meetingID)
-                    ->with('proposal')
-                    ->where('status', 1)
-                    ->orderBy('created_at', 'desc')
                     ->get();
             }
 
@@ -64,14 +70,27 @@ class OrderOfBusinessController extends Controller
             $councilType = $meeting->council_type ?? null;
             $councilTypesConfig = config('proposals.council_types');
 
+            // Initialize categorized proposals
             $categorizedProposals = [];
-
             foreach ($matters as $type => $title) {
-                $categorizedProposals[$type] = $proposals->filter(fn($p) => $p->proposal->type === $type) ?? collect();
+                $categorizedProposals[$type] = collect();
             }
+            
+            // Categorize proposals
+            foreach ($proposals as $proposal) {
+                $type = $proposal->proposal->type;
+                $subType = $proposal->proposal->sub_type;
 
-            if (!isset($categorizedProposals[$type])) {
-                $categorizedProposals[$type] = collect(); 
+                if (!isset($categorizedProposals[$type])) {
+                    $categorizedProposals[$type] = collect();
+                }
+
+                // Separate Financial Matters from Administrative Matters
+                if ($type == 2 && $subType == 0) {
+                    $type = 0; 
+                }
+
+                $categorizedProposals[$type][] = $proposal;
             }
         
             // dd($categorizedProposals);
@@ -399,15 +418,27 @@ class OrderOfBusinessController extends Controller
                 $meetingKey = $meetingTypes[$level]['meeting_key'];
                 $oobKey = $meetingTypes[$level]['oob_key'];
             
-                $query = $model::where($meetingKey, $meeting->id)
-                    ->with('proposal')
-                    ->orderBy('order_no', 'asc');
+                // $query = $model::where($meetingKey, $meeting->id)
+                //     ->with('proposal')
+                //     ->orderBy('order_no', 'asc');
             
-                if ($orderOfBusiness->status == 1) {
-                    $query->where($oobKey, $orderOfBusiness->id);
-                } else {
-                    $query->where('status', 1);
-                }
+                // if ($orderOfBusiness->status == 1) {
+                //     $query->where($oobKey, $orderOfBusiness->id);
+                    
+                // } else {
+                //     $query->where('status', 1);
+                // }
+
+                $query = $model::where($meetingKey, $meeting->id)
+                ->with('proposal')
+                ->orderBy('order_no', 'asc')
+                ->where(function ($q) use ($oobKey, $orderOfBusiness) {
+                    $q->where($oobKey, $orderOfBusiness->id)
+                      ->orWhere('status', 1);
+                });
+            
+
+                
             
                 $proposals = $query->get();
             }            
@@ -518,74 +549,74 @@ class OrderOfBusinessController extends Controller
             ]);
 
             // Fetch Employees based on Council Type
-        $employeeQuery = Employee::query();
+            $employeeQuery = Employee::query();
 
-        if ($orderOfBusiness->meeting->council_type == 2) { // Academic Council
-            $employeeQuery->whereIn('id', function ($query) {
-                $query->select('employee_id')->from('academic_council_membership');
-            });
-        } elseif ($orderOfBusiness->meeting->council_type == 3) { // Administrative Council
-            $employeeQuery->whereIn('id', function ($query) {
-                $query->select('employee_id')->from('administrative_council_membership');
-            });
-        } else { // Joint Council (Both Academic and Administrative)
-            $employeeQuery->whereIn('id', function ($query) {
-                $query->select('employee_id')->from('academic_council_membership')
-                    ->union(
-                        DB::table('administrative_council_membership')->select('employee_id')
-                    );
-            });
-        }
+            if ($orderOfBusiness->meeting->council_type == 2) { // Academic Council
+                $employeeQuery->whereIn('id', function ($query) {
+                    $query->select('employee_id')->from('academic_council_membership');
+                });
+            } elseif ($orderOfBusiness->meeting->council_type == 3) { // Administrative Council
+                $employeeQuery->whereIn('id', function ($query) {
+                    $query->select('employee_id')->from('administrative_council_membership');
+                });
+            } else { // Joint Council (Both Academic and Administrative)
+                $employeeQuery->whereIn('id', function ($query) {
+                    $query->select('employee_id')->from('academic_council_membership')
+                        ->union(
+                            DB::table('administrative_council_membership')->select('employee_id')
+                        );
+                });
+            }
 
-        if ($level == 'Local') {
-            $employeeQuery->where('campus', $orderOfBusiness->meeting->campus_id);
-        }
+            if ($level == 'Local') {
+                $employeeQuery->where('campus', $orderOfBusiness->meeting->campus_id);
+            }
 
-        // Get email addresses and cellphone numbers
-        $emails = $employeeQuery->pluck('EmailAddress')->toArray();
-        $cellNumbers = $employeeQuery->pluck('Cellphone')->toArray();
+            // Get email addresses and cellphone numbers
+            $emails = $employeeQuery->pluck('EmailAddress')->toArray();
+            $cellNumbers = $employeeQuery->pluck('Cellphone')->toArray();
 
-        // Email Notification (in Batches)
-        $chunks = array_chunk($emails, 50);
-        foreach ($chunks as $batch) {
-            Mail::to($batch)->send(new OOBNotification($orderOfBusiness, $orderOfBusiness->meeting));
-            sleep(2); // Pause to prevent timeout
-        }
+            // Email Notification (in Batches)
+            $chunks = array_chunk($emails, 50);
+            foreach ($chunks as $batch) {
+                Mail::to($batch)->send(new OOBNotification($orderOfBusiness, $orderOfBusiness->meeting));
+                sleep(2); // Pause to prevent timeout
+            }
 
-    //     // SMS/Text Blast Notification
-    //     $smsController = new SMSController();
-    //     $meeting = $orderOfBusiness->meeting;
-    //     $quarter = config('meetings.quaterly_meetings')[$meeting->quarter] ?? '';
-    //    // Correcting the level mapping
-    //         $levelMapping = [
-    //             'Local' => 'local_level',
-    //             'University' => 'university_level',
-    //             'BOR' => 'board_level',
-    //         ];
+            //     // SMS/Text Blast Notification
+            //     $smsController = new SMSController();
+            //     $meeting = $orderOfBusiness->meeting;
+            //     $quarter = config('meetings.quaterly_meetings')[$meeting->quarter] ?? '';
+            //    // Correcting the level mapping
+            //         $levelMapping = [
+            //             'Local' => 'local_level',
+            //             'University' => 'university_level',
+            //             'BOR' => 'board_level',
+            //         ];
 
-    //     $levelKey = $levelMapping[$level] ?? null;
-    //     $councilType = ($levelKey && isset(config('meetings.council_types')[$levelKey][$meeting->council_type])) 
-    //     ? config('meetings.council_types')[$levelKey][$meeting->council_type] 
-    //     : 'Unknown Council Type';
-    //     $meetingDateTime = date('M j, Y g:i A', strtotime($orderOfBusiness->meeting->meeting_date_time));
+            //     $levelKey = $levelMapping[$level] ?? null;
+            //     $councilType = ($levelKey && isset(config('meetings.council_types')[$levelKey][$meeting->council_type])) 
+            //     ? config('meetings.council_types')[$levelKey][$meeting->council_type] 
+            //     : 'Unknown Council Type';
+            //     $meetingDateTime = date('M j, Y g:i A', strtotime($orderOfBusiness->meeting->meeting_date_time));
 
-    //     $message = "NOTICE: The provisional agenda (Order of Business) for the $quarter – $councilType meeting this $meetingDateTime is now available.";
+            //     $message = "NOTICE: The provisional agenda (Order of Business) for the $quarter – $councilType meeting this $meetingDateTime is now available.";
 
-    //     foreach ($emails as $index => $email) {
-    //         $phone = $cellNumbers[$index] ?? null;
+            //     foreach ($emails as $index => $email) {
+            //         $phone = $cellNumbers[$index] ?? null;
 
-    //         if (empty($phone)) {
-    //             $hrmisEmployee = HrmisEmployee::where('EmailAddress', $email)->first();
-    //             $phone = $hrmisEmployee?->Cellphone;
-    //         }
+            //         if (empty($phone)) {
+            //             $hrmisEmployee = HrmisEmployee::where('EmailAddress', $email)->first();
+            //             $phone = $hrmisEmployee?->Cellphone;
+            //         }
 
-    //         if (!empty($phone)) {
-    //             $smsResponse = $smsController->send($phone, $message);
-    //             if ($smsResponse['Error'] == 1) {
-    //                 \Log::error("SMS Failed to $phone: " . $smsResponse['Message']);
-    //             }
-    //         }
-    //     }
+            //         if (!empty($phone)) {
+            //             $smsResponse = $smsController->send($phone, $message);
+            //             if ($smsResponse['Error'] == 1) {
+            //                 \Log::error("SMS Failed to $phone: " . $smsResponse['Message']);
+            //             }
+            //         }
+            //     }
 
 
             DB::commit(); 
@@ -596,7 +627,6 @@ class OrderOfBusinessController extends Controller
                 'title' => "Success!"
             ]);
         } catch (\Throwable $th) {
-            DB::rollBack();
 
             return response()->json(['type' => 'danger', 'message' => $th->getMessage(), 'title'=> "Something went wrong!"]);
         }
@@ -752,7 +782,7 @@ class OrderOfBusinessController extends Controller
             // Validate the request
             $data = $request->validate([
                 'group_title' => 'required|string',
-                'order_no' => 'required',
+                // 'order_no' => 'required',
                 'proposals' => 'required|array',
                 'proposals.*' => 'integer|exists:proposals,id',
             ]);
@@ -772,7 +802,7 @@ class OrderOfBusinessController extends Controller
             // Create new group
             $group = GroupProposal::create([
                 'group_title' => $data['group_title'],
-                'order_no' => $data['order_no']
+                // 'order_no' => $data['order_no']
             ]);
     
             // Assign group and update order

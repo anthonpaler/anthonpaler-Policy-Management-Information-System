@@ -30,7 +30,7 @@
                     <form action="{{ route(getUserRole().'.proposal.edit.save', ['proposal_id' => encrypt($proposal->id)]) }}" method="post" id="editProposalFrm">
                         <div class="d-flex justify-content-between gap-2 mb-3">
                             <h6 class="m-0">PROPOSAL DETAILS </h6>                       
-                            <span class="badge bg-label-primary">{{ config('proposals.status.'.$proposal->status) }}</span>
+                            <span class="badge bg-label-{{ in_array($proposal->status, [2,5,6,7]) ? 'danger' : 'primary'}}">{{ config('proposals.status.'.$proposal->status) }}</span>
                         </div>
                         <div class="mb-3">
                             <label class="form-label" for="title">Proposal Title <span class="ms-1 text-danger">*</span></label>
@@ -208,7 +208,7 @@
                             @php
                                 $countLatestVersion = 0;
                             @endphp
-                            <div class="table-responsive text-nowrap latest-version-files">
+                            <div class="table-responsive text-nowrap latest-version-files files-table">
                                 <table id="proposalFilesTable" class="table table-bordered sortable">
                                     <thead>
                                         <tr>
@@ -293,7 +293,7 @@
                             @php
                                 $countOldVersion = 0;
                             @endphp
-                            <div class="table-responsive text-nowrap old-version-files d-none">
+                            <div class="table-responsive text-nowrap old-version-files d-none files-table">
                                 <table id="" class="table table-bordered">
                                     <thead>
                                         <tr>
@@ -387,7 +387,7 @@
                                     @php $noLogsFound = false; @endphp
                                     <div class="com-wrapper d-flex {{ $log->user->employee_id == session('employee_id') ? 'justify-content-end' : 'justify-content-start' }}">
                                         <div class="{{$log->user->employee_id == session('employee_id') ? 'sender' : 'receiver' }}">
-                                            <div class="d-flex gap-4 justify-content-between">
+                                            <div class="d-flex gap-4 justify-content-between {{ $log->user->employee_id == session('employee_id') ? 'flex-row-reverse' : '' }}">
                                                 <div class="d-flex gap-2">
                                                     <div class="flex-shrink-0 me-3">
                                                         <div class="avatar avatar-sm">
@@ -642,5 +642,6 @@
     }
 </script>
 
+<script src="{{asset('assets/js/customFileUplaod.js')}}"></script>
 <script src="{{asset('assets/js/proposal.js')}}"></script>
 @endsection

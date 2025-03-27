@@ -240,7 +240,7 @@
                                         <input type="text" class="form-control flex-grow-1" data-id="" value="Select Action" id="proposalStatusInput"  disabled>
                                     </div>
                                     @if ($meeting->status == 1)
-                                        <button type="button" class="btn btn-danger d-flex gap-2" disabled>
+                                        <button type="button" class="btn btn-icon btn-danger d-flex gap-2" disabled>
                                             <i class='bx bxs-lock-alt' ></i>
                                         </button>
                                     @else
@@ -341,6 +341,18 @@
                     <tbody class="">
                         @foreach($proposals as $proposal)
                         <tr data-proponent="{{ $proposal->proponent }}" data-title="{{ $proposal->title }}">
+                            @php
+                                // Define proposal status classes dynamically
+                                $statusClass = match ($proposal->status) {
+                                    2, 7 => 'danger',
+                                    5, 6 => 'warning',
+                                    1, 8, 9 => 'primary',
+                                    3, 10 => 'success',
+                                    4 => 'info',
+                                    default => 'secondary'
+                                };
+                            @endphp
+
                             @if (session('isSecretary'))
                                 @if ($meeting->status == 1)
                                     <td>
@@ -393,25 +405,31 @@
                             </td>
                             <td> 
                                 <span class="d-flex gap-2 align-items-center">
-                                        <i class='bx bx-up-arrow-circle text-{{ $actionColors[$proposal->proposal->action] ?? 'primary' }}'></i>
-                                        {{ config('proposals.requested_action.'.$proposal->proposal->action) }}
-                                    </span>
+                                    <i class='bx bx-up-arrow-circle text-{{ $actionColors[$proposal->proposal->action] ?? 'primary' }}'></i>
+                                    {{ config('proposals.requested_action.'.$proposal->proposal->action) }}
+                                </span>
                             </td>
                             <!-- <td>{{config('meetings.level.'.$proposal->proposal->getCurrentLevelAttribute())}}</td> -->
                             <td class="status-cell">
                                 <div style="width: 230px; white-space: nowrap; ">
                                     <span class="mb-0 align-items-center d-flex w-px-100 gap-1">
-                                        <i class='bx bx-radio-circle-marked text-{{ $actionColors[$proposal->status] ?? 'primary' }}'></i>
+                                        <i class='bx bx-radio-circle-marked text-{{$statusClass}}'></i>
                                         {{ config('proposals.status.'.$proposal->status) }}
                                     </span>
                                 </div>
                             </td>
                             <td>
                                 @if($proposal->proposal->files->count() > 0)
+                                    <!-- <button class="btn btn-sm btn-secondary d-flex gap-2 view-files"
+                                            data-files="{{ json_encode($proposal->proposal->files) }}" 
+                                            data-title="{{ $proposal->proposal->title }}">
+                                        <i class='bx bx-file'></i> {{ $proposal->proposal->files->where('is_active', 1)->count() }}
+                                        FILES
+                                    </button> -->
                                     <button class="btn btn-sm btn-secondary d-flex gap-2 view-files"
                                             data-files="{{ json_encode($proposal->proposal->files) }}" 
                                             data-title="{{ $proposal->proposal->title }}">
-                                        <i class='bx bx-file'></i> {{ $proposal->proposal->files->count() }} FILES
+                                        <i class='bx bx-file'></i> VIEW FILES
                                     </button>
                                 @else
                                     <button class="btn btn-sm btn-danger d-flex gap-2">
@@ -684,7 +702,7 @@
         });
     });
 </script>
-
+<script src="{{asset('assets/js/customFileUplaod.js')}}"></script>
 <script src="{{asset('assets/js/proposal.js')}}"></script>
 <script src="{{asset('assets/js/dataTable.js')}}"></script>
 
