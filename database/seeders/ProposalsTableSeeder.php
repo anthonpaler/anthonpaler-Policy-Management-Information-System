@@ -19,10 +19,10 @@ class ProposalsTableSeeder extends Seeder
     {
     
           // Load CSV files
-          $proposalsCsv = Reader::createFromPath(storage_path('app/latest_proposals.csv'), 'r');
+          $proposalsCsv = Reader::createFromPath(storage_path('app/seeder_data/proposal_data_m27.csv'), 'r');
           $proposalsCsv->setHeaderOffset(0);
   
-          $usersCsv = Reader::createFromPath(storage_path('app/latest_user_data.csv'), 'r');
+          $usersCsv = Reader::createFromPath(storage_path('app/seeder_data/user_data_m27.csv'), 'r');
           $usersCsv->setHeaderOffset(0);
   
           // Create a mapping of user id to employee_id
@@ -34,16 +34,16 @@ class ProposalsTableSeeder extends Seeder
           // Insert proposals with mapped employee_id
           foreach ($proposalsCsv as $proposal) {
               // Get the correct employee_id using proponent_id
-              $employeeId = $userMap[$proposal['proponent_id']] ?? null;
+            //   $employeeId = $userMap[$proposal['proponent_id']] ?? null;
   
               // Convert 'NULL' or empty strings to actual null values for timestamps
               $deletedAt = (!empty($proposal['deleted_at']) && strtoupper($proposal['deleted_at']) !== 'NULL') ? $proposal['deleted_at'] : null;
               $subType = (!empty($proposal['sub_type']) && strtoupper($proposal['sub_type']) !== 'NULL') ? (int) $proposal['sub_type'] : null;
   
               // Ensure `employee_id` is available before proceeding
-              if (!$employeeId) {
-                  continue; // Skip if employee_id is missing
-              }
+            //   if (!$employeeId) {
+            //       continue; // Skip if employee_id is missing
+            //   }
   
               // Use firstOrCreate to avoid duplicates
               Proposal::updateOrInsert(
@@ -54,7 +54,7 @@ class ProposalsTableSeeder extends Seeder
                       'sub_type' => $subType,
                       'action' => $proposal['action'],
                       'status' => $proposal['status'],
-                      'employee_id' => $employeeId, // Insert employee_id instead of proponent_id
+                    //   'employee_id' => $employeeId, // Insert employee_id instead of proponent_id
                       'campus_id' => $proposal['campus_id'],
                       'created_at' => $proposal['created_at'],
                       'updated_at' => $proposal['updated_at'],

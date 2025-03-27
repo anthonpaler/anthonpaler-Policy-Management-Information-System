@@ -19,7 +19,7 @@ class ProposalFileSeeder extends Seeder
     public function run(): void
     {
         // Load CSV file
-        $csv = Reader::createFromPath(storage_path('app/latest_pfiles.csv'), 'r');
+        $csv = Reader::createFromPath(storage_path('app/seeder_data/proposal_files_27.csv'), 'r');
         $csv->setHeaderOffset(0);
 
         foreach ($csv as $row) {

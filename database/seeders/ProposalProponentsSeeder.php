@@ -16,7 +16,7 @@ class ProposalProponentsSeeder extends Seeder
     public function run(): void
     {
         // Load user data
-        $userCsv = Reader::createFromPath(storage_path('app/user_data_m27.csv'), 'r');
+        $userCsv = Reader::createFromPath(storage_path('app/seeder_data/user_data_m27.csv'), 'r');
         $userCsv->setHeaderOffset(0);
         $userRecords = iterator_to_array($userCsv->getRecords());
 
@@ -27,7 +27,7 @@ class ProposalProponentsSeeder extends Seeder
         }
 
         // Load proposal data
-        $proposalCsv = Reader::createFromPath(storage_path('app/proposal_data_m27.csv'), 'r');
+        $proposalCsv = Reader::createFromPath(storage_path('app/seeder_data/proposal_data_m27.csv'), 'r');
         $proposalCsv->setHeaderOffset(0);
         $proposalRecords = iterator_to_array($proposalCsv->getRecords());
 

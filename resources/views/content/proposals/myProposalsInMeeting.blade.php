@@ -90,14 +90,13 @@
                                 <div class="d-flex align-items-center">
                                     <div class="d-flex flex-column gap-3">
                                         @foreach ($proposal->proposal->proponents as $proponent)
-                                            <div class="d-flex gap-3 align-items-center">
-                                                <div data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $proponent->name }}" class="avatar avatar-sm pull-up">
-                                                    <img class="rounded-circle" src="{{ $proponent->image ?? '/default-avatar.png' }}" alt="Avatar">
-                                                </div>
+                                            <div class="d-flex align-items-center gap-3">
+                                                <img class="rounded-circle avatar-sm" src="{{ $proponent->image && trim($proponent->image) !== '' ? $proponent->image : asset('assets/img/avatars/default-avatar.jpg') }}
+" alt="Avatar">
                                                 <span>{{ $proponent->name }}</span>
                                             </div>
                                         @endforeach
-                                    </div>
+                                    </di>
                                 </div>
                             </td>
                             <td>

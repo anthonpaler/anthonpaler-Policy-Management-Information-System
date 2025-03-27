@@ -124,13 +124,13 @@
                             </td>
                         </tr>
                     @empty
-                        <tr>
+                        <!-- <tr>
                             <td colspan="7">
                                 <div class="alert alert-warning mt-3" role="alert">
                                     <i class="bx bx-info-circle"></i> No meetings found in the Order of Business.
                                 </div>
                             </td>
-                        </tr>
+                        </tr> -->
                     @endforelse
                 </tbody>
 

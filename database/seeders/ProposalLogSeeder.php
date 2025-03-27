@@ -16,8 +16,8 @@ class ProposalLogSeeder extends Seeder
      */
     public function run(): void
     {
-        $csvPath = storage_path('app/latest_plogs.csv');
-        $userCsvPath = storage_path('app/latest_user_data.csv');
+        $csvPath = storage_path('app/seeder_data/logs_data_m27.csv');
+        $userCsvPath = storage_path('app/seeder_data/user_data_m27.csv');
 
         // Load latest user data to map user_id to employee_id
         $userCsv = Reader::createFromPath($userCsvPath, 'r');

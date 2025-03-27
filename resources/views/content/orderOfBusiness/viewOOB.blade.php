@@ -250,13 +250,16 @@
                                         <tr class="selectable-row" data-id="{{ $proposal['data']->proposal->id }}">
                                             <td>2.<span class="order_no">{{ $counter }}</span></td>
                                             <td>
-                                                <span>{{ $proposal['data']->proposal->title }}</span>
+                                                <div style="white-space: wrap; ">
+                                                    <a style="color: #697A8D;">{{ $proposal['data']->proposal->title }}</a>
+                                                </div>
                                             </td>
                                             <td>
                                                 <div class="d-flex flex-column gap-3">
                                                     @foreach ($proposal['data']->proposal->proponents ?? [] as $proponent)
                                                         <div class="d-flex align-items-center gap-3">
-                                                            <img class="rounded-circle avatar-sm" src="{{ $proponent->image ?? '/default-avatar.png' }}" alt="Avatar">
+                                                            <img class="rounded-circle avatar-sm" src="{{ $proponent->image && trim($proponent->image) !== '' ? $proponent->image : asset('assets/img/avatars/default-avatar.jpg') }}
+" alt="Avatar">
                                                             <span>{{ $proponent->name }}</span>
                                                         </div>
                                                     @endforeach
@@ -309,7 +312,9 @@
                                                     <span class="order_no">2.{{ $counter }}.{{ $groupCounter }}</span>
                                                 </td>
                                                 <td>
-                                                    <span>{{ $groupedProposal->proposal->title }}</span>
+                                                    <div style="white-space: wrap; ">
+                                                        <a style="color: #697A8D;">{{ $groupedProposal->proposal->title }}</a>
+                                                    </div>
                                                 </td>
                                                 <td>  
                                                     <div class="d-flex flex-column gap-3">

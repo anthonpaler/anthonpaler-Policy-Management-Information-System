@@ -116,14 +116,16 @@
 }
 .reciever,
 .sender{
- width: 70% !important;
+ max-width: 70% !important;
 }
 .sender .card{
   background-color: var(  --bs-primary-bg-subtle);
+  border: 1px solid var(--bs-white);
 }
 
 .reciever .card{
-  background-color: var(  --bs-secondary-bg-subtle);
+  background-color: var(  --bs-white);
+  border: 1px solid #f5f5f5;
 }
 .com-sec-header{
   -webkit-box-shadow: 0 13px 20.5px -7.5px #ddd;
@@ -146,7 +148,7 @@
   z-index: 5 !important;
   margin-top: 60px;
   /* border: 1px dashed red; */
-  overflow-y: scroll;
+  overflow-y: auto;
   /* height: 400px;
   max-height: 650px; */
   min-height: 400px;

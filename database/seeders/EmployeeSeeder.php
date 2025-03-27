@@ -15,7 +15,7 @@ class EmployeeSeeder extends Seeder
      */
     public function run()
     {
-        $path = storage_path('app/updated_employee_data.csv');
+        $path = storage_path('app/seeder_data/employee_data_m27.csv');
 
         if (!file_exists($path)) {
             $this->command->error('CSV file not found.');

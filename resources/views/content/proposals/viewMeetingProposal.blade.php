@@ -62,10 +62,10 @@
       <div class="card-body">
         <div class="d-flex justify-content-between">
           <div class="card-info">
-            <p class="text-heading mb-1">Post Agenda</p>
+            <p class="text-heading mb-1">Posted to Agenda</p>
             <div class="d-flex align-items-center mb-1">
                 <h4 class="card-title mb-0 me-2">{{ $statusCounts['Posted to Agenda'] }}</h4>
-              <span class="text-success">proposals</span>
+              <span class="text-info">proposals</span>
             </div>
           </div>
           <div class="card-icon">
@@ -339,110 +339,114 @@
                         </tr>
                     </thead>
                     <tbody class="">
-                        @foreach($proposals as $proposal)
-                        <tr data-proponent="{{ $proposal->proponent }}" data-title="{{ $proposal->title }}">
-                            @php
-                                // Define proposal status classes dynamically
-                                $statusClass = match ($proposal->status) {
-                                    2, 7 => 'danger',
-                                    5, 6 => 'warning',
-                                    1, 8, 9 => 'primary',
-                                    3, 10 => 'success',
-                                    4 => 'info',
-                                    default => 'secondary'
-                                };
-                            @endphp
+                        @if ($proposals->isEmpty())
+                        
+                        @else
 
-                            @if (session('isSecretary'))
-                                @if ($meeting->status == 1)
-                                    <td>
-                                        <span class="text-danger"><i class='bx bxs-lock-alt' ></i></span>       
-                                    </td>                 
-                                @else
-                                    @if($meetingDateTime && $currentDateTime->lessThan($meetingDateTime))
-                                        <td>
-                                            <input type="checkbox" 
-                                            class="form-check-input select-proposal" 
-                                            data-id="{{ encrypt($proposal->proposal->id) }}" 
-                                            {{ (!in_array($proposal->status , [0, 8])) ? 'disabled' : '' }}>
-                                        </td>
-                                    @elseif($meetingDateTime && $currentDateTime->greaterThan($meetingDateTime))
-                                        <td>
-                                            <input type="checkbox" 
-                                            class="form-check-input select-proposal" 
-                                            data-id="{{ encrypt($proposal->proposal->id) }}" 
-                                            {{ (!in_array($proposal->status , [1])) ? 'disabled' : '' }}>
-                                        </td>
-                                    @endif
-                                @endif                            
-                            @endif
-                            <td>{{ $loop->iteration }}</td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="d-flex flex-column gap-3">
-                                        @foreach ($proposal->proposal->proponents as $proponent)
-                                            <div class="d-flex gap-3 align-items-center">
-                                                <div data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $proponent->name }}" class="avatar avatar-sm pull-up">
-                                                    <img class="rounded-circle" src="{{ $proponent->image ?? '/default-avatar.png' }}" alt="Avatar">
-                                                </div>
-                                                <span>{{ $proponent->name }}</span>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <div style="min-width: 300px; max-width: 500px; white-space: wrap; ">
-                                    <a style="color: #697A8D;" href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->proposal->id)]) }}" >{{ $proposal->proposal->title }}</a>
-                                </div>
-                            </td>
-                            <td>
-                                <span class="align-items-center d-flex gap-2"> 
-                                    {!! $proposal->proposal->type == 1 ? "<i class='bx bx-book-content text-primary'></i> " : "<i class='bx bxs-book-content text-danger' ></i>" !!}
+                            @foreach($proposals as $proposal)
+                            <tr data-proponent="{{ $proposal->proponent }}" data-title="{{ $proposal->title }}">
+                                @php
+                                    // Define proposal status classes dynamically
+                                    $statusClass = match ($proposal->status) {
+                                        2, 7 => 'danger',
+                                        5, 6, 8 => 'warning',
+                                        1, 9 => 'primary',
+                                        3, 10 => 'success',
+                                        4 => 'info',
+                                        default => 'secondary'
+                                    };
+                                @endphp
 
-                                    {{ config('proposals.matters.'.$proposal->proposal->type) }}
-                                </span>
-                            </td>
-                            <td> 
-                                <span class="d-flex gap-2 align-items-center">
-                                    <i class='bx bx-up-arrow-circle text-{{ $actionColors[$proposal->proposal->action] ?? 'primary' }}'></i>
-                                    {{ config('proposals.requested_action.'.$proposal->proposal->action) }}
-                                </span>
-                            </td>
-                            <!-- <td>{{config('meetings.level.'.$proposal->proposal->getCurrentLevelAttribute())}}</td> -->
-                            <td class="status-cell">
-                                <div style="width: 230px; white-space: nowrap; ">
-                                    <span class="mb-0 align-items-center d-flex w-px-100 gap-1">
-                                        <i class='bx bx-radio-circle-marked text-{{$statusClass}}'></i>
-                                        {{ config('proposals.status.'.$proposal->status) }}
-                                    </span>
-                                </div>
-                            </td>
-                            <td>
-                                @if($proposal->proposal->files->count() > 0)
-                                    <!-- <button class="btn btn-sm btn-secondary d-flex gap-2 view-files"
-                                            data-files="{{ json_encode($proposal->proposal->files) }}" 
-                                            data-title="{{ $proposal->proposal->title }}">
-                                        <i class='bx bx-file'></i> {{ $proposal->proposal->files->where('is_active', 1)->count() }}
-                                        FILES
-                                    </button> -->
-                                    <button class="btn btn-sm btn-secondary d-flex gap-2 view-files"
-                                            data-files="{{ json_encode($proposal->proposal->files) }}" 
-                                            data-title="{{ $proposal->proposal->title }}">
-                                        <i class='bx bx-file'></i> VIEW FILES
-                                    </button>
-                                @else
-                                    <button class="btn btn-sm btn-danger d-flex gap-2">
-                                        <i class='bx bx-file'></i> NO FILES
-                                    </button>
+                                @if (session('isSecretary'))
+                                    @if ($meeting->status == 1)
+                                        <td>
+                                            <span class="text-danger"><i class='bx bxs-lock-alt' ></i></span>       
+                                        </td>                 
+                                    @else
+                                        @if($meetingDateTime && $currentDateTime->lessThan($meetingDateTime))
+                                            <td>
+                                                <input type="checkbox" 
+                                                class="form-check-input select-proposal" 
+                                                data-id="{{ encrypt($proposal->proposal->id) }}" 
+                                                {{ (!in_array($proposal->status , [0, 8])) ? 'disabled' : '' }}>
+                                            </td>
+                                        @elseif($meetingDateTime && $currentDateTime->greaterThan($meetingDateTime))
+                                            <td>
+                                                <input type="checkbox" 
+                                                class="form-check-input select-proposal" 
+                                                data-id="{{ encrypt($proposal->proposal->id) }}" 
+                                                {{ (!in_array($proposal->status , [1])) ? 'disabled' : '' }}>
+                                            </td>
+                                        @endif
+                                    @endif                            
                                 @endif
-                            </td>
+                                <td>{{ $loop->iteration }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="d-flex flex-column gap-3">
+                                            @foreach ($proposal->proposal->proponents as $proponent)
+                                                <div class="d-flex align-items-center gap-3">
+                                                    <img class="rounded-circle avatar-sm" src="{{ $proponent->image && trim($proponent->image) !== '' ? $proponent->image : asset('assets/img/avatars/default-avatar.jpg') }}
+    " alt="Avatar">
+                                                    <span>{{ $proponent->name }}</span>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div style="white-space: wrap;">
+                                        <a style="color: #697A8D;" href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->proposal->id)]) }}" >{{ $proposal->proposal->title }}</a>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="align-items-center d-flex gap-2"> 
+                                        {!! $proposal->proposal->type == 1 ? "<i class='bx bx-book-content text-primary'></i> " : "<i class='bx bxs-book-content text-danger' ></i>" !!}
 
-                            <td>
-                                <a href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->proposal->id)]) }} "  class="btn btn-sm btn-primary d-flex gap-2"><i class="fa-regular fa-eye" disabled></i>VIEW DETAILS</a>
-                            </td>
-                        </tr>
-                        @endforeach
+                                        {{ config('proposals.matters.'.$proposal->proposal->type) }}
+                                    </span>
+                                </td>
+                                <td> 
+                                    <span class="d-flex gap-2 align-items-center">
+                                        <i class='bx bx-up-arrow-circle text-{{ $actionColors[$proposal->proposal->action] ?? 'primary' }}'></i>
+                                        {{ config('proposals.requested_action.'.$proposal->proposal->action) }}
+                                    </span>
+                                </td>
+                                <!-- <td>{{config('meetings.level.'.$proposal->proposal->getCurrentLevelAttribute())}}</td> -->
+                                <td class="status-cell">
+                                    <div style="width: 230px; white-space: nowrap; ">
+                                        <span class="mb-0 align-items-center d-flex w-px-100 gap-1">
+                                            <i class='bx bx-radio-circle-marked text-{{$statusClass}}'></i>
+                                            {{ config('proposals.status.'.$proposal->status) }}
+                                        </span>
+                                    </div>
+                                </td>
+                                <td>
+                                    @if($proposal->proposal->files->count() > 0)
+                                        <!-- <button class="btn btn-sm btn-secondary d-flex gap-2 view-files"
+                                                data-files="{{ json_encode($proposal->proposal->files) }}" 
+                                                data-title="{{ $proposal->proposal->title }}">
+                                            <i class='bx bx-file'></i> {{ $proposal->proposal->files->where('is_active', 1)->count() }}
+                                            FILES
+                                        </button> -->
+                                        <button class="btn btn-sm btn-secondary d-flex gap-2 view-files"
+                                                data-files="{{ json_encode($proposal->proposal->files) }}" 
+                                                data-title="{{ $proposal->proposal->title }}">
+                                            <i class='bx bx-file'></i> VIEW FILES
+                                        </button>
+                                    @else
+                                        <button class="btn btn-sm btn-danger d-flex gap-2">
+                                            <i class='bx bx-file'></i> NO FILES
+                                        </button>
+                                    @endif
+                                </td>
+
+                                <td>
+                                    <a href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->proposal->id)]) }} "  class="btn btn-sm btn-primary d-flex gap-2"><i class="fa-regular fa-eye" disabled></i>VIEW DETAILS</a>
+                                </td>
+                            </tr>
+                            @endforeach
+                        @endif
                     </tbody>
                 </table>
             </div>

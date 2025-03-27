@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedInteger('local_council_meeting_id')->nullable();
             $table->unsignedInteger('local_proposal_id')->nullable();
             $table->unsignedInteger('local_oob_id')->nullable();
-            $table->tinyInteger('status');
+            $table->tinyInteger('status')->nullable();
             $table->integer('order_no')->nullable();
             $table->unsignedBigInteger('group_proposal_id')->nullable();
             $table->timestamps();
