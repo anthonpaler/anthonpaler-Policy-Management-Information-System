@@ -96,22 +96,23 @@
             <div class="d-flex align-items-center gap-2">
                 @if (in_array(auth()->user()->role, [3, 4, 5]))
                 @if(empty($orderOfBusiness->previous_minutes))
-                <button class="btn btn-sm btn-primary d-flex align-items-center gap-2" id="openMinutesModal">
+                <button class="btn btn-sm btn-primary d-flex align-items-center gap-2" 
+                id="openMinutesModal">
                     <i class='bx bx-upload'></i>
                     Upload Previous Minutes
                 </button>
                     @endif
     
-                <button class="btn btn-sm btn-primary d-flex align-items-center gap-2" id="openAttendanceModal">
-                    <i class='bx bx-upload'></i>
-                    Upload Previous Attendance
-                </button>
+               
                 {{-- Show View Button only if there is a file --}}
                  @if(!empty($orderOfBusiness->previous_minutes))
-                <a href="#" target="_blank" class="btn btn-sm btn-success d-flex align-items-center gap-2" id="viewButton" style="display: none;">
-                    <i class='bx bx-file'></i>
-                    View Previous Minutes
-                </a>
+                 <a href="{{ asset('storage/previous_minutes/' . $orderOfBusiness->previous_minutes) }}" 
+                    target="_blank" 
+                    class="btn btn-sm btn-success d-flex align-items-center gap-2" 
+                    id="viewButton">
+                     <i class='bx bx-file'></i>
+                     View Previous Minutes
+                 </a>
                 @endif
 
                 {{-- EDIT FILE --}}
@@ -354,6 +355,18 @@
                 var postedToAgendaProposalIDS = @json($allProposalIds);
             </script>
         </div>
+
+        <div class="mb-3">
+            <div class="d-flex align-items-center">
+
+            <label class="form-label">3. Other Matters</label>
+            <button id="addOtherMatterBtn" class="btn btn-primary btn-xs ms-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Add Other Matter">
+                <i class='bx bx-plus'></i>
+            </button>
+               
+            </div>
+        </div>
+
         
         @if(session('isSecretary') && (session('secretary_level') == $meeting->getMeetingCouncilType()))
             <div class="d-flex gap-3 align-items-center flex-wrap">
@@ -503,6 +516,138 @@
 
     
     $(document).ready(function () {
+         // Open Upload Modal
+                $("#openMinutesModal").click(function(e) {
+                    e.preventDefault();
+                    $("#previousMinModal").modal("show");
+                });
+
+                // Upload Previous Minutes Form Submission
+                $('#uploadMinutesForm').on('submit', function(e) {
+                    e.preventDefault();
+
+                    let formData = new FormData(this);
+
+                    $.ajax({
+                        url: "{{ route(getUserRole().'.upload.minutes') }}", 
+                        type: "POST",
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        },
+                        beforeSend: function() {
+                            toastr.info("Uploading previous minutes...", "", { timeOut: 0, extendedTimeOut: 0 });
+                        },
+                        success: function(response) {
+                            toastr.clear();
+                            if (response.success) {
+                                toastr.success(response.message);
+
+                                $('#previousMinModal').modal('hide');
+                                $("#uploadMinutesForm")[0].reset();
+
+                                // Refresh the minutes view without reloading the page
+                                checkPreviousMinutes();
+                            } else {
+                                toastr.error(response.message);
+                            }
+                        },
+                        error: function(xhr) {
+                            let errorMessage = "An error occurred. Please try again.";
+                            if (xhr.responseJSON && xhr.responseJSON.message) {
+                                errorMessage = xhr.responseJSON.message;
+                            }
+                            toastr.error(errorMessage);
+                        }
+                    });
+                });
+
+    // Check if previous minutes exist and update buttons accordingly
+            function checkPreviousMinutes() {
+                let meetingId = $("input[name='meeting_id']").val();
+
+                $.ajax({
+                    url: "{{ route('get.previous.minutes', ':meeting_id') }}".replace(':meeting_id', meetingId),
+                    type: "GET",
+                    success: function(response) {
+                        if (response.success && response.previous_minutes) {
+                            console.log("Previous Minutes Found:", response.previous_minutes);
+
+                            // Update View Button
+                            $("#viewButton")
+                                .attr("href", "/storage/previous_minutes/" + response.previous_minutes)
+                                .show();
+
+                            // Show Edit Button
+                            $("#editMinutesButton").show();
+
+                            // Hide Upload Button
+                            $("#openMinutesModal").hide();
+
+                        } else {
+                            console.log("No Previous Minutes Found");
+
+                            // Show Upload Button & hide others
+                            $("#openMinutesModal").show();
+                            $("#viewButton").hide();
+                            $("#editMinutesButton").hide();
+                        }
+                    },
+                    error: function() {
+                        console.error("Failed to fetch previous minutes.");
+                    }
+                });
+            }
+
+            // Edit Previous Minutes
+            $("#editMinutesButton").click(function(e) {
+                e.preventDefault();
+                $("#editMinutesModal").modal("show");
+            });
+
+            $('#editMinutesForm').on('submit', function(e) {
+                e.preventDefault();
+
+                let formData = new FormData(this);
+
+                $.ajax({
+                    url: "{{ route(getUserRole().'.upload.minutes') }}", 
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    beforeSend: function() {
+                        toastr.info("Uploading new file...", "", { timeOut: 0, extendedTimeOut: 0 });
+                    },
+                    success: function(response) {
+                        toastr.clear();
+                        if (response.success) {
+                            toastr.success(response.message);
+
+                            $('#editMinutesModal').modal('hide');
+                            $("#editMinutesForm")[0].reset();
+
+                            checkPreviousMinutes();
+                        } else {
+                            toastr.error(response.message);
+                        }
+                    },
+                    error: function(jqXHR) {
+                        console.error(jqXHR);
+                    }
+                });
+            });
+
+            // Initialize Check on Page Load
+            checkPreviousMinutes();
+
+
+
         // Right-click event for group rows
         $(document).on("contextmenu", ".tr-group", function (event) {
             event.preventDefault(); // Prevent default menu
@@ -720,126 +865,6 @@
             $("#groupModal").modal("hide");
         });
 
-        checkPreviousMinutes();
-
-            function checkPreviousMinutes() {
-                let meetingId = $("input[name='meeting_id']").val();
-
-                $.ajax({
-                    url: "{{ route('get.previous.minutes', ':meeting_id') }}".replace(':meeting_id', meetingId),
-                    type: "GET",
-                    success: function(response) {
-                        if (response.success && response.previous_minutes) {
-                            console.log("Previous Minutes Found:", response.previous_minutes);
-                            $("#openMinutesModal").hide();
-                            $("#viewButton").attr("href", "/storage/previous_minutes/" + response.previous_minutes).show();
-                            $("#editMinutesButton").show();
-
-                        } else {
-                            console.log("No Previous Minutes Found");
-
-                            // Show upload button & hide view button
-                            $("#openMinutesModal").show();
-                            $("#viewButton").hide();
-                            $("#editMinutesButton").hide();
-
-                        }
-                    }
-                });
-            }
-
-                $("#editMinutesButton").click(function(e) {
-                e.preventDefault();
-                $("#editMinutesModal").modal("show");
-                });
-
-        $('#editMinutesForm').on('submit', function(e) {
-                e.preventDefault();
-
-                let formData = new FormData(this);
-
-                $.ajax({
-                    url: "{{ route(getUserRole().'.upload.minutes') }}", 
-                    type: "POST",
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                    },
-                    beforeSend: function() {
-                        toastr.info("Uploading new file...", "", { timeOut: 0, extendedTimeOut: 0 });
-                    },
-                    success: function(response) {
-                        toastr.clear();
-                        if (response.success) {
-                            toastr.success(response.message);
-
-                            $('#editMinutesModal').modal('hide');
-                            $("#editMinutesForm")[0].reset();
-                            location.reload();
-                        } else {
-                            toastr.error(response.message);
-                        }
-                    },
-                    error: function(jqXHR) {
-
-                        console.log(jqXHR);
-                        // let errorMessage = "An error occurred. Please try again.";
-                        // if (xhr.responseJSON && xhr.responseJSON.message) {
-                        //     errorMessage = xhr.responseJSON.message;
-                        // }
-                        // toastr.error(errorMessage);
-                    }
-                });
-            });
-            // $('#editMinutesForm').submit();
-
-        $("#openMinutesModal").click(function(e) {
-            e.preventDefault();
-            $("#previousMinModal").modal("show");
-        });
-
-        $('#uploadMinutesForm').on('submit', function(e) {
-                e.preventDefault(); 
-
-                let formData = new FormData(this);
-
-                $.ajax({
-                    url: "{{ route(getUserRole().'.upload.minutes') }}", 
-                    type: "POST",
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                    },
-                    beforeSend: function() {
-                        toastr.info("Uploading previous minutes...", "", { timeOut: 0, extendedTimeOut: 0 }); // Show infinite loading
-                    },
-                    success: function(response) {
-                        toastr.clear();
-                        if (response.success) {
-                            toastr.success(response.message);
-
-                            $('#previousMinModal').modal('hide');
-                            $("#uploadMinutesForm")[0].reset();
-                            $("#openMinutesModal").remove();
-
-                        } else {
-                            toastr.error(response.message);
-                        }
-                    },
-                    error: function(xhr) {
-                        let errorMessage = "An error occurred. Please try again.";
-                    if (xhr.responseJSON && xhr.responseJSON.message) {
-                        errorMessage = xhr.responseJSON.message;
-                    }
-                    toastr.error(errorMessage);
-
-                    }
-                });
-            });
 
 
 

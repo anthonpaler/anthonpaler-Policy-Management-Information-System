@@ -152,7 +152,7 @@ class OrderOfBusinessController extends Controller
     public function uploadPreviousMinutes(Request $request)
     {
         $request->validate([
-            'previous_minutes' => 'required|mimes:pdf,doc,docx|max:2048',
+            'previous_minutes' => 'required|mimes:pdf,doc,docx|max:10240',
             'meeting_id' => 'required|integer',
         ]);
     
