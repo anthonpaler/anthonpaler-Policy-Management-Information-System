@@ -14,6 +14,39 @@
     <i class='bx bx-chevron-right' ></i>
     <a href="#" >Order of Business Information</a>
 </div>
+
+<!-- Modal Upload Previous Minutes -->
+<div class="modal fade" id="previousMinModal" tabindex="-1" aria-labelledby="previousMinModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">UPLOAD PREVIOUS MINUTES</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="">
+                <form id="uploadMinutesForm" enctype="multipart/form-data">
+                    @csrf
+                    <label for="previous_minutes" class="form-label">Previous Minute File</label>
+                    <input type="file" name="previous_minutes" id="previous_minutes" class="form-control" required>
+                    <input type="hidden" name="meeting_id" value="{{ $meeting->id }}">
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Upload</button>
+                    </div>
+                </form>
+                <div id="uploadMessage" class="mt-2"></div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
 <div class="card p-4">
 
     <div class="mt-3 mb-3">
@@ -57,7 +90,43 @@
 
         <!-- Preliminaries Section -->
         <div class="mb-3">
+            <div class="d-flex justify-content-between mb-2 gap-2">
             <label class="form-label">1. Preliminaries</label>
+            
+            <div class="d-flex align-items-center gap-2">
+                @if (in_array(auth()->user()->role, [3, 4, 5]))
+                @if(empty($orderOfBusiness->previous_minutes))
+                <button class="btn btn-sm btn-primary d-flex align-items-center gap-2" id="openMinutesModal">
+                    <i class='bx bx-upload'></i>
+                    Upload Previous Minutes
+                </button>
+                    @endif
+    
+                <button class="btn btn-sm btn-primary d-flex align-items-center gap-2" id="openAttendanceModal">
+                    <i class='bx bx-upload'></i>
+                    Upload Previous Attendance
+                </button>
+                {{-- Show View Button only if there is a file --}}
+                 @if(!empty($orderOfBusiness->previous_minutes))
+                <a href="#" target="_blank" class="btn btn-sm btn-success d-flex align-items-center gap-2" id="viewButton" style="display: none;">
+                    <i class='bx bx-file'></i>
+                    View Previous Minutes
+                </a>
+                @endif
+
+                {{-- EDIT FILE --}}
+                @if (in_array(auth()->user()->role, [3, 4, 5]))
+                <button type="button" class="btn btn-sm btn-warning d-flex align-items-center gap-2" id="editMinutesButton" style="display: none;">
+                    <i class='bx bx-edit'></i> Edit File
+                </button>
+                @endif
+
+            </div>
+         @endif
+        
+            
+        </div>
+        
             <div class="input-group input-group-merge">
             <textarea
                 id="preliminaries" 
@@ -120,7 +189,14 @@
                 $groupCounter = 1;
                 $actionColors = ['secondary', 'success', 'warning', 'danger', 'info']; 
                 $noProposals = collect($categorizedProposals)->flatten()->isEmpty();
-                $allProposalIds = collect($categorizedProposals)->flatten()->pluck('id');
+                $proposalKey = match ($meeting->getMeetingLevel()) {
+                    'Local' => 'local_proposal_id',
+                    'University' => 'university_proposal_id',
+                    'BOR' => 'board_proposal_id',
+                    default => ''
+                };
+
+                $allProposalIds = collect($categorizedProposals)->flatten()->pluck($proposalKey);
             @endphp
 
             @foreach ($matters as $type => $title)
@@ -643,6 +719,130 @@
 
             $("#groupModal").modal("hide");
         });
+
+        checkPreviousMinutes();
+
+            function checkPreviousMinutes() {
+                let meetingId = $("input[name='meeting_id']").val();
+
+                $.ajax({
+                    url: "{{ route('get.previous.minutes', ':meeting_id') }}".replace(':meeting_id', meetingId),
+                    type: "GET",
+                    success: function(response) {
+                        if (response.success && response.previous_minutes) {
+                            console.log("Previous Minutes Found:", response.previous_minutes);
+                            $("#openMinutesModal").hide();
+                            $("#viewButton").attr("href", "/storage/previous_minutes/" + response.previous_minutes).show();
+                            $("#editMinutesButton").show();
+
+                        } else {
+                            console.log("No Previous Minutes Found");
+
+                            // Show upload button & hide view button
+                            $("#openMinutesModal").show();
+                            $("#viewButton").hide();
+                            $("#editMinutesButton").hide();
+
+                        }
+                    }
+                });
+            }
+
+                $("#editMinutesButton").click(function(e) {
+                e.preventDefault();
+                $("#editMinutesModal").modal("show");
+                });
+
+        $('#editMinutesForm').on('submit', function(e) {
+                e.preventDefault();
+
+                let formData = new FormData(this);
+
+                $.ajax({
+                    url: "{{ route(getUserRole().'.upload.minutes') }}", 
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    beforeSend: function() {
+                        toastr.info("Uploading new file...", "", { timeOut: 0, extendedTimeOut: 0 });
+                    },
+                    success: function(response) {
+                        toastr.clear();
+                        if (response.success) {
+                            toastr.success(response.message);
+
+                            $('#editMinutesModal').modal('hide');
+                            $("#editMinutesForm")[0].reset();
+                            location.reload();
+                        } else {
+                            toastr.error(response.message);
+                        }
+                    },
+                    error: function(jqXHR) {
+
+                        console.log(jqXHR);
+                        // let errorMessage = "An error occurred. Please try again.";
+                        // if (xhr.responseJSON && xhr.responseJSON.message) {
+                        //     errorMessage = xhr.responseJSON.message;
+                        // }
+                        // toastr.error(errorMessage);
+                    }
+                });
+            });
+            // $('#editMinutesForm').submit();
+
+        $("#openMinutesModal").click(function(e) {
+            e.preventDefault();
+            $("#previousMinModal").modal("show");
+        });
+
+        $('#uploadMinutesForm').on('submit', function(e) {
+                e.preventDefault(); 
+
+                let formData = new FormData(this);
+
+                $.ajax({
+                    url: "{{ route(getUserRole().'.upload.minutes') }}", 
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    beforeSend: function() {
+                        toastr.info("Uploading previous minutes...", "", { timeOut: 0, extendedTimeOut: 0 }); // Show infinite loading
+                    },
+                    success: function(response) {
+                        toastr.clear();
+                        if (response.success) {
+                            toastr.success(response.message);
+
+                            $('#previousMinModal').modal('hide');
+                            $("#uploadMinutesForm")[0].reset();
+                            $("#openMinutesModal").remove();
+
+                        } else {
+                            toastr.error(response.message);
+                        }
+                    },
+                    error: function(xhr) {
+                        let errorMessage = "An error occurred. Please try again.";
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
+                    toastr.error(errorMessage);
+
+                    }
+                });
+            });
+
+
+
     });
 </script>
 

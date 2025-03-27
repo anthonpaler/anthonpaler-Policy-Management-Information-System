@@ -91,4 +91,19 @@ class BorMeeting extends Model
     {
         return 'All Campuses';
     }
+
+    public function creator()
+    {
+        return $this->belongsTo(Employee::class, 'creator_id');
+    }
+
+    public function councilMembers()
+{
+    $academicMembers = AcademicCouncilMembership::with('employee')->get();
+    $adminMembers = AdministrativeCouncilMembership::with('employee')->get();
+
+    return $academicMembers->merge($adminMembers)->map(function ($member) {
+        return $member->employee; // Return the actual employee object
+    });
+}
 }

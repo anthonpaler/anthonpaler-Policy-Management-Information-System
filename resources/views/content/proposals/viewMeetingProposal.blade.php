@@ -480,6 +480,16 @@
             <div class="modal-body">
                 <form method="POST" action="{{ route(getUserRole().'.addProposal', ['meeting_id' => encrypt($meeting->id)]) }}" enctype="multipart/form-data" id="proposalFrm">
                     @csrf
+              
+                    <!-- Title -->
+                    <div class="mb-3">
+                        <label class="form-label" for="title">Title <span class="ms-1 text-danger">*</span></label>
+                        <textarea id="title" name="title" class="form-control" placeholder="Enter title" required rows="3"></textarea>
+                        @error('title')
+                            <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
+                        @enderror
+                    </div>
+
                     <!-- Proponent or Presenter Email -->
                     <div class="mb-3">
                         <label class="form-label" for="proponent_email">Proponent<span class="ms-1 text-danger">*</span></label>

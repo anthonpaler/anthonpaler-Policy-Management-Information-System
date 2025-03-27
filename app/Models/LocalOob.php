@@ -16,7 +16,8 @@ class LocalOob extends Model
         'local_council_meeting_id',
         'status',
         'preliminaries',
-        'previous_minutes'
+        'previous_minutes',
+        'previous_attendance'
     ];
 
     public function meeting()

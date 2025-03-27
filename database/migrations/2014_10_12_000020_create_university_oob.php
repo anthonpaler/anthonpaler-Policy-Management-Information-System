@@ -20,6 +20,8 @@ return new class extends Migration
             $table->timestamps();
             $table->softdeletes();
             $table->text('previous_minutes')->nullable();
+            $table->text('previous_attendance')->nullable();
+
 
 
         });

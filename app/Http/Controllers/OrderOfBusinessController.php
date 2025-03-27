@@ -19,6 +19,11 @@ use App\Models\GroupProposal;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Venues;
 use Illuminate\Support\Facades\DB;
+use App\Mail\OOBNotification;
+use Illuminate\Support\Facades\Mail;
+use App\Http\Controllers\SMSController;
+use App\Models\Employee;
+use App\Models\HrmisEmployee;
 
 
 class OrderOfBusinessController extends Controller
@@ -142,6 +147,91 @@ class OrderOfBusinessController extends Controller
             ]);
         }
     }
+
+
+    public function uploadPreviousMinutes(Request $request)
+    {
+        $request->validate([
+            'previous_minutes' => 'required|mimes:pdf,doc,docx|max:2048',
+            'meeting_id' => 'required|integer',
+        ]);
+    
+        $file = $request->file('previous_minutes');
+        $fileName = time() . '_' . $file->getClientOriginalName();
+        $file->storeAs('public/previous_minutes', $fileName);
+    
+        $meetingId = $request->meeting_id;
+    
+        // Map meeting types to their corresponding Oob models
+        $meetingMapping = [
+            'local' => [LocalCouncilMeeting::class, LocalOob::class, 'local_council_meeting_id'],
+            'university' => [UniversityCouncilMeeting::class, UniversityOob::class, 'university_council_meeting_id'],
+            'board' => [BorMeeting::class, BoardOob::class, 'bor_meeting_id']
+        ];
+    
+        $oob = null;
+    
+        foreach ($meetingMapping as $type => [$meetingModel, $oobModel, $foreignKey]) {
+            if ($meetingModel::where('id', $meetingId)->exists()) {
+                $oob = $oobModel::where($foreignKey, $meetingId)->first();
+    
+                // If OOB doesn't exist, create it
+                if (!$oob) {
+                    $oob = $oobModel::create([$foreignKey => $meetingId]);
+                }
+    
+                break;
+            }
+        }
+
+        
+    
+        if (!$oob) {
+            return response()->json(['success' => false, 'message' => 'Meeting not found'], 404);
+        }
+
+
+        if (!empty($oob->previous_minutes)) {
+            Storage::delete("public/previous_minutes/{$oob->previous_minutes}");
+        }
+    
+        // Update the OOB record with the uploaded file
+        $oob->update(['previous_minutes' => $fileName]);
+    
+        return response()->json(['success' => true, 'message' => 'Previous minutes uploaded successfully']);
+    }
+
+
+    public function getPreviousMinutes($meetingId)
+{
+    // Map meeting types to their corresponding Oob models
+    $meetingMapping = [
+        'local' => [LocalOob::class, 'local_council_meeting_id'],
+        'university' => [UniversityOob::class, 'university_council_meeting_id'],
+        'board' => [BoardOob::class, 'bor_meeting_id']
+    ];
+
+    $orderOfBusiness = null;
+
+    foreach ($meetingMapping as [$oobModel, $foreignKey]) {
+        $orderOfBusiness = $oobModel::where($foreignKey, $meetingId)->first();
+        if ($orderOfBusiness) {
+            break;
+        }
+    }
+
+    if ($orderOfBusiness && !empty($orderOfBusiness->previous_minutes)) {
+        return response()->json([
+            'success' => true,
+            'previous_minutes' => $orderOfBusiness->previous_minutes
+        ]);
+    }
+
+    return response()->json([
+        'success' => false,
+        'previous_minutes' => null
+    ]);
+}
 
     // GENERATE OOB WITH ORDER NO
     // public function generateOOB(Request $request, String $level, String $meeting_id)
@@ -293,6 +383,11 @@ class OrderOfBusinessController extends Controller
                 throw new \Exception("Meeting not found for the given Order of Business.");
             }
 
+            // Retrieve previous minutes if available
+            $previousMinutes = $orderOfBusiness->previous_minutes 
+            ? asset("storage/previous_minutes/{$orderOfBusiness->previous_minutes}") 
+            : null;
+
             $meetingTypes = [
                 'Local' => ['model' => LocalMeetingAgenda::class, 'meeting_key' => 'local_council_meeting_id', 'oob_key' => 'local_oob_id'],
                 'University' => ['model' => UniversityMeetingAgenda::class, 'meeting_key' => 'university_meeting_id', 'oob_key' => 'university_oob_id'],
@@ -353,9 +448,12 @@ class OrderOfBusinessController extends Controller
                 }
             }
 
+            
+
             return view('content.orderOfBusiness.viewOOB', compact(
                 'orderOfBusiness',
                 'meeting',
+                'previousMinutes',
                 'categorizedProposals',
                 'matters'
             ));
@@ -371,8 +469,11 @@ class OrderOfBusinessController extends Controller
 
 
     public function disseminateOOB(Request $request, String $level,String $oob_id){
+        set_time_limit(300);// Increase execution time to 5 minutes for this request
+
         DB::beginTransaction();
         try{
+
             $oobID = decrypt($oob_id);
 
             if ($level == 'Local') {
@@ -401,6 +502,7 @@ class OrderOfBusinessController extends Controller
                 if ($level == 'Local') {
                     LocalMeetingAgenda::where('local_proposal_id', $proposal_id)
                        ->update(['local_oob_id' => $oobID]);
+
                 } elseif ($level == 'University') {
                     UniversityMeetingAgenda::where('university_proposal_id', $proposal_id)
                        ->update(['university_oob_id' => $oobID]);
@@ -408,17 +510,89 @@ class OrderOfBusinessController extends Controller
                     BoardMeetingAgenda::where('board_proposal_id', $proposal_id)
                     ->update(['board_oob_id' => $oobID]);
                 }
+                
             }
 
             $orderOfBusiness->update([
                 'status' => 1,
             ]);
 
+            // Fetch Employees based on Council Type
+        $employeeQuery = Employee::query();
+
+        if ($orderOfBusiness->meeting->council_type == 2) { // Academic Council
+            $employeeQuery->whereIn('id', function ($query) {
+                $query->select('employee_id')->from('academic_council_membership');
+            });
+        } elseif ($orderOfBusiness->meeting->council_type == 3) { // Administrative Council
+            $employeeQuery->whereIn('id', function ($query) {
+                $query->select('employee_id')->from('administrative_council_membership');
+            });
+        } else { // Joint Council (Both Academic and Administrative)
+            $employeeQuery->whereIn('id', function ($query) {
+                $query->select('employee_id')->from('academic_council_membership')
+                    ->union(
+                        DB::table('administrative_council_membership')->select('employee_id')
+                    );
+            });
+        }
+
+        if ($level == 'Local') {
+            $employeeQuery->where('campus', $orderOfBusiness->meeting->campus_id);
+        }
+
+        // Get email addresses and cellphone numbers
+        $emails = $employeeQuery->pluck('EmailAddress')->toArray();
+        $cellNumbers = $employeeQuery->pluck('Cellphone')->toArray();
+
+        // Email Notification (in Batches)
+        $chunks = array_chunk($emails, 50);
+        foreach ($chunks as $batch) {
+            Mail::to($batch)->send(new OOBNotification($orderOfBusiness, $orderOfBusiness->meeting));
+            sleep(2); // Pause to prevent timeout
+        }
+
+    //     // SMS/Text Blast Notification
+    //     $smsController = new SMSController();
+    //     $meeting = $orderOfBusiness->meeting;
+    //     $quarter = config('meetings.quaterly_meetings')[$meeting->quarter] ?? '';
+    //    // Correcting the level mapping
+    //         $levelMapping = [
+    //             'Local' => 'local_level',
+    //             'University' => 'university_level',
+    //             'BOR' => 'board_level',
+    //         ];
+
+    //     $levelKey = $levelMapping[$level] ?? null;
+    //     $councilType = ($levelKey && isset(config('meetings.council_types')[$levelKey][$meeting->council_type])) 
+    //     ? config('meetings.council_types')[$levelKey][$meeting->council_type] 
+    //     : 'Unknown Council Type';
+    //     $meetingDateTime = date('M j, Y g:i A', strtotime($orderOfBusiness->meeting->meeting_date_time));
+
+    //     $message = "NOTICE: The provisional agenda (Order of Business) for the $quarter – $councilType meeting this $meetingDateTime is now available.";
+
+    //     foreach ($emails as $index => $email) {
+    //         $phone = $cellNumbers[$index] ?? null;
+
+    //         if (empty($phone)) {
+    //             $hrmisEmployee = HrmisEmployee::where('EmailAddress', $email)->first();
+    //             $phone = $hrmisEmployee?->Cellphone;
+    //         }
+
+    //         if (!empty($phone)) {
+    //             $smsResponse = $smsController->send($phone, $message);
+    //             if ($smsResponse['Error'] == 1) {
+    //                 \Log::error("SMS Failed to $phone: " . $smsResponse['Message']);
+    //             }
+    //         }
+    //     }
+
+
             DB::commit(); 
 
             return response()->json([
                 'type' => 'success',
-                'message' => 'Meeting disseminated successfully!',
+                'message' =>'Order of Business disseminated successfully! Notifications sent to Council Members.',
                 'title' => "Success!"
             ]);
         } catch (\Throwable $th) {

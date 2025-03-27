@@ -65,6 +65,9 @@ Route::middleware(['auth', 'proponents'])->prefix('proponents')->group(function(
   Route::post('/oob/filter', [OrderOfBusinessController::class, 'filterOOB'])->name(name: 'proponent.oob.filter');
   Route::get('/meetings/view-order-of-business/{level}/{oob_id}', [OrderOfBusinessController::class, 'viewOOB'])->name('proponent.order_of_business.view-oob');
 
+  Route::post('/order-of-business/upload-minutes', [OrderOfBusinessController::class, 'uploadPreviousMinutes'])->name('proponent.upload.minutes');
+
+
 });
 
 // LOCAL SECRETARY
@@ -104,6 +107,7 @@ Route::middleware(['auth', 'local_secretary'])->prefix('local-campus-secretary')
   Route::get('/fetch-proponents', [ProposalController::class, 'fetchProponents'])->name('local_sec.fetchProponents');
   Route::post('/proposals/store/{meeting_id}', [ProposalController::class, 'addProposal'])->name('local_sec.addProposal');
 
+  Route::post('/order-of-business/upload-minutes', [OrderOfBusinessController::class, 'uploadPreviousMinutes'])->name('local_sec.upload.minutes');
 
 });
 
@@ -149,6 +153,9 @@ Route::middleware(['auth', 'university_secretary'])->prefix('university-secretar
   Route::post('/proposals/store/{meeting_id}', [ProposalController::class, 'addProposal'])->name('univ_sec.addProposal');
 
 
+  Route::post('/order-of-business/upload-minutes', [OrderOfBusinessController::class, 'uploadPreviousMinutes'])->name('univ_sec.upload.minutes');
+
+
 });
 
 // BOARD SECRETARY ROUTES 
@@ -186,6 +193,9 @@ Route::middleware(['auth', 'board_secretary'])->prefix('board-secretary')->group
   Route::get('/fetch-proponents', [ProposalController::class, 'fetchProponents'])->name('board_sec.fetchProponents');
   Route::post('/proposals/store/{meeting_id}', [ProposalController::class, 'addProposal'])->name('board_sec.addProposal');
 
+  Route::post('/order-of-business/upload-minutes', [OrderOfBusinessController::class, 'uploadPreviousMinutes'])->name('board_sec.upload.minutes');
+
+
 
 });
 
@@ -221,6 +231,9 @@ Route::post('/save-proposal-group/{level}', [OrderOfBusinessController::class, '
 Route::post('/ungroup-proposal/{level}', [OrderOfBusinessController::class, 'ungroupProposal'])->name('ungroup_proposal');
 
 Route::post('/update-proposal-group/{level}', [OrderOfBusinessController::class, 'updateProposalGroup'])->name('update_proposal_group');
+
+Route::get('/get-previous-minutes/{meeting_id}', [OrderOfBusinessController::class, 'getPreviousMinutes'])->name('get.previous.minutes');
+
 
 
 

@@ -17,6 +17,10 @@ use App\Models\ProposalProponent;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use App\Mail\ProposalSubmissionNotification;
+use Illuminate\Support\Facades\Mail;
+use App\Http\Controllers\SMSController;
+
 
 class ProposalController extends Controller
 {
@@ -193,6 +197,27 @@ class ProposalController extends Controller
                     'employee_id' => trim($employeeId),
                 ]);
             }
+
+
+             // ✅ Notify the Meeting Creator via Email & SMS
+        $creator = $meeting->creator; // Fetching the creator details
+        if ($creator) {
+            // Send Email Notification
+            Mail::to($creator->EmailAddress)->send(new ProposalSubmissionNotification($proposal, $meeting));
+
+            // // Send SMS Notification
+            // $smsController = new SMSController();
+            // $message = "A new proposal '{$proposal->title}' has been submitted for review in {$meeting->description}. Please check the system.";
+
+            // if (!empty($creator->Cellphone)) {
+            //     $smsResponse = $smsController->send($creator->Cellphone, $message);
+            //     if ($smsResponse['Error'] == 1) {
+            //         \Log::error("SMS Failed to {$creator->Cellphone}: " . $smsResponse['Message']);
+            //     }
+            // }
+        }
+
+
     
             DB::commit(); // Commit transaction if everything is successful
     
@@ -230,6 +255,8 @@ class ProposalController extends Controller
 
     public function addProposal(Request $request, String $meeting_id)
 {
+    DB::beginTransaction();
+
     try {
 
 
@@ -338,6 +365,18 @@ class ProposalController extends Controller
             'file_id' => $fileIdsString,
         ]);
 
+        $proponentIds = explode(',', $request->input('proponent_email'));
+            
+        foreach ($proponentIds as $employeeId) {
+            $proponent = Employee::where('EmailAddress', $request->input('proponent_email'))->first();
+
+            ProposalProponent::create([
+                'proposal_id' => $proposal->id,
+                'employee_id' => $proponent->id,
+            ]);
+        }
+
+        DB::commit();
 
 
         return redirect()->back()->with('toastr', [
@@ -346,6 +385,8 @@ class ProposalController extends Controller
         ]);   
         
     } catch (\Throwable $th) {
+        DB::rollBack(); 
+
         return response()->json(['type' => 'danger', 'message' => $th->getMessage(), 'title' => "Something went wrong!"]);
     }
 }

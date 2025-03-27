@@ -6,6 +6,9 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\AcademicCouncilMembership;
+use App\Models\AdministrativeCouncilMembership;
+use App\Models\Employee;
 
 
 class LocalCouncilMeeting extends Model
@@ -105,4 +108,33 @@ class LocalCouncilMeeting extends Model
     {
         return $this->campus ? $this->campus->name : 'N/A';
     }
+
+    public function creator()
+    {
+        return $this->belongsTo(Employee::class, 'creator_id');
+    }
+
+    public function councilMembers()
+{
+   // Ensure meeting has a valid council_type
+   if (is_null($this->council_type)) {
+    return collect(); // Return empty collection if no council_type
+}
+
+$academicMembers = AcademicCouncilMembership::whereHas('employee')
+    ->where('council_type', $this->council_type)
+    ->with('employee')
+    ->get();
+
+$adminMembers = AdministrativeCouncilMembership::whereHas('employee')
+    ->where('council_type', $this->council_type)
+    ->with('employee')
+    ->get();
+
+return $academicMembers->merge($adminMembers)->map(function ($member) {
+    return $member->employee; 
+});
+}
+
+
 }

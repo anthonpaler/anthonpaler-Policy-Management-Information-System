@@ -40,4 +40,6 @@ class BoardMeetingAgenda extends Model
     {
         return $this->belongsTo(BoardOob::class, 'board_oob_id');
     }
+
+    
 }

@@ -17,6 +17,7 @@ class BoardOob extends Model
         'status',
         'preliminaries',
         'previous_minutes',
+        'previous_attendance'
         
     ];
 

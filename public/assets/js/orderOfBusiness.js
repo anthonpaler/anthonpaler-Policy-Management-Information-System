@@ -105,6 +105,7 @@ document.addEventListener("DOMContentLoaded", function () {
             headers: {
                 "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
             },
+            timeout: 300000,
             beforeSend: function () {
                 disseminateOOBBtn
                     .html(`<i class='bx bx-loader-alt bx-spin'></i><span>Disseminating...</span>`)

@@ -59,6 +59,7 @@ $(document).ready(function() {
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
+            timeout: 300000,
             beforeSend: function () {
                 $("#createMeetingBtn").html(`<i class='bx bx-loader-alt bx-spin' ></i>
                     <span>Creating Meeting...</span> `).prop('disabled', true);

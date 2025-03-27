@@ -265,51 +265,6 @@
 </div>
 
 <script>
-      $('#matter').on('change', function() {
-        var matter = $(this).val();
-        var subType = $('#sub_type');
-        var actionSelect = $('#action');
-
-        actionSelect.empty();
-
-        if (matter == 1) {
-            actionSelect.append(`
-                @if ( in_array( session('user_role'), [0, 2]))
-                    <option value="4">Endorsement for Local ACAD</option>
-                    <option value="1">Endorsement for UACAD</option>
-                @endif
-            `);
-            subType.prop('disabled', true);
-            $('#subTypeContainer').css('display', 'none');
-        } else if (matter == 2) {
-            subType.prop('disabled', false);
-            $('#subTypeContainer').css('display', 'block');
-
-            actionSelect.append(`
-                @if (in_array( session('user_role'), [1, 2]))
-                    <option value="5">Endorsement for Local ADCO</option>
-                    <option value="2">Endorsement for UADCO</option>
-                @endif
-            `);
-        }else if (matter == 3) {
-            subType.prop('disabled', true);
-            $('#subTypeContainer').css('display', 'none');
-
-            actionSelect.append(`
-                <option value="3">Endorsement for BOR</option>
-                <option value="9">BOR Confirmation</option>
-            `);
-        }
-        else if (matter == 4) {
-            subType.prop('disabled', true);
-            $('#subTypeContainer').css('display', 'none');
-
-            actionSelect.append(`
-                <option value="3">Endorsement for BOR</option>
-                <option value="10">BOR Information</option>
-            `);
-        }
-    });
     function getImageByFileType(fileType) {
         switch (fileType) {
             case "pdf":

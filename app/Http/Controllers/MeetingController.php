@@ -12,6 +12,14 @@ use App\Models\UniversityMeetingAgenda;
 use App\Models\BoardMeetingAgenda;
 use App\Models\LocalMeetingAgenda;
 use App\Models\Employee;
+use App\Models\HrmisEmployee;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\MeetingNotification;
+use App\Mail\MeetingUpdateNotification;
+use Carbon\Carbon;
+
+
+
 
 class MeetingController extends Controller
 {
@@ -74,6 +82,8 @@ class MeetingController extends Controller
     // CREATE THE MEETING
     public function createMeeting(Request $request )
     {
+        set_time_limit(300);// Increase execution time to 5 minutes for this request
+
         DB::beginTransaction();
         try{
             $role = session('user_role');
@@ -123,14 +133,87 @@ class MeetingController extends Controller
             if($level == 2){
                 $meeting = BorMeeting::create($meetingData);
             }
-           
+
+            $employeeQuery = Employee::query();
+
+            
+            if ($request->input('council_type') == 2) { // Academic Council
+                $employeeQuery->whereIn('id', function($query) {
+                    $query->select('employee_id')->from('academic_council_membership');
+                });
+            } elseif ($request->input('council_type') == 3) { // Administrative Council
+                $employeeQuery->whereIn('id', function($query) {
+                    $query->select('employee_id')->from('administrative_council_membership');
+                });
+            } else { // Joint Council (Both Academic and Administrative Council)
+                $employeeQuery->whereIn('id', function($query) {
+                    $query->select('employee_id')->from('academic_council_membership')
+                          ->union(
+                              DB::table('administrative_council_membership')->select('employee_id')
+                          );
+                });
+            }
+    
+            // Filter by campus if needed
+            if ($level == 0) {
+                $employeeQuery->where('campus', $campus_id);
+            }
+    
+            // Get email addresses of employees
+            $emails = $employeeQuery->pluck('EmailAddress',)->toArray();
+            $cellNumbers = $employeeQuery->pluck('Cellphone')->toArray(); 
+
+
+            // Send emails in smaller batches
+            $chunks = array_chunk($emails, 50); // Send 50 at a time
+
+    
+            // Send meeting notification emails
+            foreach ($chunks as $batch) {
+                Mail::to($batch)->send(new MeetingNotification($meeting));
+                sleep(2); // Wait 2 seconds between batches to avoid timeouts
+            }
+            // foreach ($emails as $email) {
+            //     Mail::to($email)->send(new MeetingNotification($meeting));
+            // }
+
+
+            // 🔹 Send SMS Notifications
+              $smsController = new SMSController();
+              $quarter = config('meetings.quaterly_meetings')[$request->input('quarter')] ?? '';
+              $level = config('meetings.level')[$level] ?? '';
+              $councilType = config('meetings.council_types')[strtolower($level) . '_level'][$request->input('council_type')] ?? '';
+              $meetingDateTime = date('M j, Y g:i A', strtotime($request->input('meeting_date_time')));
+
+
+              $message = "ADVISORY!\nThe $quarter – $councilType\nwill be on $meetingDateTime.\nfor more details please visit https://policy.southernleytestateu.edu.ph";
+
+              foreach ($emails as $index => $email) {
+                $phone = $cellNumbers[$index] ?? null;
+            
+                // If no cellphone in `employees` table, check `hrmis.employee` table
+                if (empty($phone)) {
+                    $hrmisEmployee = HrmisEmployee::where('EmailAddress', $email)->first();
+                    $phone = $hrmisEmployee?->Cellphone;
+                }
+            
+                // Send SMS if phone number is found
+                if (!empty($phone)) {
+                    $smsResponse = $smsController->send($phone, $message);
+                    if ($smsResponse['Error'] == 1) {
+                        \Log::error("SMS Failed to $phone: " . $smsResponse['Message']);
+                    }
+                }
+            }
+
+            
             DB::commit();
 
             return response()->json([
                 'type' => "success",
                 'title' => "Success",
                 'redirect' => route(getUserRole().'.meetings'),
-                'message' => 'Meeting created successfully.',
+                'message' => 'Meeting created successfully and an email notification has been sent to the Council Members.',
             ]);
         } catch (\Throwable $th) {
             DB::rollBack(); // Rollback transaction if something fails
@@ -169,6 +252,8 @@ class MeetingController extends Controller
     // EDIT MEETING
     public function EditMeeting(Request $request, String $level, String $meeting_id)
     {
+        DB::beginTransaction();
+
         try{
             $request->validate([
                 'description' => 'nullable|string',
@@ -194,7 +279,44 @@ class MeetingController extends Controller
             if($level == 'BOR'){
                 $meeting = BorMeeting::find($meetingID);
             }
-    
+
+            $updatedFields = [];
+
+            // Normalize date formats before comparison
+            $oldDateTime = $meeting->meeting_date_time ? Carbon::parse($meeting->meeting_date_time)->format('Y-m-d H:i:s') : null;
+            $newDateTime = $request->input('meeting_date_time') ? Carbon::parse($request->input('meeting_date_time'))->format('Y-m-d H:i:s') : null;
+                        
+
+            if ($oldDateTime !== $newDateTime) {
+                $updatedFields['meeting_date_time'] = [
+                    'before' => $oldDateTime,
+                    'after' => $newDateTime
+                ];
+            }
+
+            $oldSubmissionStart = $meeting->submission_start ? Carbon::parse($meeting->submission_start)->format('Y-m-d') : null;
+            $newSubmissionStart = $request->input('submission_start') ? Carbon::parse($request->input('submission_start'))->format('Y-m-d') : null;
+
+            if ($oldSubmissionStart !== $newSubmissionStart) {
+                $updatedFields['submission_start'] = [
+                    'before' => $oldSubmissionStart,
+                    'after' => $newSubmissionStart
+                ];
+            }
+
+            $oldSubmissionEnd = $meeting->submission_end ? Carbon::parse($meeting->submission_end)->format('Y-m-d') : null;
+            $newSubmissionEnd = $request->input('submission_end') ? Carbon::parse($request->input('submission_end'))->format('Y-m-d') : null;
+
+            if ($oldSubmissionEnd !== $newSubmissionEnd) {
+                $updatedFields['submission_end'] = [
+                    'before' => $oldSubmissionEnd,
+                    'after' => $newSubmissionEnd
+                ];
+            }
+
+            
+
+        
             $meetingData = [
                 'description' => $request->input('description'),
                 'meeting_date_time' => $request->input('meeting_date_time'),
@@ -210,13 +332,75 @@ class MeetingController extends Controller
             ];
     
             $meeting->update($meetingData);
-    
+
+
+            // Send email & SMS only if relevant fields were updated
+        if (!empty($updatedFields)) {
+            // Get email addresses of employees
+            $employeeQuery = Employee::query();
+
+            if ($request->input('council_type') == 2) { // Academic Council
+                $employeeQuery->whereIn('id', function($query) {
+                    $query->select('employee_id')->from('academic_council_membership');
+                });
+            } elseif ($request->input('council_type') == 3) { // Administrative Council
+                $employeeQuery->whereIn('id', function($query) {
+                    $query->select('employee_id')->from('administrative_council_membership');
+                });
+            } else { // Joint Council (Both Academic and Administrative Council)
+                $employeeQuery->whereIn('id', function($query) {
+                    $query->select('employee_id')->from('academic_council_membership')
+                          ->union(
+                              DB::table('administrative_council_membership')->select('employee_id')
+                          );
+                });
+            }
+
+            if ($level == 'Local') {
+                $employeeQuery->where('campus', session('campus_id'));
+            }
+
+            $emails = $employeeQuery->pluck('EmailAddress')->toArray();
+            $cellNumbers = $employeeQuery->pluck('Cellphone')->toArray();
+
+            // Send email notifications in batches
+            $chunks = array_chunk($emails, 50);
+            foreach ($chunks as $batch) {
+                Mail::to($batch)->send(new MeetingUpdateNotification($meeting,$updatedFields));
+                sleep(2);
+            }
+
+            // // 🔹 Send SMS Notifications
+            // $smsController = new SMSController();
+            // $quarter = config('meetings.quaterly_meetings')[$meeting->quarter] ?? 'N/A';
+            // $councilType = config('meetings.council_types')[strtolower($level) . '_level'][$request->input('council_type')] ?? '';
+            
+            // $message = "ADVISORY!\nThere are some changes on $quarter $councilType meeting,please visit https://policy.southernleytestateu.edu.ph";
+
+            // foreach ($emails as $index => $email) {
+            //     $phone = $cellNumbers[$index] ?? null;
+            //     if (empty($phone)) {
+            //         $hrmisEmployee = HrmisEmployee::where('EmailAddress', $email)->first();
+            //         $phone = $hrmisEmployee?->Cellphone;
+            //     }
+            //     if (!empty($phone)) {
+            //         $smsResponse = $smsController->send($phone, $message);
+            //         if ($smsResponse['Error'] == 1) {
+            //             \Log::error("SMS Failed to $phone: " . $smsResponse['Message']);
+            //         }
+            //     }
+            // }
+        }
+
+        DB::commit();
+
             return response()->json([
                 'type' => "success",
                 'title' => "Success",
                 'message' => 'Meeting updated successfully.',
             ]);
         } catch (\Throwable $th) {
+            DB::rollBack();
        
             return response()->json([
                 'type' => 'danger',
