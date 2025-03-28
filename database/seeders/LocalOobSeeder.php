@@ -17,7 +17,7 @@ class LocalOobSeeder extends Seeder
     public function run(): void
     {
         // Load the latest OOB CSV
-        $csv = Reader::createFromPath(storage_path('app/latest_oob.csv'), 'r');
+        $csv = Reader::createFromPath(storage_path('app/seeder_data/oob_data_m27.csv'), 'r');
         $csv->setHeaderOffset(0);
 
         // Insert records into the local_oob table

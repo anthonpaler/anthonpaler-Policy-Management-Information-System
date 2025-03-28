@@ -18,7 +18,7 @@ class UniversityCouncilMeetingsTableSeeder extends Seeder
     public function run(): void
     {
         // Load CSV file
-        $csv = Reader::createFromPath(storage_path('app/latest_meeting.csv'), 'r');
+        $csv = Reader::createFromPath(storage_path('app/seeder_data/meetings_data_m27.csv'), 'r');
         $csv->setHeaderOffset(0);
 
         // Insert records with level = 0

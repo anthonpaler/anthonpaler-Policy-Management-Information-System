@@ -15,13 +15,17 @@ class DatabaseSeeder extends Seeder
         // Call the individual seeders
         $this->call([
             EmployeeSeeder::class,
-            LocalCouncilMeetingsTableSeeder::class,
-            LocalMeetingAgendaSeeder::class,
-            LocalOobSeeder::class,
             ProposalsTableSeeder::class,
+            LocalCouncilMeetingsTableSeeder::class,
             UniversityCouncilMeetingsTableSeeder::class,
-            UniversityMeetingAgendaSeeder::class,
             UniversityOobSeeder::class,
+            LocalOobSeeder::class,
+            LocalMeetingAgendaSeeder::class,
+            UniversityMeetingAgendaSeeder::class,
+            ProposalFileSeeder::class,
+            ProposalLogSeeder::class,
+            ProposalProponentsSeeder::class,
+            AdministrativeCouncilMembershipSeeder::class,
         ]);
     }
 }

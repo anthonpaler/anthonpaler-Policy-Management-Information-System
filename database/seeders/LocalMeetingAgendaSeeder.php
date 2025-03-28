@@ -17,7 +17,7 @@ class LocalMeetingAgendaSeeder extends Seeder
     public function run(): void
     {
         // Load the latest proposals CSV
-        $csv = Reader::createFromPath(storage_path('app/latest_proposals.csv'), 'r');
+        $csv = Reader::createFromPath(storage_path('app/seeder_data/proposal_data_m27.csv'), 'r');
         $csv->setHeaderOffset(0);
 
         // Insert records into the local_meeting_agenda table

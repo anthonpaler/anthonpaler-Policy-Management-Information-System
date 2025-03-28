@@ -315,7 +315,7 @@
                                                 <div class="d-flex flex-column gap-3">
                                                     @foreach ($groupedProposal->proposal->proponents ?? [] as $proponent)
                                                         <div class="d-flex align-items-center gap-3">
-                                                            <img class="rounded-circle avatar-sm" src="{{ $proponent->image ?? '/default-avatar.png' }}" alt="Avatar">
+                                                            <img class="rounded-circle avatar-sm" src="{{ $proponent->image && trim($proponent->image) !== '' ? $proponent->image : asset('assets/img/avatars/default-avatar.jpg') }}" alt="Avatar">
                                                             <span>{{ $proponent->name }}</span>
                                                         </div>
                                                     @endforeach

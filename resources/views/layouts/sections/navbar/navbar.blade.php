@@ -43,7 +43,9 @@ $navbarDetached = ($navbarDetached ?? '');
                     <small class="text-muted d-flex justify-content-end">{{ config('usersetting.role.'.session('user_role')) }}</small>
                 </div>
                 <div class="avatar avatar-online">
-                    <img src="{{session('profile_photo') }}" alt class="w-px-40 h-auto rounded-circle" />
+                    <img src="{{ session('profile_photo') && trim(session('profile_photo')) !== '' ? session('profile_photo') : asset('assets/img/avatars/default-avatar.jpg') }}" 
+     alt="Profile Photo" 
+     class="w-px-40 h-auto rounded-circle" />
                 </div>
             </div>
         </a>
@@ -53,7 +55,9 @@ $navbarDetached = ($navbarDetached ?? '');
                 <div class="d-flex">
                     <div class="flex-shrink-0 me-3">
                         <div class="avatar avatar-online">
-                        <img src="{{session('profile_photo') }}" alt class="w-px-40 h-auto rounded-circle" />
+                        <img src="{{ session('profile_photo') && trim(session('profile_photo')) !== '' ? session('profile_photo') : asset('assets/img/avatars/default-avatar.jpg') }}" 
+     alt="Profile Photo" 
+     class="w-px-40 h-auto rounded-circle" />
                         </div>
                     </div>
                     <div class="flex-grow-1">

@@ -122,13 +122,13 @@
                     </thead>
                     <tbody class="">
                     @if ($proposals->isEmpty())
-                        <tr>
-                            <td colspan="8">
+                        <!-- <tr>
+                            <td valign="top" colspan="9" class="dataTables_empty">
                                 <div class="alert alert-warning mt-3" role="alert">
                                     <i class="bx bx-info-circle"></i> You dont have proposal at the moment.
                                 </div>
                             </td>
-                        </tr>
+                        </tr> -->
                     @else
                         @foreach($proposals as $proposal)
                         <tr data-title="{{ $proposal->title }}">
@@ -148,10 +148,9 @@
                                 <div class="d-flex align-items-center">
                                     <div class="d-flex flex-column gap-3">
                                         @foreach ($proposal->proponents as $proponent)
-                                            <div class="d-flex gap-3 align-items-center">
-                                                <div data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $proponent->name }}" class="avatar avatar-sm pull-up">
-                                                    <img class="rounded-circle" src="{{ $proponent->image ?? '/default-avatar.png' }}" alt="Avatar">
-                                                </div>
+                                            <div class="d-flex align-items-center gap-3">
+                                                <img class="rounded-circle avatar-sm" src="{{ $proponent->image && trim($proponent->image) !== '' ? $proponent->image : asset('assets/img/avatars/default-avatar.jpg') }}
+" alt="Avatar">
                                                 <span>{{ $proponent->name }}</span>
                                             </div>
                                         @endforeach

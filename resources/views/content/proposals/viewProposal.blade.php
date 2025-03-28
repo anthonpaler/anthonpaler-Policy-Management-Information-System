@@ -77,7 +77,7 @@
                                                         </div>
                                                     </div>
                                                     <div class="d-flex flex-column">
-                                                        <a href="" class="text-heading text-truncate m-0">
+                                                        <a class="text-heading text-truncate m-0">
                                                             <span class="fw-medium">{{$proponent->name}}</span>
                                                         </a>
                                                         <small class="text-wrap">{{$proponent->email}}</small>
@@ -386,9 +386,9 @@
                                 @if (in_array($log->action, [1,4,5,6]))
                                     @php $noLogsFound = false; @endphp
                                     <div class="com-wrapper d-flex {{ $log->user->employee_id == session('employee_id') ? 'justify-content-end' : 'justify-content-start' }}">
-                                        <div class="{{$log->user->employee_id == session('employee_id') ? 'sender' : 'receiver' }}">
+                                        <div class="{{$log->user->employee_id == session('employee_id') ? 'sender' : 'reciever' }}">
                                             <div class="d-flex gap-4 justify-content-between {{ $log->user->employee_id == session('employee_id') ? 'flex-row-reverse' : '' }}">
-                                                <div class="d-flex gap-2">
+                                                <!-- <div class="d-flex gap-2">
                                                     <div class="flex-shrink-0 me-3">
                                                         <div class="avatar avatar-sm">
                                                             <img src="{{ asset($log->user->image ?? 'assets/img/avatars/default.png') }}" 
@@ -399,10 +399,23 @@
                                                         <span class="fw-medium d-block">{{ $log->user->name }}</span>
                                                         <small class="text-muted">{{ config('usersetting.role.'.$log->user->role) }}</small>
                                                     </div>
+                                                </div> -->
+                                                <div class="d-flex justify-content-start align-items-center ">
+                                                    <div class="avatar-wrapper">
+                                                        <div class="avatar avatar-sm me-3">
+                                                            <img src="{{ asset($log->user->image ?? 'assets/img/avatars/default.png') }}" alt="Avatar" class="rounded-circle">
+                                                        </div>
+                                                    </div>
+                                                    <div class="d-flex flex-column">
+                                                        <a class="text-heading text-truncate m-0">
+                                                            <span class="fw-medium">{{$log->user->name}}</span>
+                                                        </a>
+                                                        <small class="text-wrap">{{ config('usersetting.role.'.$log->user->role) }}</small>
+                                                    </div>
                                                 </div>
                                                
                                                 <div class="d-flex flex-column">
-                                                    <span class="badge bg-label-warning" style="text-transform: none;">{{ config('proposals.proposal_action.'.$log->action) }}</span>
+                                                    <small class="text-{{ in_array($log->status, [2,5, 6,7]) ? 'danger' : 'primary'}}">{{ config('proposals.status.'.$log->status) }}</small>
                                                     <small class="text-muted align-self-end">{{ $log->created_at->format('F d, Y') }}</small>
                                                 </div>
                                             </div>

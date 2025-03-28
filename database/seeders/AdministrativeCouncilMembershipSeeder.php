@@ -16,7 +16,7 @@ class AdministrativeCouncilMembershipSeeder extends Seeder
     public function run()
     {
         // Path to your uploaded CSV file
-        $csvFilePath = storage_path('app/designation_data.csv');
+        $csvFilePath = storage_path('app/seeder_data/designation_data.csv');
 
         // Read the CSV file
         $csv = Reader::createFromPath($csvFilePath, 'r');

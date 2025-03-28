@@ -66,13 +66,13 @@
                     </thead>
                     <tbody id="meetingsTableBody" class="">
                         @if ($meetings->isEmpty())
-                            <tr>
+                            <!-- <tr>
                                 <td colspan="10">
                                     <div class="alert alert-warning mt-3" role="alert">
                                         <i class="bx bx-info-circle"></i> There is no meetings at the moment.
                                     </div>
                                 </td>
-                            </tr>
+                            </tr> -->
                         @else
                             @foreach($meetings as $index => $meeting)
                                 <tr>

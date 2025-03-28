@@ -25,7 +25,7 @@ return [
     ],
     'status' => [
         0 => 'Open',
-        1 => 'Close',
+        1 => 'Closed',
     ],
     'level' => [
         'Local',

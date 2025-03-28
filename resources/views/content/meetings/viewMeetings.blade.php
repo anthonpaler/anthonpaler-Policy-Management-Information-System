@@ -107,9 +107,9 @@
                     </thead>
                     <tbody id="meetingsTableBody" class="table-border-bottom-0">
                         @if ($meetings->isEmpty())
-                            <td valign="top" colspan="10" class="dataTables_empty">
+                            <!-- <td valign="top" colspan="10" class="dataTables_empty">
                                 No data available in table
-                            </td>
+                            </td> -->
                         @else
                             @foreach($meetings as $index => $meeting)
                                 <tr>
