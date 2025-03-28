@@ -179,32 +179,32 @@ class MeetingController extends Controller
 
 
             // 🔹 Send SMS Notifications
-              $smsController = new SMSController();
-              $quarter = config('meetings.quaterly_meetings')[$request->input('quarter')] ?? '';
-              $level = config('meetings.level')[$level] ?? '';
-              $councilType = config('meetings.council_types')[strtolower($level) . '_level'][$request->input('council_type')] ?? '';
-              $meetingDateTime = date('M j, Y g:i A', strtotime($request->input('meeting_date_time')));
+            //   $smsController = new SMSController();
+            //   $quarter = config('meetings.quaterly_meetings')[$request->input('quarter')] ?? '';
+            //   $level = config('meetings.level')[$level] ?? '';
+            //   $councilType = config('meetings.council_types')[strtolower($level) . '_level'][$request->input('council_type')] ?? '';
+            //   $meetingDateTime = date('M j, Y g:i A', strtotime($request->input('meeting_date_time')));
 
 
-              $message = "ADVISORY!\nThe $quarter – $councilType\nwill be on $meetingDateTime.\nfor more details please visit https://policy.southernleytestateu.edu.ph";
+            //   $message = "ADVISORY!\nThe $quarter – $councilType\nwill be on $meetingDateTime.\nfor more details please visit https://policy.southernleytestateu.edu.ph";
 
-              foreach ($emails as $index => $email) {
-                $phone = $cellNumbers[$index] ?? null;
+            //   foreach ($emails as $index => $email) {
+            //     $phone = $cellNumbers[$index] ?? null;
             
-                // If no cellphone in `employees` table, check `hrmis.employee` table
-                if (empty($phone)) {
-                    $hrmisEmployee = HrmisEmployee::where('EmailAddress', $email)->first();
-                    $phone = $hrmisEmployee?->Cellphone;
-                }
+            //     // If no cellphone in `employees` table, check `hrmis.employee` table
+            //     if (empty($phone)) {
+            //         $hrmisEmployee = HrmisEmployee::where('EmailAddress', $email)->first();
+            //         $phone = $hrmisEmployee?->Cellphone;
+            //     }
             
-                // Send SMS if phone number is found
-                if (!empty($phone)) {
-                    $smsResponse = $smsController->send($phone, $message);
-                    if ($smsResponse['Error'] == 1) {
-                        \Log::error("SMS Failed to $phone: " . $smsResponse['Message']);
-                    }
-                }
-            }
+            //     // Send SMS if phone number is found
+            //     if (!empty($phone)) {
+            //         $smsResponse = $smsController->send($phone, $message);
+            //         if ($smsResponse['Error'] == 1) {
+            //             \Log::error("SMS Failed to $phone: " . $smsResponse['Message']);
+            //         }
+            //     }
+            // }
 
             
             DB::commit();

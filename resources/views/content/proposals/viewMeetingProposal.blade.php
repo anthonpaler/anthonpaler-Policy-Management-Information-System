@@ -653,7 +653,7 @@
     }
 </script>
 <script>
- document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function () {
         let emailInput = document.getElementById("proponent_email");
         let tagify = new Tagify(emailInput, {
             enforceWhitelist: false,
@@ -666,41 +666,41 @@
             }
         });
 
-        document.querySelector("#proposalFrm").addEventListener("submit", function (e) {
-        let tagifiedEmails = tagify.value.map(tag => tag.value);
-        let emailValue = tagifiedEmails[0] || "";
+            document.querySelector("#proposalFrm").addEventListener("submit", function (e) {
+                let tagifiedEmails = tagify.value.map(tag => tag.value);
+                let emailValue = tagifiedEmails[0] || "";
 
-        // Validate email format before submitting
-        if (!emailValue.match(/^[\w\.-]+@[\w\.-]+\.\w+$/)) {
-            e.preventDefault(); // Prevent form submission
-            toastr.error("Please enter a valid email address.");
-            return;
-        }
-
-        emailInput.value = emailValue;
-    });
-
-     // Fetch proponent emails dynamically
-     function fetchProponents(query) {
-            $.ajax({
-                url: "{{route(getUserRole().'.fetchProponents')}}",
-                type: "GET",
-                data: { search: query },
-                success: function (response) {
-                    tagify.settings.whitelist = response;
-                    tagify.dropdown.show(); // Show dropdown
+                // Validate email format before submitting
+                if (!emailValue.match(/^[\w\.-]+@[\w\.-]+\.\w+$/)) {
+                    e.preventDefault(); // Prevent form submission
+                    toastr.error("Please enter a valid email address.");
+                    return;
                 }
+
+                emailInput.value = emailValue;
             });
-        }
-    
-        // Listen for input event to fetch data
-        tagify.on("input", function (e) {
-            let value = e.detail.value;
-            if (value.length >= 2) { // Fetch only if at least 2 characters are typed
-                fetchProponents(value);
+
+            // Fetch proponent emails dynamically
+            function fetchProponents(query) {
+                $.ajax({
+                    url: "{{route(getUserRole().'.fetchProponents')}}",
+                    type: "GET",
+                    data: { search: query },
+                    success: function (response) {
+                        tagify.settings.whitelist = response;
+                        tagify.dropdown.show(); // Show dropdown
+                    }
+                });
             }
-        });
-    });
+    
+            // Listen for input event to fetch data
+                tagify.on("input", function (e) {
+                    let value = e.detail.value;
+                    if (value.length >= 2) { // Fetch only if at least 2 characters are typed
+                        fetchProponents(value);
+                    }
+                });
+});
 </script>
 <script src="{{asset('assets/js/customFileUplaod.js')}}"></script>
 <script src="{{asset('assets/js/proposal.js')}}"></script>

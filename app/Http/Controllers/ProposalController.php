@@ -14,6 +14,10 @@ use App\Models\LocalMeetingAgenda;
 use App\Models\UniversityMeetingAgenda;
 use App\Models\BoardMeetingAgenda;
 use App\Models\ProposalProponent;
+use App\Models\OtherMatter;
+use App\Models\LocalOob;
+use App\Models\UniversityOob;
+use App\Models\BoardOob;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
@@ -294,6 +298,7 @@ class ProposalController extends Controller
 
             $campus_id = session('campus_id');
 
+           
             // Create proposal
             $proposal = Proposal::create([
                 'employee_id' => $proponent->id,
@@ -305,11 +310,23 @@ class ProposalController extends Controller
                 'status' => 0,
             ]);
 
+            $oobID = null; // Default to null
 
-            
+            if ($user->role == 3) { // Local Secretary
+                $oob = LocalOoB::where('local_council_meeting_id', $meetingID)->first();
+                $oobID = $oob ? $oob->id : null;
+            } elseif ($user->role == 4) { // University Secretary
+                $oob = UniversityOoB::where('university_council_meeting_id', $meetingID)->first();
+                $oobID = $oob ? $oob->id : null;
+            } elseif ($user->role == 5) { // Board Secretary
+                $oob = BoardOoB::where('bor_meeting_id', $meetingID)->first();
+                $oobID = $oob ? $oob->id : null;
+            }
+
+
 
             // Attach proposal to the corresponding meeting agenda
-            $this->attachProposalToAgenda($meetingID, $proposal->id, $user->role);
+            $this->attachProposalToAgenda($meetingID, $proposal->id, $user->role, $oobID);
 
             // Handle file uploads
             $fileIds = [];
@@ -406,28 +423,209 @@ class ProposalController extends Controller
     /**
      * Attach proposal to the appropriate agenda table based on the meeting type.
      */
-    private function attachProposalToAgenda($meetingID, $proposalID, $roleID)
+    private function attachProposalToAgenda($meetingID, $proposalID, $roleID, $oobID = null)
     {
-        if ($roleID == 3) {
+        $status = 0; // Default status
+
+        if ($roleID == 3) { // Local Secretary
+            $existsInOOB = LocalOoB::where('local_council_meeting_id', $meetingID)->exists();
             LocalMeetingAgenda::create([
                 'local_council_meeting_id' => $meetingID,
                 'local_proposal_id' => $proposalID,
-                'status' => 0,
+                'local_oob_id' => $oobID, // Store OOB ID
+                'status' => $existsInOOB ? 1 : 0, // Update status
             ]);
-        } elseif ($roleID == 4) {
+        } elseif ($roleID == 4) { // University Secretary
+            $existsInOOB = UniversityOoB::where('university_council_meeting_id', $meetingID)->exists();
             UniversityMeetingAgenda::create([
-                'university_council_meeting_id' => $meetingID,
+                'university_meeting_id' => $meetingID,
                 'university_proposal_id' => $proposalID,
-                'status' => 0,
+                'university_oob_id' => $oobID, // Store OOB ID
+                'status' => $existsInOOB ? 1 : 0, // Update status
             ]);
-        } elseif ($roleID == 5) {
+        } elseif ($roleID == 5) { // Board Secretary
+            $existsInOOB = BoardOoB::where('bor_meeting_id', $meetingID)->exists();
             BoardMeetingAgenda::create([
                 'bor_meeting_id' => $meetingID,
                 'bor_proposal_id' => $proposalID,
-                'status' => 0,
+                'board_oob_id' => $oobID, // Store OOB ID
+                'status' => $existsInOOB ? 1 : 0, // Update status
             ]);
         }
     }
+
+    //ADD OTHER MATTER
+    public function addOtherMatters(Request $request, String $meeting_id)
+    {
+        DB::beginTransaction();
+        try {
+            $proponent_email = is_array($request->proponent_email) ? $request->proponent_email[0] : $request->proponent_email;
+            $request->merge(['proponent_email' => $proponent_email]);
+
+            $meetingID = decrypt($meeting_id);
+            $user = auth()->user();
+    
+            // Ensure the user has the correct role (Secretary: Local=3, University=4, Board=5)
+            if (!in_array($user->role, [3, 4, 5])) {
+                return response()->json([
+                    'type' => 'danger', 
+                    'message' => 'You are not authorized to submit other matters!', 
+                    'title' => "Unauthorized"
+                ]);
+            }
+    
+            // Retrieve meeting model based on role
+            $meeting = $this->getMeetingModel($meetingID, $user->role);
+            if (!$meeting) {
+                return response()->json([
+                    'type' => 'danger', 
+                    'message' => 'Invalid meeting ID.', 
+                    'title' => "Error"
+                ]);
+            }
+    
+            // Validate input
+            $request->validate([
+                'proponent_email' => 'required|email|exists:employees,EmailAddress',
+                'title' => 'required|string|max:255',
+                'action' => 'required|string|max:255',
+                'proposal_files' => 'required|array',
+                'proposal_files.*' => 'file|mimes:pdf,xls,xlsx,csv|max:100000',
+                'matter' => 'required|integer',
+                'sub_type' => 'nullable|integer',
+            ]);
+
+            $proponent = Employee::where('EmailAddress', $request->input('proponent_email'))->first();
+
+            $campus_id = session('campus_id');
+    
+            // Create Proposal Entry
+            $proposal = Proposal::create([
+                'employee_id' => $proponent->id,
+                'campus_id' => $campus_id,
+                'title' => $request->input('title'),
+                'action' => $request->input('action'),
+                'type' => $request->input('matter'),
+                'sub_type' => $request->input('sub_type'),
+                'status' => 0,
+            ]);
+
+            $oobID = null; // Default to null
+
+            if ($user->role == 3) { // Local Secretary
+                $oob = LocalOoB::where('local_council_meeting_id', $meetingID)->first();
+                $oobID = $oob ? $oob->id : null;
+            } elseif ($user->role == 4) { // University Secretary
+                $oob = UniversityOoB::where('university_council_meeting_id', $meetingID)->first();
+                $oobID = $oob ? $oob->id : null;
+            } elseif ($user->role == 5) { // Board Secretary
+                $oob = BoardOoB::where('bor_meeting_id', $meetingID)->first();
+                $oobID = $oob ? $oob->id : null;
+            }
+    
+            // Attach the proposal to the appropriate meeting agenda
+        $this->attachProposalToAgenda($meetingID, $proposal->id, $user->role, $oobID);
+
+        // Attach the proposal to the Other Matters table
+        $this->attachProposalToOtherMatter($proposal->id, $user->role);
+    
+            // Handle File Uploads
+            $fileIds = [];
+            $file_order_no = 1;
+            if ($request->hasFile('proposal_files')) {
+                foreach ($request->file('proposal_files') as $file) {
+                    $originalNameWithExt = $file->getClientOriginalName();
+                    $extension = $file->getClientOriginalExtension();
+    
+                    // Extract filename without final extension
+                    preg_match('/^(.*?)(\(\d+\))?(\.\w+)?$/', $originalNameWithExt, $matches);
+                    $baseName = trim($matches[1]);
+                    $filename = "{$baseName}.{$extension}";
+    
+                    $i = 1;
+                    while (Storage::disk('public')->exists("proposals/{$filename}")) {
+                        $filename = "{$baseName} ({$i}).{$extension}";
+                        $i++;
+                    }
+    
+                    // Store the file
+                    $filePath = $file->storeAs('proposals', $filename, 'public');
+    
+                    // Save file record in DB
+                    $proposalFile = ProposalFile::create([
+                        'proposal_id' => $proposal->id,
+                        'file' => $filename,
+                        'version' => 1,
+                        'file_status' => 1,
+                        'file_reference_id' => null,
+                        'is_active' => true,
+                        'order_no' => $file_order_no,
+                    ]);
+    
+                    $fileIds[] = $proposalFile->id;
+                    $file_order_no++;
+                }
+            }
+    
+            // Save file IDs in proposal logs
+            $fileIdsString = implode(',', $fileIds);
+    
+            ProposalLog::create([
+                'proposal_id' => $proposal->id,
+                'employee_id' => session('employee_id'),
+                'comments' => null,
+                'status' => 0,
+                'level' => 0,
+                'action' => 7,
+                'file_id' => $fileIdsString,
+            ]);
+
+            $proponentIds = explode(',', $request->input('proponent_email'));
+                
+            foreach ($proponentIds as $employeeId) {
+                $proponent = Employee::where('EmailAddress', $request->input('proponent_email'))->first();
+
+                ProposalProponent::create([
+                    'proposal_id' => $proposal->id,
+                    'employee_id' => $proponent->id,
+                ]);
+            }
+    
+            DB::commit();
+    
+            return response()->json([
+                'type' => 'success',
+                'message' => 'Other Matter added successfully!',
+            ]);
+    
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response()->json([
+                'type' => 'danger', 
+                'message' => $th->getMessage(), 
+                'title' => "Something went wrong!"
+            ]);
+        }
+    }
+
+
+    private function attachProposalToOtherMatter($proposalID, $roleID)
+    {
+        if ($roleID == 3) {
+            OtherMatter::create([               
+                'proposal_id' => $proposalID,
+            ]);
+        } elseif ($roleID == 4) {
+            OtherMatter::create([               
+                'proposal_id' => $proposalID,
+            ]);
+        } elseif ($roleID == 5) {
+            OtherMatter::create([               
+                'proposals_id' => $proposalID,
+            ]);
+        }
+    }
+    
 
 
 

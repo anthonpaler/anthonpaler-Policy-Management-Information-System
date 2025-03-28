@@ -12,11 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('other_matters', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('order_of_business_id')->nullable();
-            $table->unsignedBigInteger('proposal_id')->nullable();
-
-            $table->foreign('order_of_business_id')->references('id')->on('order_of_businesses')->onDelete('cascade');
+            $table->unsignedInteger('id')->autoIncrement();
+            $table->unsignedInteger('proposal_id')->nullable();
             $table->foreign('proposal_id')->references('id')->on('proposals')->onDelete('cascade');
             $table->timestamps();
         });

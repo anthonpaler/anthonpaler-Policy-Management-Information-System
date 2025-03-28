@@ -109,6 +109,9 @@ Route::middleware(['auth', 'local_secretary'])->prefix('local-campus-secretary')
 
   Route::post('/order-of-business/upload-minutes', [OrderOfBusinessController::class, 'uploadPreviousMinutes'])->name('local_sec.upload.minutes');
 
+  Route::post('/add-other-matters/{meeting_id}', [ProposalController::class, 'addOtherMatters'])->name('local_sec.addOtherMatters');
+
+
 });
 
 

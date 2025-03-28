@@ -95,40 +95,37 @@
             
             <div class="d-flex align-items-center gap-2">
                 @if (in_array(auth()->user()->role, [3, 4, 5]))
-                @if(empty($orderOfBusiness->previous_minutes))
-                <button class="btn btn-sm btn-primary d-flex align-items-center gap-2" 
-                id="openMinutesModal">
-                    <i class='bx bx-upload'></i>
-                    Upload Previous Minutes
-                </button>
-                    @endif
-    
-               
-                {{-- Show View Button only if there is a file --}}
-                 @if(!empty($orderOfBusiness->previous_minutes))
-                 <a href="{{ asset('storage/previous_minutes/' . $orderOfBusiness->previous_minutes) }}" 
-                    target="_blank" 
-                    class="btn btn-sm btn-success d-flex align-items-center gap-2" 
-                    id="viewButton">
-                     <i class='bx bx-file'></i>
-                     View Previous Minutes
-                 </a>
-                @endif
-
-                {{-- EDIT FILE --}}
-                @if (in_array(auth()->user()->role, [3, 4, 5]))
-                <button type="button" class="btn btn-sm btn-warning d-flex align-items-center gap-2" id="editMinutesButton" style="display: none;">
-                    <i class='bx bx-edit'></i> Edit File
-                </button>
-                @endif
-
-            </div>
-         @endif
+                    @if(empty($orderOfBusiness->previous_minutes))
+                    <button class="btn btn-sm btn-primary d-flex align-items-center gap-2" 
+                    id="openMinutesModal">
+                        <i class='bx bx-upload'></i>
+                        Upload Previous Minutes
+                    </button>
+                        @endif
         
-            
+                
+                    {{-- Show View Button only if there is a file --}}
+                    @if(!empty($orderOfBusiness->previous_minutes))
+                    <a href="{{ asset('storage/previous_minutes/' . $orderOfBusiness->previous_minutes) }}" 
+                        target="_blank" 
+                        class="btn btn-sm btn-success d-flex align-items-center gap-2" 
+                        id="viewButton">
+                        <i class='bx bx-file'></i>
+                        View Previous Minutes
+                    </a>
+                    @endif
+
+                    {{-- EDIT FILE --}}
+                    @if (in_array(auth()->user()->role, [3, 4, 5]))
+                    <button type="button" class="btn btn-sm btn-warning d-flex align-items-center gap-2" id="editMinutesButton" style="display: none;">
+                        <i class='bx bx-edit'></i> Edit File
+                    </button>
+                    @endif
+                @endif 
+            </div>  
         </div>
         
-            <div class="input-group input-group-merge">
+        <div class="input-group input-group-merge">
             <textarea
                 id="preliminaries" 
                 class="form-control"
@@ -182,79 +179,141 @@
         @endif
 
 
-        <div class="mb-3">
-            <label class="form-label">2. New Business</label>
+    <div class="mb-3">
+        <label class="form-label">2. New Business</label>
 
+        @php 
+            $counter = 1; 
+            $groupCounter = 1;
+            $actionColors = ['secondary', 'success', 'warning', 'danger', 'info']; 
+            $noProposals = collect($categorizedProposals)->flatten()->isEmpty();
+            $proposalKey = match ($meeting->getMeetingLevel()) {
+                'Local' => 'local_proposal_id',
+                'University' => 'university_proposal_id',
+                'BOR' => 'board_proposal_id',
+                default => ''
+            };
+
+            $allProposalIds = collect($categorizedProposals)->flatten()->pluck($proposalKey);
+            $otherMattersProposalIds = collect($otherMattersProposals)->pluck($proposalKey);
+
+
+        @endphp
+
+        @foreach ($matters as $type => $title)
             @php 
-                $counter = 1; 
-                $groupCounter = 1;
-                $actionColors = ['secondary', 'success', 'warning', 'danger', 'info']; 
-                $noProposals = collect($categorizedProposals)->flatten()->isEmpty();
-                $proposalKey = match ($meeting->getMeetingLevel()) {
-                    'Local' => 'local_proposal_id',
-                    'University' => 'university_proposal_id',
-                    'BOR' => 'board_proposal_id',
-                    default => ''
-                };
+                // Group proposals and standalone proposals together based on order_no
+                $allProposals = collect();
 
-                $allProposalIds = collect($categorizedProposals)->flatten()->pluck($proposalKey);
+                // Add standalone proposals to collection
+                foreach ($categorizedProposals[$type]->whereNull('group_proposal_id') as $proposal) {
+                    $allProposals->push([
+                        'type' => 'individual',
+                        'order_no' => $proposal->order_no,
+                        'data' => $proposal
+                    ]);
+                }
+
+                // Add grouped proposals to collection
+                foreach ($categorizedProposals[$type]->whereNotNull('group_proposal_id')->groupBy('group_proposal_id') as $groupID => $proposals) {
+                    $groupOrderNo = $proposals->first()->proposal_group->order_no ?? 9999;
+                    $allProposals->push([
+                        'type' => 'group',
+                        'order_no' => $groupOrderNo,
+                        'group_id' => $groupID,
+                        'data' => $proposals
+                    ]);
+                }
+
+                // Sort by order_no
+                $allProposals = $allProposals->sortBy('order_no');
             @endphp
+            
+            @if ($categorizedProposals[$type]->count() > 0)
+                <div class="table-responsive text-nowrap mb-4">
+                    <table class="table table-bordered sortable" id="{{ session('isSecretary') && (session('secretary_level') == $meeting->getMeetingCouncilType()) ? 'oobTable' :  ''}}">
+                        <thead>
+                            <tr style="background-color: var(--bs-primary) !important; border-color: var(--bs-primary)  !important;">
+                                <th colspan="5" class="p-4 text-white">{{ $title }}</th>
+                            </tr>
+                            <tr>
+                                <th style="width: 50px;">No.</th>
+                                <th style="width: 700px;">Title of the Proposal</th>
+                                <th style="width: 200px;">Presenters</th>
+                                <th style="width: 150px;">Requested Action</th>
+                                <th style="width: 100px;">File</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($allProposals as $proposal)
+                                @if ($proposal['type'] === 'individual')
+                                    <tr class="selectable-row" data-id="{{ $proposal['data']->proposal->id }}">
+                                        <td>2.<span class="order_no">{{ $counter }}</span></td>
+                                        <td>
+                                            <span>{{ $proposal['data']->proposal->title }}</span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex flex-column gap-3">
+                                                @foreach ($proposal['data']->proposal->proponents ?? [] as $proponent)
+                                                    <div class="d-flex align-items-center gap-3">
+                                                        <img class="rounded-circle avatar-sm" src="{{ $proponent->image ?? '/default-avatar.png' }}" alt="Avatar">
+                                                        <span>{{ $proponent->name }}</span>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="d-flex gap-2 align-items-center">
+                                                <i class='bx bx-up-arrow-circle text-{{ $actionColors[$proposal['data']->proposal->action] ?? 'primary' }}'></i>
+                                                {{ config('proposals.requested_action.'.$proposal['data']->proposal->action) }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            @if ($proposal['data']->proposal->files->isNotEmpty())
+                                                <button class="btn btn-sm btn-secondary view-files d-flex gap-2" data-files="{{ json_encode($proposal['data']->proposal->files) }}" data-title="{{ $proposal['data']->proposal->title }}">
+                                                    <i class='bx bx-file'></i> VIEW FILES
+                                                </button>
+                                            @else
+                                                <button class="btn btn-sm btn-danger d-flex gap-2" disabled>
+                                                    <i class='bx bx-file'></i> NO FILES
+                                                </button>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                    @php $counter++; @endphp
+                                @else
+                                <tr class="tr-group selectable-row group position-relative" data-id="{{ $proposal['data']->first()->proposal_group->id }}">
+                                    <td>2.<span class="order_no">{{ $counter }}</span></td>
+                                    <td colspan="4">
+                                        <strong>{{ $proposal['data']->first()->proposal_group->group_title ?? 'Group Proposal' }}</strong>
 
-            @foreach ($matters as $type => $title)
-                @php 
-                    // Group proposals and standalone proposals together based on order_no
-                    $allProposals = collect();
-
-                    // Add standalone proposals to collection
-                    foreach ($categorizedProposals[$type]->whereNull('group_proposal_id') as $proposal) {
-                        $allProposals->push([
-                            'type' => 'individual',
-                            'order_no' => $proposal->order_no,
-                            'data' => $proposal
-                        ]);
-                    }
-
-                    // Add grouped proposals to collection
-                    foreach ($categorizedProposals[$type]->whereNotNull('group_proposal_id')->groupBy('group_proposal_id') as $groupID => $proposals) {
-                        $groupOrderNo = $proposals->first()->proposal_group->order_no ?? 9999;
-                        $allProposals->push([
-                            'type' => 'group',
-                            'order_no' => $groupOrderNo,
-                            'group_id' => $groupID,
-                            'data' => $proposals
-                        ]);
-                    }
-
-                    // Sort by order_no
-                    $allProposals = $allProposals->sortBy('order_no');
-                @endphp
-                
-                @if ($categorizedProposals[$type]->count() > 0)
-                    <div class="table-responsive text-nowrap mb-4">
-                        <table class="table table-bordered sortable" id="{{ session('isSecretary') && (session('secretary_level') == $meeting->getMeetingCouncilType()) ? 'oobTable' :  ''}}">
-                            <thead>
-                                <tr style="background-color: var(--bs-primary) !important; border-color: var(--bs-primary)  !important;">
-                                    <th colspan="5" class="p-4 text-white">{{ $title }}</th>
+                                        <!-- Dropdown inside the row (hidden by default) -->
+                                                <!-- New Business Section -->
+                                        @if (session('isSecretary') && (session('secretary_level') == $meeting->getMeetingCouncilType()))
+                                            <div class="dropdown position-absolute" style="right: 10px; top: 50%; transform: translateY(-50%);">
+                                                <button class="btn btn-sm btn-warning dropdown-toggle d-none group-menu-btn" type="button" data-bs-toggle="dropdown">
+                                                    Actions
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li><button class="dropdown-item ungroup-btn">Ungroup</button></li>
+                                                    <li><button class="dropdown-item edit-group-btn">Edit</button></li>
+                                                </ul>
+                                            </div>
+                                        @endif
+                                    </td>
                                 </tr>
-                                <tr>
-                                    <th style="width: 50px;">No.</th>
-                                    <th style="width: 700px;">Title of the Proposal</th>
-                                    <th style="width: 200px;">Presenters</th>
-                                    <th style="width: 150px;">Requested Action</th>
-                                    <th style="width: 100px;">File</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($allProposals as $proposal)
-                                    @if ($proposal['type'] === 'individual')
-                                        <tr class="selectable-row" data-id="{{ $proposal['data']->proposal->id }}">
-                                            <td>2.<span class="order_no">{{ $counter }}</span></td>
-                                            <td>
-                                                <span>{{ $proposal['data']->proposal->title }}</span>
+
+                                    @foreach ($proposal['data'] as $groupedProposal)
+                                        <tr class="selectable-row group-items" data-id="{{ $groupedProposal->proposal->id }}">
+                                            <td class="ps-5 pe-1">
+                                                <span class="order_no">2.{{ $counter }}.{{ $groupCounter }}</span>
                                             </td>
                                             <td>
+                                                <span>{{ $groupedProposal->proposal->title }}</span>
+                                            </td>
+                                            <td>  
                                                 <div class="d-flex flex-column gap-3">
-                                                    @foreach ($proposal['data']->proposal->proponents ?? [] as $proponent)
+                                                    @foreach ($groupedProposal->proposal->proponents ?? [] as $proponent)
                                                         <div class="d-flex align-items-center gap-3">
                                                             <img class="rounded-circle avatar-sm" src="{{ $proponent->image ?? '/default-avatar.png' }}" alt="Avatar">
                                                             <span>{{ $proponent->name }}</span>
@@ -264,97 +323,38 @@
                                             </td>
                                             <td>
                                                 <span class="d-flex gap-2 align-items-center">
-                                                    <i class='bx bx-up-arrow-circle text-{{ $actionColors[$proposal['data']->proposal->action] ?? 'primary' }}'></i>
-                                                    {{ config('proposals.requested_action.'.$proposal['data']->proposal->action) }}
+                                                    <i class='bx bx-up-arrow-circle text-{{ $actionColors[$groupedProposal->proposal->action] ?? 'primary' }}'></i>
+                                                    {{ config('proposals.requested_action.'.$groupedProposal->proposal->action) }}
                                                 </span>
                                             </td>
                                             <td>
-                                                @if ($proposal['data']->proposal->files->isNotEmpty())
-                                                    <button class="btn btn-sm btn-secondary view-files d-flex gap-2" data-files="{{ json_encode($proposal['data']->proposal->files) }}" data-title="{{ $proposal['data']->proposal->title }}">
+                                                @if ($groupedProposal->proposal->files->isNotEmpty())
+                                                    <button class="btn btn-sm btn-secondary view-files d-flex gap-2" data-files="{{ json_encode($groupedProposal->proposal->files) }}" data-title="{{ $groupedProposal->proposal->title  }}">
                                                         <i class='bx bx-file'></i> VIEW FILES
                                                     </button>
-                                                @else
+                                                @else 
                                                     <button class="btn btn-sm btn-danger d-flex gap-2" disabled>
                                                         <i class='bx bx-file'></i> NO FILES
                                                     </button>
                                                 @endif
                                             </td>
                                         </tr>
-                                        @php $counter++; @endphp
-                                    @else
-                                    <tr class="tr-group selectable-row group position-relative" data-id="{{ $proposal['data']->first()->proposal_group->id }}">
-                                        <td>2.<span class="order_no">{{ $counter }}</span></td>
-                                        <td colspan="4">
-                                            <strong>{{ $proposal['data']->first()->proposal_group->group_title ?? 'Group Proposal' }}</strong>
-
-                                            <!-- Dropdown inside the row (hidden by default) -->
-                                                 <!-- New Business Section -->
-                                            @if (session('isSecretary') && (session('secretary_level') == $meeting->getMeetingCouncilType()))
-                                                <div class="dropdown position-absolute" style="right: 10px; top: 50%; transform: translateY(-50%);">
-                                                    <button class="btn btn-sm btn-warning dropdown-toggle d-none group-menu-btn" type="button" data-bs-toggle="dropdown">
-                                                        Actions
-                                                    </button>
-                                                    <ul class="dropdown-menu">
-                                                        <li><button class="dropdown-item ungroup-btn">Ungroup</button></li>
-                                                        <li><button class="dropdown-item edit-group-btn">Edit</button></li>
-                                                    </ul>
-                                                </div>
-                                            @endif
-                                        </td>
-                                    </tr>
-
-                                        @foreach ($proposal['data'] as $groupedProposal)
-                                            <tr class="selectable-row group-items" data-id="{{ $groupedProposal->proposal->id }}">
-                                                <td class="ps-5 pe-1">
-                                                    <span class="order_no">2.{{ $counter }}.{{ $groupCounter }}</span>
-                                                </td>
-                                                <td>
-                                                    <span>{{ $groupedProposal->proposal->title }}</span>
-                                                </td>
-                                                <td>  
-                                                    <div class="d-flex flex-column gap-3">
-                                                        @foreach ($groupedProposal->proposal->proponents ?? [] as $proponent)
-                                                            <div class="d-flex align-items-center gap-3">
-                                                                <img class="rounded-circle avatar-sm" src="{{ $proponent->image ?? '/default-avatar.png' }}" alt="Avatar">
-                                                                <span>{{ $proponent->name }}</span>
-                                                            </div>
-                                                        @endforeach
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <span class="d-flex gap-2 align-items-center">
-                                                        <i class='bx bx-up-arrow-circle text-{{ $actionColors[$groupedProposal->proposal->action] ?? 'primary' }}'></i>
-                                                        {{ config('proposals.requested_action.'.$groupedProposal->proposal->action) }}
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    @if ($groupedProposal->proposal->files->isNotEmpty())
-                                                        <button class="btn btn-sm btn-secondary view-files d-flex gap-2" data-files="{{ json_encode($groupedProposal->proposal->files) }}" data-title="{{ $groupedProposal->proposal->title  }}">
-                                                            <i class='bx bx-file'></i> VIEW FILES
-                                                        </button>
-                                                    @else 
-                                                        <button class="btn btn-sm btn-danger d-flex gap-2" disabled>
-                                                            <i class='bx bx-file'></i> NO FILES
-                                                        </button>
-                                                    @endif
-                                                </td>
-                                            </tr>
-                                            @php $groupCounter++; @endphp
-                                        @endforeach
-                                        @php $counter++; $groupCounter = 1; @endphp
-                                    @endif
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @endif
-            @endforeach
+                                        @php $groupCounter++; @endphp
+                                    @endforeach
+                                    @php $counter++; $groupCounter = 1; @endphp
+                                @endif
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+        @endforeach
 
 
-            <script>
-                var postedToAgendaProposalIDS = @json($allProposalIds);
-            </script>
-        </div>
+        <script>
+            var postedToAgendaProposalIDS = @json($allProposalIds);
+        </script>
+    </div>
 
         <div class="mb-3">
             <div class="d-flex align-items-center">
@@ -363,8 +363,66 @@
             <button id="addOtherMatterBtn" class="btn btn-primary btn-xs ms-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Add Other Matter">
                 <i class='bx bx-plus'></i>
             </button>
-               
+                
             </div>
+
+            @if ($otherMattersProposals->isNotEmpty())
+        <div class="table-responsive text-nowrap mb-4">
+            <table class="table table-bordered">
+                <thead>
+                    <tr style="background-color: var(--bs-primary) !important; border-color: var(--bs-primary)  !important;">
+                        <th colspan="5" class="p-4 text-white">{{ $otherMattersTitle }}</th>
+                    </tr>
+                    <tr>
+                        <th style="width: 50px;">No.</th>
+                        <th style="width: 700px;">Title of the Proposal</th>
+                        <th style="width: 200px;">Presenter</th>
+                        <th style="width: 150px;">Requested Action</th>
+                        <th style="width: 100px;">File</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @php $counter = 1; @endphp
+                    @foreach ($otherMattersProposals as $otherMatter)
+                        <tr>
+                            <td>3.{{ $counter }}</td>
+                            <td>{{ $otherMatter->proposal->title }}</td>
+                            <td>
+                                <div class="d-flex flex-column gap-3">
+                                    @foreach ($otherMatter->proposal->proponents ?? [] as $proponent)
+                                        <div class="d-flex align-items-center gap-3">
+                                            <img class="rounded-circle avatar-sm" src="{{ $proponent->image ?? '/default-avatar.png' }}" alt="Avatar">
+                                            <span>{{ $proponent->name }}</span>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </td>
+                            <td>
+                                <span class="d-flex gap-2 align-items-center">
+                                    <i class='bx bx-up-arrow-circle text-{{ $actionColors[$otherMatter->proposal->action] ?? 'primary' }}'></i>
+                                    {{ config('proposals.requested_action.'.$otherMatter->proposal->action) }}
+                                </span>
+                            </td>
+                            <td>
+                                @if ($otherMatter->proposal->files->isNotEmpty())
+                                    <button class="btn btn-sm btn-secondary view-files d-flex gap-2" data-files="{{ json_encode($otherMatter->proposal->files) }}" data-title="{{ $otherMatter->proposal->title }}">
+                                        <i class='bx bx-file'></i> VIEW FILES
+                                    </button>
+                                @else
+                                    <button class="btn btn-sm btn-danger d-flex gap-2" disabled>
+                                        <i class='bx bx-file'></i> NO FILES
+                                    </button>
+                                @endif
+                            </td>
+                        </tr>
+                        @php $counter++; @endphp
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+            @else
+                <p class="text-muted">No other matters recorded.</p>
+            @endif
         </div>
 
         
@@ -383,6 +441,140 @@
     @if (session('isSecretary'))
     </form>
     @endif
+
+
+    <!-- ADD OTHER MATTERS MODAL -->
+<div class="modal fade" id="otherMattersModal" tabindex="-1" aria-labelledby="otherMattersModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-primary" id="otherMattersModalLabel">Add Other Matters</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="{{ route(getUserRole().'.addOtherMatters', ['meeting_id' => encrypt($meeting->id)]) }}" enctype="multipart/form-data" id="otherMattersFrm">
+                        @csrf
+
+                        <!-- Title -->
+                        <div class="mb-3">
+                            <label class="form-label" for="title">Title <span class="ms-1 text-danger">*</span></label>
+                            <textarea id="title" name="title" class="form-control" placeholder="Enter title" required rows="3"></textarea>
+                        </div>
+
+                        <!-- Proponent or Presenter Email -->
+                        <div class="mb-3">
+                            <label class="form-label" for="proponent_email">Proponent<span class="ms-1 text-danger">*</span></label>
+                            <div class="input-group">
+                                <span id="email-icon" class="input-group-text"><i class="bx bx-envelope"></i></span>
+                                <input 
+                                    type="text" 
+                                    id="proponent_email_matter" 
+                                    name="proponent_email" 
+                                    class="form-control @error('proponent_email') is-invalid @enderror" 
+                                    placeholder="Enter proponent's email"
+                                    required
+                                >
+                            </div>
+                            @error('proponent_email')
+                                <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <!-- Type of Matter -->
+                        <div class="mb-3">
+                            <label class="form-label" for="matter">Type of Matter or Proposal <span class="ms-1 text-danger">*</span></label>
+                            <div class="input-group">
+                                <span id="matters-icon" class="input-group-text"><i class="bx bx-briefcase"></i></span>
+                                <select class="form-select @error('matter') is-invalid @enderror" id="matter" name="matter" required>
+                                    <option value="" disabled>Select Type of Matter or Proposal</option>
+                                    @switch(session('user_role'))
+                                        @case(0)
+                                            <option value="1">{{ config('proposals.matters.1') }}</option>
+                                            @break
+                                        @case(1)
+                                            <option value="2">{{ config('proposals.matters.2') }}</option>
+                                            @break
+                                        @default
+                                            @foreach (config('proposals.matters') as $key => $value)
+                                                <option value="{{ $key }}">{{ $value }}</option>
+                                            @endforeach
+                                    @endswitch
+                                </select>
+                            </div>
+                                @error('matter')
+                                    <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
+                                @enderror
+                        </div>
+
+                    <!-- Requested Action -->
+                    <div class="mb-3">
+                            <label class="form-label" for="action">Requested Action <span class="ms-1 text-danger">*</span></label>
+                            <div class="input-group">
+                                <span id="action-icon" class="input-group-text"><i class="bx bx-task"></i></span>
+                                <select class="form-control @error('action') is-invalid @enderror" id="action" name="action">
+                                    @switch(session('user_role'))
+                                        @case(0)
+                                            <option value="1">{{ config('proposals.requested_action.1') }}</option>
+                                            <option value="3">{{ config('proposals.requested_action.3') }}</option>
+                                            @break
+                                        @case(1)
+                                            <option value="2">{{ config('proposals.requested_action.2') }}</option>
+                                            <option value="3">{{ config('proposals.requested_action.3') }}</option>
+                                            @break
+                                        @default
+                                            @foreach (config('proposals.requested_action') as $key => $value)
+                                                <option value="{{ $key }}">{{ $value }}</option>
+                                            @endforeach
+                                    @endswitch
+                                </select>
+                            </div>
+                            @error('action')
+                                <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
+                            @enderror
+                    </div>
+
+                    <!-- Sub Type -->
+                    <div class="mb-3" id="subTypeContainer" style="display: none;">
+                        <label class="form-label" for="sub_type">Sub Type</label>
+                        <div class="input-group">
+                            <span id="sub-type-icon" class="input-group-text"><i class="bx bx-category-alt"></i></span>
+                            <select name="sub_type" id="sub_type" class="form-control @error('sub_type') is-invalid @enderror" required>
+                                <option value="">Select Sub-type</option>
+                                @foreach (config('proposals.proposal_subtypes') as $key => $subType)
+                                    <option value="{{ $key }}" @selected(old('sub_type') == $key)>{{ $subType }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @error('sub_type')
+                            <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                        <!-- Proposal Files -->
+                        <div class="">
+                            <h6 class="text-primary">PROPOSAL FILES</h6>
+                            <div class="upload-container mb-3">
+                                <label class="form-label" for="fileUpload">Proposal File/s <span class="ms-1 text-danger">*</span></label>
+                                <div id="dropArea" class="drop-area">
+                                    <span class="upload-text">Drag & Drop files here, or <strong class="text-primary">click to upload</strong></span>
+                                    <small class="text-muted">Accepted formats: .pdf, .xls, .xlsx, and .csv only</small>
+                                    <input type="file" id="fileUpload" name="proposal_files[]" accept=".pdf,.xls,.xlsx,.csv" multiple hidden>
+                                </div>
+                                <h5 id="uploadedFilesLabel" class="file-header mt-3"><i class='bx bx-file'></i> Uploaded Files</h5>
+                                <ul id="fileList" class="file-list mt-3">
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="text-end">
+                            <button type="submit" id="addMatter" class="btn btn-primary">Add Other Matters</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+</div>
+
 
     <!-- Modal Preview File -->
     <div class="modal fade" id="fileModal" tabindex="-1" aria-labelledby="fileModalLabel" aria-hidden="true">
@@ -442,8 +634,115 @@
         </div>
     </div>
 </div>
+
 <script>
+    document.addEventListener("DOMContentLoaded", function () {
+           let emailInput = document.getElementById("proponent_email_matter");
+           let tagify = new Tagify(emailInput, {
+               enforceWhitelist: false,
+               maxTags: 1,
+               whitelist: [],
+               dropdown: {
+                   maxItems: 10,   // Show up to 10 results
+                   enabled: 1,     // Show dropdown on input
+                   closeOnSelect: false
+               }
+           });
+   
+           document.querySelector("#otherMattersFrm").addEventListener("submit", function (e) {
+           let tagifiedEmails = tagify.value.map(tag => tag.value);
+           let emailValue = tagifiedEmails[0] || "";
+   
+           // Validate email format before submitting
+           if (!emailValue.match(/^[\w\.-]+@[\w\.-]+\.\w+$/)) {
+               e.preventDefault(); // Prevent form submission
+               toastr.error("Please enter a valid email address.");
+               return;
+           }
+   
+           emailInput.value = emailValue;
+       });
+   
+        // Fetch proponent emails dynamically
+        function fetchProponents(query) {
+               $.ajax({
+                   url: "{{route(getUserRole().'.fetchProponents')}}",
+                   type: "GET",
+                   data: { search: query },
+                   success: function (response) {
+                       tagify.settings.whitelist = response;
+                       tagify.dropdown.show(); // Show dropdown
+                   }
+               });
+           }
+       
+           // Listen for input event to fetch data
+           tagify.on("input", function (e) {
+               let value = e.detail.value;
+               if (value.length >= 2) { // Fetch only if at least 2 characters are typed
+                   fetchProponents(value);
+               }
+           });
+       });
+</script>
+
+<script>
+
+var proposalStatus = @json(config('proposals.status'));
+
     $(document).ready(function () {
+
+        // Open Add Other Matter Modal
+        $("#addOtherMatterBtn").on("click", function (e) {
+            e.preventDefault();
+            $("#otherMattersModal").modal("show");
+        });
+
+        $("#otherMattersFrm").on("submit", function (e) {
+        e.preventDefault(); // Prevent default form submission
+        
+        let formData = new FormData(this);
+        let submitButton = $("#addMatter");
+        submitButton.prop("disabled", true); // Disable button to prevent duplicate submissions
+
+        $.ajax({
+            url: $(this).attr("action"),
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            beforeSend: function () {
+            submitButton.prop("disabled", true); // Disable button to prevent duplicate submissions
+            submitButton.text("Adding..."); // Optionally change button text
+         },
+            success: function (response) {
+                if (response.type === "success") {
+                    toastr.success(response.message, "Success");
+                    $("#otherMattersModal").modal("hide"); // Close the modal
+                    $("#otherMattersFrm")[0].reset(); // Reset the form
+
+                    // Optionally refresh the list of Other Matters without reloading
+                    loadOtherMatters();
+                } else {
+                    toastr.error(response.message, "Error");
+                }
+            },
+            error: function (xhr) {
+                let response = xhr.responseJSON;
+                if (response && response.message) {
+                    toastr.error(response.message, "Error");
+                } else {
+                    toastr.error("An unexpected error occurred.", "Error");
+                }
+            },
+            complete: function () {
+                submitButton.prop("disabled", false); // Re-enable button
+            }
+        });
+    });
+
+
+
          // Open Upload Modal
                 $("#openMinutesModal").click(function(e) {
                     e.preventDefault();
@@ -492,7 +791,7 @@
                     });
                 });
 
-    // Check if previous minutes exist and update buttons accordingly
+        // Check if previous minutes exist and update buttons accordingly
             function checkPreviousMinutes() {
                 let meetingId = $("input[name='meeting_id']").val();
 
@@ -914,11 +1213,88 @@
                 });
             });
 
-
-
     });
-</script>
 
+    $('#matter').on('change', function() {
+        var matter = $(this).val();
+        var subType = $('#sub_type');
+        var actionSelect = $('#action');
+
+        actionSelect.empty();
+
+        if (matter == 1) {
+            actionSelect.append(`
+                @if (session('user_role') == 3)
+                    <option value="4">Endorsement for Local ACAD</option>
+                    <option value="1">Endorsement for UACAD</option>
+                @endif
+                @if (session('user_role') == 4)
+                    <option value="6">Approval for UACAD</option>
+                    <option value="3">Endorsement for BOR</option>
+                @endif
+                @if (session('user_role') == 5)
+                    <option value="8">BOR Approval</option>
+                @endif
+            `);
+            subType.prop('disabled', true);
+            $('#subTypeContainer').css('display', 'none');
+        } else if (matter == 2) {
+            subType.prop('disabled', false);
+            $('#subTypeContainer').css('display', 'block');
+
+            actionSelect.append(`
+                @if (session('user_role') == 3)
+                    <option value="5">Endorsement for Local ADCO</option>
+                    <option value="2">Endorsement for UADCO</option>
+                @endif
+                @if (session('user_role') == 4)
+                    <option value="7">Approval for UADCO</option>
+                    <option value="3">Endorsement for BOR</option>
+                @endif
+                @if (session('user_role') == 5)
+                    <option value="8">BOR Approval</option>
+                @endif
+            `);
+        }else if (matter == 3) {
+            subType.prop('disabled', true);
+            $('#subTypeContainer').css('display', 'none');
+
+            actionSelect.append(`
+                <option value="3">Endorsement for BOR</option>
+                <option value="9">BOR Confirmation</option>
+            `);
+        }
+        else if (matter == 4) {
+            subType.prop('disabled', true);
+            $('#subTypeContainer').css('display', 'none');
+
+            actionSelect.append(`
+                <option value="3">Endorsement for BOR</option>
+                <option value="10">BOR Information</option>
+            `);
+        }
+    });
+
+    function getImageByFileType(fileType) {
+        switch (fileType) {
+            case "pdf":
+                return "{{ asset('assets/img/icons/file-icons/pdf.png') }}";
+            case "xls":
+                return "{{ asset('assets/img/icons/file-icons/xls.png') }}";
+            case "xlsx":
+                return "{{ asset('assets/img/icons/file-icons/xlsx.png') }}";
+            case "csv":
+                return "{{ asset('assets/img/icons/file-icons/csv-file.png') }}";
+            default:
+                return "{{ asset('assets/img/icons/file-icons/file.png') }}";
+        }
+    }
+
+
+   
+</script>
+<script src="{{asset('assets/js/customFileUplaod.js')}}"></script>
 <script src="{{asset('assets/js/orderOfBusiness.js')}}"></script>
 <script src="{{asset('assets/js/proposal.js')}}"></script>
+
 @endsection

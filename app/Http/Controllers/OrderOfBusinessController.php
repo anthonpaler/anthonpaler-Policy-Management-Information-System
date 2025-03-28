@@ -25,6 +25,7 @@ use App\Http\Controllers\SMSController;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Employee;
 use App\Models\HrmisEmployee;
+use App\Models\OtherMatter;
 
 
 class OrderOfBusinessController extends Controller
@@ -383,6 +384,7 @@ class OrderOfBusinessController extends Controller
             $oobID = decrypt($oob_id);
             $proposals = collect();
             $matters = [0 => 'Financial Matters'] + config('proposals.matters');
+            $otherMattersTitle = 'Other Matters'; 
             $orderOfBusiness = null;
             $meeting = null;
 
@@ -438,10 +440,20 @@ class OrderOfBusinessController extends Controller
                 });
             
 
-                
-            
                 $proposals = $query->get();
-            }            
+            }
+            
+            // Fetch "Other Matters" Proposals
+            $otherMattersProposals = OtherMatter::with('proposal')
+            ->whereHas('proposal', function ($query) {
+                $query->whereNotNull('id'); 
+            })
+            ->get();
+
+            $otherMattersProposalIds = $otherMattersProposals->pluck('proposal_id')->toArray();
+
+            
+
 
             // Get meeting type
             $councilType = $meeting->council_type ?? null;
@@ -479,6 +491,12 @@ class OrderOfBusinessController extends Controller
                 }
             }
 
+            foreach ($categorizedProposals as $type => $proposals) {
+                $categorizedProposals[$type] = collect($proposals)->reject(function ($proposal) use ($otherMattersProposalIds) {
+                    return in_array($proposal->proposal->id, $otherMattersProposalIds);
+                })->values();
+            }
+
             
 
             return view('content.orderOfBusiness.viewOOB', compact(
@@ -486,7 +504,10 @@ class OrderOfBusinessController extends Controller
                 'meeting',
                 'previousMinutes',
                 'categorizedProposals',
-                'matters'
+                'matters',
+                'otherMattersProposals',
+                'otherMattersTitle'
+
             ));
 
         } catch (\Throwable $th) {
