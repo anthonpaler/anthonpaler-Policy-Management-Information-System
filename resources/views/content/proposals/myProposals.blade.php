@@ -100,8 +100,18 @@
     </div>
 </div>
 <div class="card">
-    <h5 class="card-header">My Proposals List</h5>
     <div class="card-body">
+        <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-3">
+            <h5 class="m-0">My Proposals</h5>
+            <div>
+                <div class="input-group input-group-merge">
+                    <input type="text" class="form-control" id="proposalSearch" placeholder="Search...">    
+                    <span  class="input-group-text">
+                        <i class='bx bx-search' ></i>
+                    </span>
+                </div>
+            </div>
+        </div>
         <div class="card-datatable pt-0">
             <div class="table-responsive text-nowrap">
                 <table id="proposalTable" class="datatables-basic table table-striped">
@@ -189,7 +199,7 @@
                             </td>
                             <td>
                                 @if($proposal->files->count() > 0)
-                                    <button class="btn btn-sm btn-success d-flex gap-2 view-files"
+                                    <button class="btn btn-sm btn-primary d-flex gap-2 view-files"
                                             data-files="{{ json_encode($proposal->files) }}" 
                                             data-title="{{ $proposal->title }}">
                                         <i class='bx bx-file'></i> VIEW FILES
@@ -201,7 +211,7 @@
                                 @endif
                             </td>
                             <td>
-                            <div class="d-flex align-items-center gap-2">
+                                <div class="d-flex align-items-center gap-2">
                                     <a class="action-btn success edit-proposal" 
                                     href="{{ $proposal->is_editable ? route(getUserRole().'.proposal.edit', ['proposal_id' => encrypt($proposal->id)]) : 'javascript:void(0);' }}"
                                     onclick="{{ $proposal->is_editable ? '' : 'cantEditWarning()' }}">
@@ -222,7 +232,6 @@
                                         <span class="tooltiptext">View</span>
                                     </a>
                                 </div>
-
                             </td>
                         </tr>
                         @endforeach
@@ -232,8 +241,8 @@
             </div>
         </div>
     </div>
-     <!-- Modal -->
-     <div class="modal fade" id="proposalFIleModal" tabindex="-1" aria-labelledby="proposalFIleModalLabel" aria-hidden="true">
+    <!-- Modal -->
+    <div class="modal fade" id="proposalFIleModal" tabindex="-1" aria-labelledby="proposalFIleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -249,9 +258,10 @@
             </div>
         </div>
     </div>
+   <!-- Modal Preview File -->
     <div class="modal fade" id="fileModal" tabindex="-1" aria-labelledby="fileModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
+        <div class="modal-dialog modal-xl" style="height: 95%; display: flex; align-items: center;">
+            <div class="modal-content" style="height: 100%;">
                 <div class="modal-header">
                     <div class="d-flex align-items-center gap-3">
                         <h5 class="modal-title" id="fileModalLabel">File Preview</h5>
@@ -261,8 +271,8 @@
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <iframe id="fileIframe" src="" width="100%" height="600px" frameborder="0"></iframe>
+                <div class="modal-body" style="flex-grow: 1; overflow: hidden;">
+                    <iframe id="fileIframe" src="" width="100%" height="100%" style="height: 100%;" frameborder="0"></iframe>
                 </div>
             </div>
         </div>

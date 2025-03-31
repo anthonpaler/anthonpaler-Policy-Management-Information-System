@@ -14,32 +14,6 @@ $(document).ready(function() {
             $(".old-version-files").removeClass("d-none");
         }
     });
-
-    // $('#matter').on('change', function() {
-    //     var matter = $(this).val();
-    //     var subType = $('#sub_type');
-    //     var actionSelect = $('#action');
-    
-    //     actionSelect.empty();
-    
-    //     if (matter == 1) {
-    //         actionSelect.append(`
-    //             <option value="1">Endorsement for UACAD</option>
-    //             <option value="3">Endorsement for BOR</option>
-    //         `);
-    //         subType.prop('disabled', true);
-    //         $('#subTypeContainer').css('display', 'none');
-    //     } else if (matter == 2) {
-    //         subType.prop('disabled', false);
-    //         $('#subTypeContainer').css('display', 'block');
-    
-    //         actionSelect.append(`
-    //             <option value="2">Endorsement for UADCO</option>
-    //             <option value="3">Endorsement for BOR</option>
-    //         `);
-    //     }
-    
-    // });
     
     let selectedProponents = window.selectedProponents || [];
     let proponentInput = $("#proponents");
@@ -84,7 +58,7 @@ $(document).ready(function() {
                                         <div class="d-flex justify-content-start align-items-center user-name">
                                             <div class="avatar-wrapper">
                                                 <div class="avatar avatar-sm me-4">
-                                                    <img src="${user.image ? user.image : '/default-avatar.png'}" alt="Avatar" class="rounded-circle">
+                                                    <img src="${user.image ? user.image : '/assets/img/avatars/default-avatar.jpg'}" alt="Avatar" class="rounded-circle">
                                                 </div>
                                             </div>
                                             <div class="d-flex flex-column">
@@ -132,7 +106,7 @@ $(document).ready(function() {
                         <div class="d-flex justify-content-start align-items-center ">
                             <div class="avatar-wrapper">
                                 <div class="avatar avatar-sm me-3">
-                                    <img src="${userImage}" alt="Avatar" class="rounded-circle">
+                                    <img src="${userImage ? userImage : '/assets/img/avatars/default-avatar.jpg'}" alt="Avatar" class="rounded-circle">
                                 </div>
                             </div>
                             <div class="d-flex flex-column">
@@ -209,7 +183,7 @@ $(document).ready(function() {
             proposalRow.find(".badge.bg-label-primary").text("Revised");
 
             // Increment version number
-            var versionElement = proposalRow.find(".badge.bg-label-success");
+            var versionElement = proposalRow.find(".version");
             var currentVersion = parseInt(versionElement.text().replace("Version ", "").trim());
             var newVersion = currentVersion + 1;
 
@@ -292,9 +266,12 @@ $(document).ready(function() {
             success: function (response) {
                 $("#updateProposal").html(`<i class='bx bx-save'></i>
                     <span>Save Changes</span>`).prop('disabled', false);
-                console.log(response);
+                // console.log(response);
                 showAlert(response.type, response.title, response.message);
-                location.reload();
+
+                if(response.type ==  'success'){
+                    location.reload();
+                }
             },
             error: function (xhr, status, error) {
                 $("#updateProposal").html(`<i class='bx bx-save'></i>
@@ -425,8 +402,6 @@ $(document).ready(function() {
                 if(fileObj.is_active == true){
                     fileListHtml += `
                     <a href="#" class="form-control d-flex align-items-center gap-2 view-file-preview" style="text-transform: none;"
-                    data-bs-toggle="modal" 
-                    data-bs-target="#fileModal"
                     data-file-url="/storage/proposals/${fileObj.file}" >
                         <span>${fileObj.order_no}. </span><i class='bx bx-file-blank'></i><span>${fileObj.file}</span>
                     </a>`;
@@ -444,11 +419,46 @@ $(document).ready(function() {
     $(document).on('click', '.view-file-preview', function (e) {
         e.preventDefault();
         const fileUrl = $(this).data('file-url');
-        $('#fileIframe').attr('src', fileUrl);
+        const fileExtension = fileUrl.split('.').pop().toLowerCase(); 
 
-        var fileModal = new bootstrap.Modal(document.getElementById('fileModal'));
-        fileModal.show();
+        if (fileExtension !== 'pdf') {
+            window.open(fileUrl, '_blank'); // Open Excel, CSV, etc., in a new tab
+            $('#fileModal').modal('hide'); 
+            return;
+        }
+    
+        if (/Mobi|Android/i.test(navigator.userAgent)) { // Open file in new tab if mobile device
+            window.open(fileUrl, '_blank'); 
+            $('#fileModal').modal('hide');
+        } else {
+            $('#fileIframe').attr('src', fileUrl);
+            var fileModal = new bootstrap.Modal(document.getElementById('fileModal'));
+            fileModal.show();
+        }
+
     });
+    $(document).on('click', '.view-single-file-preview', function (e) {
+        e.preventDefault();
+        const fileUrl = $(this).data('file-url');
+        const fileExtension = fileUrl.split('.').pop().toLowerCase(); 
+    
+        // If the file is not a PDF, always open it in a new tab
+        if (fileExtension !== 'pdf') {
+            window.open(fileUrl, '_blank'); // Open Excel, CSV, etc., in a new tab
+            $('#fileModal').modal('hide'); 
+            return;
+        }
+    
+        if (/Mobi|Android/i.test(navigator.userAgent)) { // Open file in new tab if mobile device
+            window.open(fileUrl, '_blank'); 
+            $('#fileModal').modal('hide');
+        } else {
+            $('#fileIframe').attr('src', fileUrl);
+            $('#fileModal').modal('show');
+        }
+    });
+    
+    
 
     $('#fileModal').on('show.bs.modal', function () {
         $('#proposalFIleModal').addClass('d-block');
@@ -486,7 +496,7 @@ $(document).ready(function() {
 
     // console.log(proposalStatus);
     // UPDATE SELECTED PROPOSAL STATUS USING PROPOSAL ACTION
-    $('#okActionButton').on('click', function() {
+    $('#updateMultiProposalBtn').on('click', function() {
         var proposalStatusInput = $("#proposalStatusInput");
         var action = proposalStatusInput.data('id'); 
         var status_label = proposalStatus[action+1];
@@ -511,12 +521,12 @@ $(document).ready(function() {
                 action: action, 
             },
             beforeSend: function() {
-                $('#okButton').html(`<i class='bx bx-loader-alt bx-spin bx-rotate-90' ></i>`).prop('disabled', true);
+                $('#updateMultiProposalBtn').html(`<i class='bx bx-loader-alt bx-spin bx-rotate-90' ></i> Updating Proposal Status...`).prop('disabled', true);
             },
             success: function(response) {
                 console.log("Success Response:", response);
 
-                $('#okButton').html(`<i class="fa-regular fa-circle-check"></i>`).prop('disabled', false);
+                $('#updateMultiProposalBtn').html(`<i class='bx bx-send'></i> Update Proposal Status`).prop('disabled', false);
             
                 if (response.type === 'success') {
                     selectedProposals.forEach(id => {
@@ -547,7 +557,7 @@ $(document).ready(function() {
                     responseText: xhr.responseText
                 });
                 
-                $('#okButton').html(`<i class="fa-regular fa-circle-check"></i>`).prop('disabled', false);
+                $('#updateMultiProposalBtn').html(`<i class='bx bx-send'></i> Update Proposal Status`).prop('disabled', false);
 
                 showAlert('danger', 'Error!', 'Something Went Wrong!');
             }
@@ -563,15 +573,17 @@ $(document).ready(function() {
     
         var proposalStatusInput = $("#proposalStatusInput");
     
-        proposalStatusInput.val(action_label);
+        proposalStatusInput.text(action_label);
         proposalStatusInput.data('id', action_id); 
         // alert(action_id + ' ' + action_label);
         console.log(proposalStatusInput.data('id'));
 
         if ([1, 4, 5, 6].includes(action_id)) {
             $("#comment").prop('disabled', false);
+            $(".select-proposal-file").removeClass('d-none').addClass('d-block');
         } else {
             $("#comment").prop('disabled', true);
+            $(".select-proposal-file").removeClass('d-block').addClass('d-none');
         }
     });
 
@@ -580,14 +592,11 @@ $(document).ready(function() {
 
     $('.select-proposal-file').on('change', function() {
         let proposalFileId = $(this).data('id');
-        let label = $(this).siblings("small");
-    
+        
         if ($(this).is(':checked')) {
             selectedProposalFiles.add(proposalFileId);
-            label.html("SELECTED");
         } else {
             selectedProposalFiles.delete(proposalFileId);
-            label.html("SELECT"); 
         }
     
         console.log("Updated selected proposal files: ", Array.from(selectedProposalFiles));
@@ -642,7 +651,7 @@ $(document).ready(function() {
             },
             success: function(response) {
                 console.log("Success Response:", response);
-                $("#updateProposalStatus").html(`<i class='bx bxs-send' ></i> Update Proposal Status`).prop('disabled', false);
+                $("#updateProposalStatus").html(`<i class='bx bx-send'></i> Update Proposal Status`).prop('disabled', false);
                 showAlert(response.type, response.title, response.message);
                 location.reload(); 
             },                
@@ -652,7 +661,7 @@ $(document).ready(function() {
                     error: error,
                     responseText: xhr.responseText
                 });
-                $("#updateProposalStatus").html(`<i class='bx bxs-send' ></i> Update Proposal Status`).prop('disabled', false);
+                $("#updateProposalStatus").html(`<i class='bx bx-send'></i> Update Proposal Status`).prop('disabled', false);
                 showAlert('danger', 'Error!', 'Something Went Wrong!');
             }
         });
@@ -680,6 +689,7 @@ $(document).ready(function() {
             success: function (response) {
                 $("#updateProposalSec").html(`<i class='bx bx-save'></i>
                     <span>Save Changes</span> `).prop('disabled', false);
+                $(".select-proposal-file").removeClass('d-block').addClass('d-none');
                 showAlert(response.type, response.title, response.message);
             },            
             error: function (xhr, status, error) {

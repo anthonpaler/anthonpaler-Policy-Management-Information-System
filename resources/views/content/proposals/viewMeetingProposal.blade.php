@@ -38,9 +38,9 @@
 <div class="row">
 <!-- /single card  -->
   <div class="col-lg-2 col-sm-6 mb-3">
-    <div class="card">
+    <div class="card h-100">
       <div class="card-body">
-        <div class="d-flex justify-content-between">
+        <div class="d-flex gap-2 justify-content-between">
           <div class="card-info">
             <p class="text-heading mb-1">For Endorsment</p>
             <div class="d-flex align-items-center mb-1">
@@ -58,9 +58,9 @@
     </div>
   </div>
   <div class="col-lg-2 col-md-6 col-sm-6 mb-3">
-    <div class="card">
+    <div class="card h-100">
       <div class="card-body">
-        <div class="d-flex justify-content-between">
+        <div class="d-flex gap-2 justify-content-between">
           <div class="card-info">
             <p class="text-heading mb-1">Posted to Agenda</p>
             <div class="d-flex align-items-center mb-1">
@@ -78,9 +78,9 @@
     </div>
   </div>
   <div class="col-lg-2 col-md-6 col-sm-6 mb-3">
-    <div class="card">
+    <div class="card h-100">
       <div class="card-body">
-        <div class="d-flex justify-content-between">
+        <div class="d-flex gap-2 justify-content-between">
           <div class="card-info">
             <p class="text-heading mb-1">Approved</p>
             <div class="d-flex align-items-center mb-1">
@@ -98,9 +98,9 @@
     </div>
   </div>
   <div class="col-lg-2 col-md-6 col-sm-6 mb-3">
-    <div class="card">
+    <div class="card h-100">
       <div class="card-body">
-        <div class="d-flex justify-content-between">
+        <div class="d-flex gap-2 justify-content-between">
           <div class="card-info">
             <p class="text-heading mb-1">Endorsed</p>
             <div class="d-flex align-items-center mb-1">
@@ -118,9 +118,9 @@
     </div>
   </div>
   <div class="col-lg-2 col-md-6 col-sm-6 mb-3">
-    <div class="card">
+    <div class="card h-100">
       <div class="card-body">
-        <div class="d-flex justify-content-between">
+        <div class="d-flex gap-2 justify-content-between">
           <div class="card-info">
             <p class="text-heading mb-1">Returned</p>
             <div class="d-flex align-items-center mb-1">
@@ -138,9 +138,9 @@
     </div>
   </div>
   <div class="col-lg-2 col-md-6 col-sm-6 mb-3">
-    <div class="card">
+    <div class="card h-100">
       <div class="card-body">
-        <div class="d-flex justify-content-between">
+        <div class="d-flex gap-2 justify-content-between">
           <div class="card-info">
             <p class="text-heading mb-1">Deffered</p>
             <div class="d-flex align-items-center mb-1">
@@ -162,7 +162,7 @@
     <div class="card-body">
         <div class="d-flex justify-content-between w-100">
             <div class="w-100 ">
-                <div class="d-flex justify-content-between w-100 gap-3 flex-wrap">
+                <div class="d-flex justify-content-between w-100 gap-3 flex-wrap align-items-center">
                     <div class="">
                         <h5 class="m-0">
                             {{ config('meetings.quaterly_meetings.'.$meeting->quarter) }} @if ($meeting->getMeetingCouncilType() == 0)
@@ -177,77 +177,86 @@
                                 {{ config('meetings.status.'.$meeting->status) }}
                             </span> -->
                         </h5>
+                        <div class="d-flex align-items-center gap-2 flex-wrap mt-2">
+                            <small>Submission Period : </small>
+                            <small class="">{{ \Carbon\Carbon::parse($meeting->submission_start)->format('F d, Y') }}</small>
+                            <small> - </small>
+                            <small class="text-danger">{{ \Carbon\Carbon::parse($meeting->submission_end)->format('F d, Y') }}</small>
+                        </div>
                     </div>
                     @if (session('isSecretary'))
                         <div class="d-flex justify-content-between gap-3">
                             <div class="d-flex gap-3 w-100 flex-wrap">
-                                <button type="button" class="btn btn-primary text-nowrap d-flex gap-2 align-items-center" data-bs-toggle="modal" data-bs-target="#proposalModal">
-                                    <i class='bx bx-book-add mt-1'></i> Add Proposal
-                                </button>
-
                                 <div>
-                                    <div class="btn-group">
-                                        <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">Proposal Actions</button>
+                                    <button type="button" class="btn btn-success text-nowrap d-flex gap-2 align-items-center" data-bs-toggle="modal" data-bs-target="#proposalModal">
+                                        <i class='bx bx-book-add mt-1' style="font-size: .97em;"></i> Add Proposal
+                                    </button>
+                                </div>
 
-                                        @php
-                                            $currentDateTime = now();
-                                            $meetingDateTime = \Carbon\Carbon::parse($meeting->meeting_date_time);
-                                        @endphp
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <div>
+                                        <div class="btn-group">
+                                            <button type="button" class="form-control dropdown-toggle d-flex gap-2 justify-content-between align-items-center" data-bs-toggle="dropdown" aria-expanded="false" data-id="" id="proposalStatusInput" >Proposal Actions</button>
 
-                                        <ul class="dropdown-menu">
-                                            @foreach (array_slice(config('proposals.proposal_action'), 0, 7, true) as $index => $item)
-                                                @php
-                                                    // Skip indices 2, 4, 5, and 6
-                                                    if (in_array($index, [1, 4, 5, 6])) {
-                                                        continue;
-                                                    }
+                                            @php
+                                                $currentDateTime = now();
+                                                $meetingDateTime = \Carbon\Carbon::parse($meeting->meeting_date_time);
+                                            @endphp
 
-                                                    if(session('user_role') == 5 ){
-                                                        if (in_array($index, [3])) {
+                                            <ul class="dropdown-menu">
+                                                @foreach (array_slice(config('proposals.proposal_action'), 0, 7, true) as $index => $item)
+                                                    @php
+                                                        // Skip indices 2, 4, 5, and 6
+                                                        if (in_array($index, [1, 4, 5, 6])) {
                                                             continue;
                                                         }
-                                                    }
 
-                                                    $isDisabled = true; 
+                                                        if(session('user_role') == 5 ){
+                                                            if (in_array($index, [3])) {
+                                                                continue;
+                                                            }
+                                                        }
+
+                                                        $isDisabled = true; 
+                                                        
+                                                        if ($meetingDateTime) {
+                                                            if ($currentDateTime->greaterThan($meetingDateTime)) {
+                                                                $isDisabled = in_array($index, [0, 1]); // Enable 0 & 1 if current date is before meeting date
+                                                            }
+                                                            else {
+                                                                $isDisabled = in_array($index, [2, 3, 4, 5, 6]); // Enable 2-6 if current date is after or equal to meeting date
+                                                            }
+                                                        }
+                                                    @endphp
                                                     
-                                                    if ($meetingDateTime) {
-                                                        if ($currentDateTime->greaterThan($meetingDateTime)) {
-                                                            $isDisabled = in_array($index, [0, 1]); // Enable 0 & 1 if current date is before meeting date
-                                                        }
-                                                        else {
-                                                            $isDisabled = in_array($index, [2, 3, 4, 5, 6]); // Enable 2-6 if current date is after or equal to meeting date
-                                                        }
-                                                    }
-                                                @endphp
-                                                
-                                                <li>
-                                                    <span class="dropdown-item proposal-action {{ $index === 6 ? 'text-danger' : '' }} {{ $isDisabled ? 'disabled' : '' }}" 
-                                                        data-id="{{ $index }}" 
-                                                        data-label="{{ $item }}">
-                                                        {{ $item }}
-                                                    </span>
-                                                </li>
+                                                    <li>
+                                                        <span class="dropdown-item proposal-action {{ $index === 6 ? 'text-danger' : '' }} {{ $isDisabled ? 'disabled' : '' }}" 
+                                                            data-id="{{ $index }}" 
+                                                            data-label="{{ $item }}">
+                                                            {{ $item }}
+                                                        </span>
+                                                    </li>
 
-                                                @if (in_array($index, [1, 5])) 
-                                                    <li><hr class="dropdown-divider"></li>
-                                                @endif
-                                            @endforeach
-                                        </ul>
+                                                    @if (in_array($index, [1, 5])) 
+                                                        <li><hr class="dropdown-divider"></li>
+                                                    @endif
+                                                @endforeach
+                                            </ul>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="d-flex gap-2">
-                                    <div class=" flex-grow-1">
+                                    <!-- <div class=" flex-grow-1">
                                         <input type="text" class="form-control flex-grow-1" data-id="" value="Select Action" id="proposalStatusInput"  disabled>
+                                    </div> -->
+                                    <div>
+                                        <button class="btn btn-{{ $meeting->status == 1 ? 'danger': 'primary' }} d-flex gap-2 align-items-center text-nowrap" 
+                                                id="updateMultiProposalBtn" 
+                                                data-id="{{ encrypt($proposal->id) }}" 
+                                                {{ $proposal->meeting->status == 1 ? 'disabled' : '' }}>
+                                            
+                                            {!! $proposal->meeting->status == 1 ? "<i class='bx bx-lock-alt'></i>" : "<i class='bx bx-send'></i>" !!}
+                                            Update Proposal Status
+                                        </button>
                                     </div>
-                                    @if ($meeting->status == 1)
-                                        <button type="button" class="btn btn-icon btn-danger d-flex gap-2" disabled>
-                                            <i class='bx bxs-lock-alt' ></i>
-                                        </button>
-                                    @else
-                                        <button type="button" id="okActionButton" class="btn btn-icon btn-success" {{ $meeting->status == 1 ? 'disabled': '' }}>
-                                            <i class="fa-regular fa-circle-check"></i>
-                                        </button>
-                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -278,9 +287,9 @@
                 <div class="btn-group">
                     <button class="btn btn-primary btn-icon dropdown-toggle  hide-arrow" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i class='bx bx-filter-alt'></i></button>
                     <ul class="dropdown-menu p-4" style="width: 300px;">
-                        <h5 class="m-0">Filter</h5>
-                        <div class="mb-2 mt-2">
-                            <small class="form-label">Status</small>
+                        <h5 class="m-0 text-primary">Filter Proposal</h5>
+                        <div class="mb-3 mt-3">
+                            <small class="">STATUS</small>
                             <select class="form-select" name="proposalStatus" required>
                                 <option value="">All Status</option>
                                 @foreach (config('proposals.status') as $key => $value)
@@ -290,8 +299,8 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="mb-2 mt-2">
-                            <small class="form-label">Type of Matter</small>
+                        <div class="mb-3">
+                            <small class="f">TYPE OF MATTER</small>
                             <select class="form-select" name="proposalMatter" required>
                                 <option value="">All Type of Matter</option>
                                 @foreach (config('proposals.matters') as $key => $value)
@@ -302,8 +311,8 @@
                             </select>
                         </div>
 
-                        <div class="mb-2 mt-2">
-                            <small class="form-label">Requested Action</small>
+                        <div class="mb-3">
+                            <small class="">REQUESTED ACTION</small>
                             <select class="form-select" name="proposalAction" required>
                                 <option value="">All Requested Action</option>
                                 @foreach (config('proposals.requested_action') as $key => $value)
@@ -360,7 +369,7 @@
                                 @if (session('isSecretary'))
                                     @if ($meeting->status == 1)
                                         <td>
-                                            <span class="text-danger"><i class='bx bxs-lock-alt' ></i></span>       
+                                            <span class="text-danger"><i class='bx bx-lock-alt' ></i></span>       
                                         </td>                 
                                     @else
                                         @if($meetingDateTime && $currentDateTime->lessThan($meetingDateTime))
@@ -442,7 +451,7 @@
                                 </td>
 
                                 <td>
-                                    <a href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->proposal->id)]) }} "  class="btn btn-sm btn-primary d-flex gap-2"><i class="fa-regular fa-eye" disabled></i>VIEW DETAILS</a>
+                                    <a href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->proposal->id)]) }} "  class="btn btn-sm btn-primary d-flex gap-2" style="max-width: 142px;"><i class="fa-regular fa-eye" disabled></i>VIEW PROPOSAL</a>
                                 </td>
                             </tr>
                             @endforeach
@@ -473,8 +482,8 @@
 
 <!-- Modal Preview File -->
 <div class="modal fade" id="fileModal" tabindex="-1" aria-labelledby="fileModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
+    <div class="modal-dialog modal-xl" style="height: 95%; display: flex; align-items: center;">
+        <div class="modal-content" style="height: 100%;">
             <div class="modal-header">
                 <div class="d-flex align-items-center gap-3">
                     <h5 class="modal-title" id="fileModalLabel">File Preview</h5>
@@ -484,12 +493,13 @@
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <iframe id="fileIframe" src="" width="100%" height="600px" frameborder="0"></iframe>
+            <div class="modal-body" style="flex-grow: 1; overflow: hidden;">
+                <iframe id="fileIframe" src="" width="100%" height="100%" style="height: 100%;" frameborder="0"></iframe>
             </div>
         </div>
     </div>
 </div>
+
 
 <!-- ADD PROOPOSAL MODAL -->
 <div class="modal fade" id="proposalModal" tabindex="-1" aria-labelledby="proposalModalLabel" aria-hidden="true">

@@ -95,3 +95,50 @@
     flex-direction: column;
     gap: 10px;
 }
+
+.btn-label-primary {
+    background-color:  var(--bs-primary-bg-subtle) !important;
+    color: var(--bs-primary) !important;
+    border-color: transparent !important;
+}
+.btn-label-primary:focus{
+    background-color: var(--bs-primary) !important;
+    color: var(--bs-white) !important;
+}
+
+.btn-label-success {
+    background-color:  var(--bs-success-bg-subtle) !important;
+    color: var(--bs-success) !important;
+    border-color: transparent !important;
+}
+.btn-label-success:focus{
+    background-color: var(--bs-success) !important;
+    color: var(--bs-white) !important;
+}
+.btn-label-warning {
+    background-color:  var(--bs-warning-bg-subtle) !important;
+    color: var(--bs-warning) !important;
+    border-color: transparent !important;
+}
+.btn-label-warning:focus{
+    background-color: var(--bs-warning) !important;
+    color: var(--bs-white) !important;
+}
+.btn-label-danger {
+    background-color:  var(--bs-danger-bg-subtle) !important;
+    color: var(--bs-danger) !important;
+    border-color: transparent !important;
+}
+.btn-label-danger:focus{
+    background-color: var(--bs-danger) !important;
+    color: var(--bs-white) !important;
+}
+.btn-label-info {
+    background-color:  var(--bs-info-bg-subtle) !important;
+    color: var(--bs-info) !important;
+    border-color: transparent !important;
+}
+.btn-label-info:focus{
+    background-color: var(--bs-info) !important;
+    color: var(--bs-white) !important;
+}

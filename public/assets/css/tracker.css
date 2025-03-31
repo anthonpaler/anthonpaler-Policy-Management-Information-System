@@ -2,12 +2,16 @@
 .c-progress-step{
   display: flex;
   gap: 30px;
-  border-left: 3px solid var(--bs-success);
+  border-left: 3px solid var(--bs-secondary);
   height: 140px;
   margin-left: 35px;
   position: relative;
   padding-left: 60px;
   padding-top: 20px;
+}
+
+.c-progress-step.active{
+  border-left: 3px solid   var(--bs-success);
 }
 
 .c-progress-step .step-badge{

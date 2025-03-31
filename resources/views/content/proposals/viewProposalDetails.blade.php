@@ -33,269 +33,285 @@
 
 <div class="p-0">
     <div class="row">
-        <div class="col col-lg-5 mb-4">
+        <div class="col mb-4">
             <div class="card">
                 <div class="card-body">
-                        <div class="d-flex justify-content-between gap-2 mb-3">
-                            <h6 class="m-0">PROPOSAL DETAILS </h6>                       
-                            <span class="badge bg-label-{{ $statusClass}}">{{ config('proposals.status.'.$proposal->status) }}</span>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label" for="title">Proposal Title</label>
-                              
-                            <textarea
-                                id="title"
-                                name="title"
-                                class="form-control"
-                                placeholder="Enter title"
-                                aria-label="Enter title"
-                                required
-                                rows="2"
-                                disabled
-                            >{{$proposal->title}}</textarea>
-                        </div>
-                        <div class="mb-3" id="subTypeContainer" style="">
-                            <label class="form-label" for="proponents">Proponent/s</label>
-                            <div class="form-control proponent-con" style="">
-                                <input type="text" class="form-control mb-3" value="{{$proposal->employee_id}}" id="proponents" name="proponents" hidden>
-                                <ul class="" id="proponentListCon">
-                                    @foreach ($proposal->proponents as $proponent)
-                                        <li data-id="{{$proponent->employee_id}}" data-name="{{$proponent->name}}" data-email="{{$proponent->email}}" data-image="{{$proponent->image}}" id="primaryProponent">
-                                            <div class="d-flex justify-content-between align-items-center ms-2 me-2">
-                                                <div class="d-flex justify-content-start align-items-center ">
-                                                    <div class="avatar-wrapper">
-                                                        <div class="avatar avatar-sm me-3">
-                                                            <img src="{{$proponent->image}}" alt="Avatar" class="rounded-circle">
-                                                        </div>
-                                                    </div>
-                                                    <div class="d-flex flex-column">
-                                                        <a class="text-heading text-truncate m-0">
-                                                            <span class="fw-medium">{{$proponent->name}}</span>
-                                                        </a>
-                                                        <small class="text-wrap">{{$proponent->email}}</small>
+                    <div class="d-flex justify-content-between gap-2 mb-3">
+                        <h6 class="m-0">PROPOSAL DETAILS </h6>                       
+                        <span class="badge bg-label-{{ $statusClass}}">{{ config('proposals.status.'.$proposal->status) }}</span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="title">Proposal Title</label>
+                            
+                        <textarea
+                            id="title"
+                            name="title"
+                            class="form-control"
+                            placeholder="Enter title"
+                            aria-label="Enter title"
+                            required
+                            rows="3"
+                            disabled
+                        >{{$proposal->title}}</textarea>
+                    </div>
+                    <div class="mb-3" id="subTypeContainer" style="">
+                        <label class="form-label" for="proponents">Proponent/s</label>
+                        <div class="form-control proponent-con" style="">
+                            <input type="text" class="form-control mb-3" value="{{$proposal->employee_id}}" id="proponents" name="proponents" hidden>
+                            <ul class="" id="proponentListCon">
+                                @foreach ($proposal->proponents as $proponent)
+                                    <li data-id="{{$proponent->employee_id}}" data-name="{{$proponent->name}}" data-email="{{$proponent->email}}" data-image="{{$proponent->image}}" id="primaryProponent">
+                                        <div class="d-flex justify-content-between align-items-center ms-2 me-2">
+                                            <div class="d-flex justify-content-start align-items-center ">
+                                                <div class="avatar-wrapper">
+                                                    <div class="avatar avatar-sm me-3">
+                                                        <img class="rounded-circle avatar-sm" src="{{ $proponent->image && trim($proponent->image) !== '' ? $proponent->image : asset('assets/img/avatars/default-avatar.jpg') }}
+                                                    " alt="Avatar">
                                                     </div>
                                                 </div>
-                                                <!-- @if($proponent->id === auth()->user()->id)
-                                                    <div class="">
-                                                        <small class="badge bg-label-secondary d-flex align-items-center gap-2">
-                                                            <i class='bx bx-user-check'></i>Submitter
-                                                        </small>
-                                                    </div>
-                                                @else
-                                                    <div class="">
-                                                        <small class="badge bg-label-danger d-flex align-items-center gap-2 remove" data-id="{{$proponent->employee_id}}"><i class='bx bx-trash'></i>Remove</small>
-                                                    </div> 
-                                                @endif -->
+                                                <div class="d-flex flex-column">
+                                                    <a class="text-heading text-truncate m-0">
+                                                        <span class="fw-medium">{{$proponent->name}}</span>
+                                                    </a>
+                                                    <small class="text-wrap">{{$proponent->email}}</small>
+                                                </div>
                                             </div>
-                                        </li>
-                                    @endforeach
+                                        </div>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="mb-3">
+                                <label class="form-label" for="sub_type">Type of Matter or Proposal</label>
+                                <div class="input-group input-group-merge">
+                                    <span id="matters-icon" class="input-group-text"><i class="bx bx-briefcase"></i></span>
+                                    <select
+                                        class="form-control @error('matter') is-invalid @enderror"
+                                        id="matter"
+                                        name="matter"
+                                        aria-label="Select Matter"
+                                        aria-describedby="matters-icon"
+                                        required 
+                                        disabled
+                                    >
+                                        <option value="" disabled>Select Type of Matter or Proposal</option>
+                                        @foreach (config('proposals.matters') as $key => $value)
+                                            <option value="{{ $key }}" {{ $proposal->type === $key ? 'selected' : '' }}>
+                                                {{ $value }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                @error('matter')
+                                    <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
+                                @enderror
+                            </div>       
+                        </div>
+                        <div class="col">
+                            <div class="mb-3">
+                                <label class="form-label" for="action">Requested Action</label>
+                                <div class="input-group input-group-merge">
+                                    <span id="action-icon" class="input-group-text"><i class="bx bx-task"></i></span>
+                                    <select
+                                        class="form-control @error('action') is-invalid @enderror"
+                                        id="action"
+                                        name="action"
+                                        aria-label="Action to be taken"
+                                        aria-describedby="action-icon"
+                                        disabled
+                                    >
+                                        <option value="" disabled>Select an action</option>
+                                        @foreach (config('proposals.requested_action') as $key => $item)
+                                            <option value="{{ $key }}" {{ $proposal->action === $key ? 'selected' : '' }}>{{ $item }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                @error('action')
+                                    <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3" id="subTypeContainer" style="{{$proposal->type == 2 ? 'display: block;' : 'display: none;'}}">
+                        <label class="form-label" for="sub_type">Sub Type</label>
+                        <div class="input-group input-group-merge">
+                            <span id="sub-type-icon" class="input-group-text"><i class="bx bx-category-alt"></i></span>
+                            <select
+                                name="sub_type"
+                                id="sub_type"
+                                class="form-control @error('sub_type') is-invalid @enderror"
+                                aria-label="Sub-type of proposal"
+                                aria-describedby="sub-type-icon"
+                                required
+                                disabled
+                            >
+                                <option value="">Select Sub-type</option>
+                                @foreach (config('proposals.proposal_subtypes') as $key => $subType)
+                                    <option value="{{ $key }}" {{ $proposal->sub_type === $key ? 'selected' : '' }}>{{ $subType }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @error('sub_type')
+                            <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="">PROPOSAL FILE/S</label>
+                        <div class="d-flex justify-content-between align-items-center custom_tab_wrapper mb-3">
+                            <div class="">
+                                <ul class="custom_tab_list">
+                                    <li class="custom_tab_item file-tab latest-file-tab active" data-status = "0">
+                                        <div class="">
+                                            <i class='bx bx-file' ></i>
+                                            <span>Latest File Versions</span>
+                                        </div>
+                                    </li>
+                                    <li class="custom_tab_item file-tab old-file-tab" data-status = "1">
+                                        <div class="">
+                                            <i class='bx bxs-file-blank' ></i>
+                                            <span>Old File Versions</span>
+                                        </div>
+                                    </li>
                                 </ul>
                             </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label" for="sub_type">Type of Matter or Proposal</label>
-                            <div class="input-group input-group-merge">
-                                <span id="matters-icon" class="input-group-text"><i class="bx bx-briefcase"></i></span>
-                                <select
-                                    class="form-control @error('matter') is-invalid @enderror"
-                                    id="matter"
-                                    name="matter"
-                                    aria-label="Select Matter"
-                                    aria-describedby="matters-icon"
-                                    required 
-                                    disabled
-                                >
-                                    <option value="" disabled>Select Type of Matter or Proposal</option>
-                                    @foreach (config('proposals.matters') as $key => $value)
-                                        <option value="{{ $key }}" {{ $proposal->type === $key ? 'selected' : '' }}>
-                                            {{ $value }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            @error('matter')
-                                <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
-                            @enderror
-                        </div>           
-                        <div class="mb-3">
-                            <label class="form-label" for="action">Requested Action</label>
-                            <div class="input-group input-group-merge">
-                                <span id="action-icon" class="input-group-text"><i class="bx bx-task"></i></span>
-                                <select
-                                    class="form-control @error('action') is-invalid @enderror"
-                                    id="action"
-                                    name="action"
-                                    aria-label="Action to be taken"
-                                    aria-describedby="action-icon"
-                                    disabled
-                                >
-                                    <option value="" disabled>Select an action</option>
-                                    @foreach (config('proposals.requested_action') as $key => $item)
-                                        <option value="{{ $key }}" {{ $proposal->action === $key ? 'selected' : '' }}>{{ $item }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            @error('action')
-                                <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        <div class="mb-3" id="subTypeContainer" style="{{$proposal->type == 2 ? 'display: block;' : 'display: none;'}}">
-                            <label class="form-label" for="sub_type">Sub Type</label>
-                            <div class="input-group input-group-merge">
-                                <span id="sub-type-icon" class="input-group-text"><i class="bx bx-category-alt"></i></span>
-                                <select
-                                    name="sub_type"
-                                    id="sub_type"
-                                    class="form-control @error('sub_type') is-invalid @enderror"
-                                    aria-label="Sub-type of proposal"
-                                    aria-describedby="sub-type-icon"
-                                    required
-                                    disabled
-                                >
-                                    <option value="">Select Sub-type</option>
-                                    @foreach (config('proposals.proposal_subtypes') as $key => $subType)
-                                        <option value="{{ $key }}" {{ $proposal->sub_type === $key ? 'selected' : '' }}>{{ $subType }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            @error('sub_type')
-                                <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label" for="">PROPOSAL FILE/S</label>
-                            <div class="d-flex justify-content-between align-items-center custom_tab_wrapper mb-3">
-                                <div class="">
-                                    <ul class="custom_tab_list">
-                                        <li class="custom_tab_item file-tab latest-file-tab active" data-status = "0">
-                                            <div class="">
-                                                <i class='bx bx-file' ></i>
-                                                <span>Latest File Versions</span>
-                                            </div>
-                                        </li>
-                                        <li class="custom_tab_item file-tab old-file-tab" data-status = "1">
-                                            <div class="">
-                                                <i class='bx bxs-file-blank' ></i>
-                                                <span>Old File Versions</span>
-                                            </div>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
 
-                            <input type="file" id="file-upload" style="display: none;" accept=".pdf, .xls, .xlsx, .csv"
-                            >
-                            @php
-                                $countLatestVersion = 0;
-                            @endphp
-                            <div class="table-responsive text-nowrap latest-version-files files-table">
-                                <table id="proposalFilesTable" class="table table-bordered">
-                                    <thead>
-                                        <tr>
-                                            <th style="width: 40px;"></th>
-                                            <th style="">File</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($proposal->files as $file)
-                                            @if ($file->is_active == 1)
-                                                @php
-                                                    $countLatestVersion++;
-                                                @endphp
-                                                <tr>
-                                                    <td>
-                                                        <div class="d-flex gap-3">
-                                                            <span class="text-muted file_order_no">
-                                                                {{  $file->order_no }}
-                                                            </span>
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <div class="d-flex gap-3">
-                                                            <div class="proposal-file-img">
-                                                                <img src="{{ asset('assets/img/icons/document/folder_3.png') }}" alt="">
+                        <input type="file" id="file-upload" style="display: none;" accept=".pdf, .xls, .xlsx, .csv"
+                        >
+                        @php
+                            $countLatestVersion = 0;
+                        @endphp
+                        <div class="table-responsive text-nowrap latest-version-files files-table">
+                            <table id="proposalFilesTable" class="table table-striped sortable">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 40px;"></th>
+                                        <th style="">File</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($proposal->files as $file)
+                                        @if ($file->is_active == 1)
+                                            @php
+                                                $countLatestVersion++;
+
+                                                // DYNAMIC FILE ICON
+                                                $fileExtension = pathinfo($file->file, PATHINFO_EXTENSION);
+                                                $iconPath = asset('assets/img/icons/file-icons/' .      
+                                                    ($fileExtension === 'pdf' ? 'pdf.png' : 
+                                                    ($fileExtension === 'xls' ? 'xls.png' : 
+                                                    ($fileExtension === 'xlsx' ? 'xlsx.png' : 
+                                                    ($fileExtension === 'csv' ? 'csv-file.png' : 'file.png')))));
+
+                                                // FILE STATUS COLOR
+                                                $statusColors = [ 'secondary','warning', 'success', 'danger', 'primary']; 
+                                            @endphp
+                                            <tr>
+                                                <td>
+                                                    <div class="d-flex gap-3">
+                                                        <input type="checkbox" class="form-check-input select-proposal-file d-none" data-id="{{ $file->id }}"> 
+                                                        <span class="text-muted file_order_no">
+                                                            {{  $file->order_no }}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="d-flex align-items-center gap-3">
+                                                            <div class="">
+                                                                <img src="{{ $iconPath }}" class="file-icon" alt="File Icon">
                                                             </div>
-                                                            <div class="d-flex flex-column gap-2">
-                                                                <span class="text-wrap view-file-preview"   data-bs-toggle="modal" 
-                                                                data-bs-target="#fileModal"
-                                                                data-file-url="/storage/proposals/{{$file->file}}">{{ $file->file }} </span>
+                                                            <div class="file-name">
+                                                                <span style="color: #3E4043;" class="text-wrap view-single-file-preview" 
+                                                                data-file-url="/storage/proposals/{{$file->file}}">{{$file->file}}</span>
                                                                 <div class="d-flex gap-2">
-                                                                    <span class="badge bg-label-primary">{{ config(key: 'proposals.proposal_file_status.'.$file->file_status) }}</span>
-                                                                    <span class="badge bg-label-success">Version {{ $file->version }}</span>
+                                                                    <small class="text-muted version">Version  {{ $file->version }}</small>
+                                                                    <small class="text-{{ $statusColors[$file->file_status] }}">{{ config(key: 'proposals.proposal_file_status.'.$file->file_status) }}</small>
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                    </td>
-                                                </tr>
-                                            @endif
-                                        @endforeach
-                                        @if ($countLatestVersion == 0)
-                                            <td colspan="3">
-                                                <div
-                                                    class="alert alert-info"
-                                                    role="alert"
-                                                >
-                                                    <p>No latest version files</p>
-                                                </div>
-                                            </td>
+                                                    </div>
+                                                </td>
+                                            </tr>
                                         @endif
-                                    </tbody>
-                                </table>
-                            </div>
-                            @php
-                                $countOldVersion = 0;
-                            @endphp
-                            <div class="table-responsive text-nowrap old-version-files d-none files-table">
-                                <table id="" class="table table-bordered">
-                                    <thead>
-                                        <tr>
-                                            <th style="width: 40px;"></th>
-                                            <th style="">File</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($proposal->files as $file)
-                                            @if ($file->is_active == 0)
-                                                @php
-                                                    $countOldVersion++;
-                                                @endphp
-                                                <tr>
-                                                    <td>
-                                                        <div class="d-flex gap-3">
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <div class="d-flex gap-3">
-                                                            <div class="proposal-file-img">
-                                                                <img src="{{ asset('assets/img/icons/document/folder_3.png') }}" alt="">
-                                                            </div>
-                                                            <div class="d-flex flex-column gap-2">
-                                                                <span class="text-wrap view-file-preview"  data-bs-toggle="modal" 
-                                                                data-bs-target="#fileModal"
-                                                                data-file-url="/storage/proposals/{{$file->file}}">{{ $file->file }} </span>
-                                                                <div class="d-flex gap-2">
-                                                                    <span class="badge bg-label-success">Version {{ $file->version }}</span>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            @endif
-                                        @endforeach
-                                        @if ($countOldVersion == 0)
-                                            <td colspan="2">
-                                                <div
-                                                    class="alert alert-info"
-                                                    role="alert"
-                                                >
-                                                    <p>No old version files</p>
-                                                </div>
-                                            </td>
-                                        @endif
-                                    </tbody>
-                                </table>
-                            </div>
+                                    @endforeach
+                                    @if ($countLatestVersion == 0)
+                                        <td colspan="2">
+                                            <div
+                                                class="alert alert-info"
+                                                role="alert"
+                                            >
+                                                <p>No latest version files</p>
+                                            </div>
+                                        </td>
+                                    @endif
+                                </tbody>
+                            </table>
                         </div>
+                        @php
+                            $countOldVersion = 0;
+                            // DYNAMIC FILE ICON
+                            $fileExtension = pathinfo($file->file, PATHINFO_EXTENSION);
+                            $iconPath = asset('assets/img/icons/file-icons/' . 
+                                ($fileExtension === 'pdf' ? 'pdf.png' : 
+                                ($fileExtension === 'xls' ? 'xls.png' : 
+                                ($fileExtension === 'xlsx' ? 'xlsx.png' : 
+                                ($fileExtension === 'csv' ? 'csv-file.png' : 'file.png')))));
+                        @endphp
+                        <div class="table-responsive text-nowrap old-version-files d-none files-table">
+                            <table id="" class="table table-striped ">
+                                <thead>
+                                    <tr>
+                                        <th style="">File</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($proposal->files as $file)
+                                        @if ($file->is_active == 0)
+                                            @php
+                                                $countOldVersion++;
+                                                // DYNAMIC FILE ICON
+                                                $fileExtension = pathinfo($file->file, PATHINFO_EXTENSION);
+                                                        $iconPath = asset('assets/img/icons/file-icons/' .  
+                                                            ($fileExtension === 'pdf' ? 'pdf.png' : 
+                                                            ($fileExtension === 'xls' ? 'xls.png' : 
+                                                            ($fileExtension === 'xlsx' ? 'xlsx.png' : 
+                                                            ($fileExtension === 'csv' ? 'csv-file.png' : 'file.png')))));
+                                            @endphp
+                                            <tr>
+                                                <td>
+                                                    <div class="d-flex align-items-center gap-3">
+                                                        <div class="">
+                                                            <img src="{{ $iconPath }}" class="file-icon" alt="File Icon">
+                                                        </div>
+                                                        <div class="file-name">
+                                                            <span style="color: #3E4043;" class="text-wrap view-single-file-preview" 
+                                                            data-file-url="/storage/proposals/{{$file->file}}">{{$file->file}}</span>
+                                                            <div class="d-flex gap-2">
+                                                                <small class="text-muted version">Version  {{ $file->version }}</small>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endif
+                                    @endforeach
+                                    @if ($countOldVersion == 0)
+                                        <td colspan="1">
+                                            <div
+                                                class="alert alert-info"
+                                                role="alert"
+                                            >
+                                                <p>No old version files</p>
+                                            </div>
+                                        </td>
+                                    @endif
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div> 
@@ -329,7 +345,7 @@
                                     $lastLogs = $proposal_logs->where('level', 2)->where('status', 3)->first();
                                 @endphp
 
-                                <div class="c-progress-step {{ $levelKey == 3 ? 'last' : '' }}">
+                                <div class="c-progress-step {{ $hasLogs || $lastLogs ? 'active' : '' }} {{ $levelKey == 3 ? 'last' : '' }}">
                                     <div class="step-badge {{ $hasLogs || $lastLogs ? 'active' : '' }}">
                                         <small><strong>STEP</strong></small>
                                         <h4 class="m-0">{{ $levelKey + 1 }}</h4>
@@ -383,19 +399,23 @@
 </div>
 <!-- Modal Preview File -->
 <div class="modal fade" id="fileModal" tabindex="-1" aria-labelledby="fileModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
+    <div class="modal-dialog modal-xl" style="height: 95%; display: flex; align-items: center;">
+        <div class="modal-content" style="height: 100%;">
             <div class="modal-header">
-                <h5 class="modal-title" id="fileModalLabel">File Preview</h5>
+                <div class="d-flex align-items-center gap-3">
+                    <h5 class="modal-title" id="fileModalLabel">File Preview</h5>
+                    <div class="d-flex align-items-center gap-3">
+                        <i class="bx bx-fullscreen full-screen-file-preview" id="toggleIframeFullscreen"></i>
+                    </div>
+                </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <iframe id="fileIframe" src="" width="100%" height="600px" frameborder="0"></iframe>
+            <div class="modal-body" style="flex-grow: 1; overflow: hidden;">
+                <iframe id="fileIframe" src="" width="100%" height="100%" style="height: 100%;" frameborder="0"></iframe>
             </div>
         </div>
     </div>
 </div>
-
 <script>
     var proposalStatus = @json(config('proposals.status'));
 

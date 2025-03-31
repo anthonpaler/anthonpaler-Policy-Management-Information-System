@@ -34,7 +34,7 @@
 @endphp
 <div class="p-0">
     <div class="row">
-        <div class="col col-lg-5 mb-4">
+        <div class="col mb-4">
             <div class="card">
                 <div class="card-body">
                     <form action="{{ route(getUserRole().'.proposal.edit.save', ['proposal_id' => encrypt($proposal->id)]) }}" method="post" id="editProposalFrm">
@@ -52,7 +52,7 @@
                                 placeholder="Enter title"
                                 aria-label="Enter title"
                                 required
-                                rows="2"
+                                rows="3"
                             >{{$proposal->title}}</textarea>
                         </div>
                         <div class="col-md-6 c-field-p w-100">
@@ -83,7 +83,8 @@
                                                 <div class="d-flex justify-content-start align-items-center ">
                                                     <div class="avatar-wrapper">
                                                         <div class="avatar avatar-sm me-3">
-                                                            <img src="{{$proponent->image}}" alt="Avatar" class="rounded-circle">
+                                                            <img class="rounded-circle avatar-sm" src="{{ $proponent->image && trim($proponent->image) !== '' ? $proponent->image : asset('assets/img/avatars/default-avatar.jpg') }}
+                                                        " alt="Avatar">
                                                         </div>
                                                     </div>
                                                     <div class="d-flex flex-column">
@@ -125,50 +126,56 @@
                                 </ul>
                             </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label" for="sub_type">Type of Matter or Proposal <span class="ms-1 text-danger">*</span></label>
-                            <div class="input-group input-group-merge">
-                                <span id="matters-icon" class="input-group-text"><i class="bx bx-briefcase"></i></span>
-                                <select
-                                    class="form-control @error('matter') is-invalid @enderror"
-                                    id="matter"
-                                    name="matter"
-                                    aria-label="Select Matter"
-                                    aria-describedby="matters-icon"
-                                    required
-                                >
-                                    <option value="" disabled>Select Type of Matter or Proposal</option>
-                                    @foreach (config('proposals.matters') as $key => $value)
-                                        <option value="{{ $key }}" {{ $proposal->type === $key ? 'selected' : '' }}>
-                                            {{ $value }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                        <div class="row">
+                            <div class="col">
+                                <div class="mb-3">
+                                    <label class="form-label" for="sub_type">Type of Matter or Proposal <span class="ms-1 text-danger">*</span></label>
+                                    <div class="input-group input-group-merge">
+                                        <span id="matters-icon" class="input-group-text"><i class="bx bx-briefcase"></i></span>
+                                        <select
+                                            class="form-select @error('matter') is-invalid @enderror"
+                                            id="matter"
+                                            name="matter"
+                                            aria-label="Select Matter"
+                                            aria-describedby="matters-icon"
+                                            required
+                                        >
+                                            <option value="" disabled>Select Type of Matter or Proposal</option>
+                                            @foreach (config('proposals.matters') as $key => $value)
+                                                <option value="{{ $key }}" {{ $proposal->type === $key ? 'selected' : '' }}>
+                                                    {{ $value }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    @error('matter')
+                                        <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
+                                    @enderror
+                                </div>           
                             </div>
-                            @error('matter')
-                                <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
-                            @enderror
-                        </div>           
-                        <div class="mb-3">
-                            <label class="form-label" for="action">Requested Action <span class="ms-1 text-danger">*</span></label>
-                            <div class="input-group input-group-merge">
-                                <span id="action-icon" class="input-group-text"><i class="bx bx-task"></i></span>
-                                <select
-                                    class="form-control @error('action') is-invalid @enderror"
-                                    id="action"
-                                    name="action"
-                                    aria-label="Action to be taken"
-                                    aria-describedby="action-icon"
-                                >
-                                    <option value="" disabled>Select an action</option>
-                                    @foreach (config('proposals.requested_action') as $key => $item)
-                                        <option value="{{ $key }}" {{ $proposal->action === $key ? 'selected' : '' }}>{{ $item }}</option>
-                                    @endforeach
-                                </select>
+                            <div class="col">
+                                <div class="mb-3">
+                                    <label class="form-label" for="action">Requested Action <span class="ms-1 text-danger">*</span></label>
+                                    <div class="input-group input-group-merge">
+                                        <span id="action-icon" class="input-group-text"><i class="bx bx-task"></i></span>
+                                        <select
+                                            class="form-select @error('action') is-invalid @enderror"
+                                            id="action"
+                                            name="action"
+                                            aria-label="Action to be taken"
+                                            aria-describedby="action-icon"
+                                        >
+                                            <option value="" disabled>Select an action</option>
+                                            @foreach (config('proposals.requested_action') as $key => $item)
+                                                <option value="{{ $key }}" {{ $proposal->action === $key ? 'selected' : '' }}>{{ $item }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    @error('action')
+                                        <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
+                                    @enderror
+                                </div>
                             </div>
-                            @error('action')
-                                <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
-                            @enderror
                         </div>
                         <div class="mb-3" id="subTypeContainer" style="{{$proposal->type == 2 ? 'display: block;' : 'display: none;'}}">
                             <label class="form-label" for="sub_type">Sub Type</label>
@@ -177,11 +184,10 @@
                                 <select
                                     name="sub_type"
                                     id="sub_type"
-                                    class="form-control @error('sub_type') is-invalid @enderror"
+                                    class="form-select @error('sub_type') is-invalid @enderror"
                                     aria-label="Sub-type of proposal"
                                     aria-describedby="sub-type-icon"
                                     required
-                                    disabled
                                 >
                                     <option value="">Select Sub-type</option>
                                     @foreach (config('proposals.proposal_subtypes') as $key => $subType)
@@ -220,7 +226,7 @@
                                 $countLatestVersion = 0;
                             @endphp
                             <div class="table-responsive text-nowrap latest-version-files files-table">
-                                <table id="proposalFilesTable" class="table table-bordered sortable">
+                                <table id="proposalFilesTable" class="table table-striped sortable">
                                     <thead>
                                         <tr>
                                             <th style="width: 40px;"></th>
@@ -233,56 +239,64 @@
                                             @if ($file->is_active == 1)
                                                 @php
                                                     $countLatestVersion++;
+
+                                                    // DYNAMIC FILE ICON
+                                                    $fileExtension = pathinfo($file->file, PATHINFO_EXTENSION);
+                                                    $iconPath = asset('assets/img/icons/file-icons/' .      
+                                                        ($fileExtension === 'pdf' ? 'pdf.png' : 
+                                                        ($fileExtension === 'xls' ? 'xls.png' : 
+                                                        ($fileExtension === 'xlsx' ? 'xlsx.png' : 
+                                                        ($fileExtension === 'csv' ? 'csv-file.png' : 'file.png')))));
+
+                                                    // FILE STATUS COLOR
+                                                    $statusColors = [ 'secondary','warning', 'success', 'danger', 'primary']; 
                                                 @endphp
                                                 <tr>
                                                     <td>
                                                         <div class="d-flex gap-3">
-                                                            <!-- <input type="checkbox" class="form-check-input select-proposal-file" data-id="{{ $file->id }}" >  -->
+                                                            <input type="checkbox" class="form-check-input select-proposal-file d-none" data-id="{{ $file->id }}"> 
                                                             <span class="text-muted file_order_no">
                                                                 {{  $file->order_no }}
                                                             </span>
                                                         </div>
                                                     </td>
                                                     <td>
-                                                        <div class="d-flex gap-3">
-                                                            <div class="proposal-file-img">
-                                                                <img src="{{ asset('assets/img/icons/document/folder_3.png') }}" alt="">
-                                                            </div>
-                                                            <div class="d-flex flex-column gap-2">
-                                                                <span class="text-wrap view-file-preview"   data-bs-toggle="modal" 
-                                                                data-bs-target="#fileModal"
-                                                                data-file-url="/storage/proposals/{{$file->file}}">{{ $file->file }} </span>
-                                                                <div class="d-flex gap-2">
-                                                                    <span class="badge bg-label-primary">{{ config(key: 'proposals.proposal_file_status.'.$file->file_status) }}</span>
-                                                                    <span class="badge bg-label-success">Version {{ $file->version }}</span>
+                                                        <div class="d-flex align-items-center gap-3">
+                                                                <div class="">
+                                                                    <img src="{{ $iconPath }}" class="file-icon" alt="File Icon">
+                                                                </div>
+                                                                <div class="file-name">
+                                                                    <span style="color: #3E4043;" class="text-wrap view-single-file-preview" 
+                                                                    data-file-url="/storage/proposals/{{$file->file}}">{{$file->file}}</span>
+                                                                    <div class="d-flex gap-2">
+                                                                        <small class="text-muted version">Version  {{ $file->version }}</small>
+                                                                        <small class="text-{{ $statusColors[$file->file_status] }}">{{ config(key: 'proposals.proposal_file_status.'.$file->file_status) }}</small>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </td>
                                                     <td>
                                                         <div class="d-flex align-items-center gap-2">
-                                                            <button class="btn btn-primary btn-sm rename-file-btn" 
+                                                            <button 
+                                                                class="action-btn success rename-file-btn" 
                                                                 data-bs-toggle="modal" 
                                                                 data-bs-target="#renameFileModal"
                                                                 data-id="{{ $file->id }}"
                                                                 data-filename="{{ $file->file }}">
                                                                 <i class='bx bx-rename'></i>
+                                                                <span class="tooltiptext">Rename</span>
                                                             </button>
-
-                                                            <button class="btn btn-sm btn-success resubmit-proposal"
                                                             
-                                                            data-bs-toggle="tooltip" data-bs-offset="0,8" data-bs-placement="top" data-bs-custom-class="tooltip-primary" data-bs-original-title="Resubmit File "
-
-                                                            data-id="{{ $file->id }}" {{ (!in_array($proposal->status, [2,5,6]) && $proposal->is_edit_disabled && $file->file_status) ? 'disabled' : '' }}>
+                                                            <button class="action-btn danger delete-proposal-file"  data-id="{{ $file->id }}" >
+                                                                <i class='bx bx-trash-alt'></i>
+                                                                <span class="tooltiptext">Delete</span>
+                                                            </button>
+                                                            
+                                                            <button class="action-btn primary resubmit-proposal" data-id="{{ $file->id }}" >
                                                                 <i class='bx bx-upload' ></i>
+                                                                <span class="tooltiptext">Reupload</span>
                                                             </button>
-
-                                                            <button type="button" class="btn btn-sm  btn-danger delete-proposal-file" data-bs-toggle="tooltip" data-bs-offset="0,8" data-bs-placement="top" data-bs-custom-class="tooltip-primary" data-bs-original-title="Delete File "
-                                                            data-id="{{ $file->id }}" {{ (!in_array($proposal->status, [2,5,6]) && $proposal->is_edit_disabled  && $file->file_status) ? 'disabled' : '' }}
-                                                            > 
-                                                                <i class='bx bxs-trash'></i>
-                                                            </button>
-                                                            
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -303,12 +317,18 @@
                             </div>
                             @php
                                 $countOldVersion = 0;
-                            @endphp 
+                                // DYNAMIC FILE ICON
+                                $fileExtension = pathinfo($file->file, PATHINFO_EXTENSION);
+                                $iconPath = asset('assets/img/icons/file-icons/' . 
+                                    ($fileExtension === 'pdf' ? 'pdf.png' : 
+                                    ($fileExtension === 'xls' ? 'xls.png' : 
+                                    ($fileExtension === 'xlsx' ? 'xlsx.png' : 
+                                    ($fileExtension === 'csv' ? 'csv-file.png' : 'file.png')))));
+                            @endphp
                             <div class="table-responsive text-nowrap old-version-files d-none files-table">
-                                <table id="" class="table table-bordered">
+                                <table id="" class="table table-striped ">
                                     <thead>
                                         <tr>
-                                            <th style="width: 40px;"></th>
                                             <th style="">File</th>
                                         </tr>
                                     </thead>
@@ -317,23 +337,25 @@
                                             @if ($file->is_active == 0)
                                                 @php
                                                     $countOldVersion++;
+                                                    // DYNAMIC FILE ICON
+                                                    $fileExtension = pathinfo($file->file, PATHINFO_EXTENSION);
+                                                            $iconPath = asset('assets/img/icons/file-icons/' .  
+                                                                ($fileExtension === 'pdf' ? 'pdf.png' : 
+                                                                ($fileExtension === 'xls' ? 'xls.png' : 
+                                                                ($fileExtension === 'xlsx' ? 'xlsx.png' : 
+                                                                ($fileExtension === 'csv' ? 'csv-file.png' : 'file.png')))));
                                                 @endphp
                                                 <tr>
                                                     <td>
-                                                        <div class="d-flex gap-3">
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <div class="d-flex gap-3">
-                                                            <div class="proposal-file-img">
-                                                                <img src="{{ asset('assets/img/icons/document/folder_3.png') }}" alt="">
+                                                        <div class="d-flex align-items-center gap-3">
+                                                            <div class="">
+                                                                <img src="{{ $iconPath }}" class="file-icon" alt="File Icon">
                                                             </div>
-                                                            <div class="d-flex flex-column gap-2">
-                                                                <span class="text-wrap view-file-preview"   data-bs-toggle="modal" 
-                                                                data-bs-target="#fileModal"
-                                                                data-file-url="/storage/proposals/{{$file->file}}">{{ $file->file }} </span>
+                                                            <div class="file-name">
+                                                                <span style="color: #3E4043;" class="text-wrap view-single-file-preview" 
+                                                                data-file-url="/storage/proposals/{{$file->file}}">{{$file->file}}</span>
                                                                 <div class="d-flex gap-2">
-                                                                    <span class="badge bg-label-success">Version {{ $file->version }}</span>
+                                                                    <small class="text-muted version">Version  {{ $file->version }}</small>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -342,7 +364,7 @@
                                             @endif
                                         @endforeach
                                         @if ($countOldVersion == 0)
-                                            <td colspan="2">
+                                            <td colspan="1">
                                                 <div
                                                     class="alert alert-info"
                                                     role="alert"
@@ -407,7 +429,7 @@
                                     $lastLogs = $proposal_logs->where('level', 2)->where('status', 3)->first();
                                 @endphp
 
-                                <div class="c-progress-step {{ $levelKey == 3 ? 'last' : '' }}">
+                                <div class="c-progress-step {{ $hasLogs || $lastLogs ? 'active' : '' }} {{ $levelKey == 3 ? 'last' : '' }}">
                                     <div class="step-badge {{ $hasLogs || $lastLogs ? 'active' : '' }}">
                                         <small><strong>STEP</strong></small>
                                         <h4 class="m-0">{{ $levelKey + 1 }}</h4>
@@ -428,7 +450,7 @@
                                         };
                                     @endphp
 
-                                    <div class="c-progress-2">
+                                    <div class="c-progress-2 ">
                                         <div class="log-card {{ $logStatusClass }}">
                                             <div class="card-body p-3">
                                                 <h6 class="card-title m-0">
@@ -460,14 +482,19 @@
 </div>
 <!-- Modal Preview File -->
 <div class="modal fade" id="fileModal" tabindex="-1" aria-labelledby="fileModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
+    <div class="modal-dialog modal-xl" style="height: 95%; display: flex; align-items: center;">
+        <div class="modal-content" style="height: 100%;">
             <div class="modal-header">
-                <h5 class="modal-title" id="fileModalLabel">File Preview</h5>
+                <div class="d-flex align-items-center gap-3">
+                    <h5 class="modal-title" id="fileModalLabel">File Preview</h5>
+                    <div class="d-flex align-items-center gap-3">
+                        <i class="bx bx-fullscreen full-screen-file-preview" id="toggleIframeFullscreen"></i>
+                    </div>
+                </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <iframe id="fileIframe" src="" width="100%" height="600px" frameborder="0"></iframe>
+            <div class="modal-body" style="flex-grow: 1; overflow: hidden;">
+                <iframe id="fileIframe" src="" width="100%" height="100%" style="height: 100%;" frameborder="0"></iframe>
             </div>
         </div>
     </div>
@@ -476,37 +503,35 @@
 <!-- Modal for Renaming File -->
 <div class="modal fade" id="renameFileModal" tabindex="-1" aria-labelledby="renameFileModallLabel" 
      aria-hidden="true" data-file-id="">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="renameFileModallLabel">Rename File</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form action="">
-                    @csrf
-                    <div class="mb-3">
-                        <label class="form-label" for="">Current File Name</label>
-                        <div class="input-group input-group-merge">
-                            <span id="" class="input-group-text">
-                                <i class='bx bx-file' ></i>
-                            </span>
-                            <input type="text" class="form-control" id="currentFileName" value="" disabled>
-                        </div>
+                <div class="mb-3">
+                    <label class="form-label" for="">Current File Name</label>
+                    <div class="input-group input-group-merge">
+                        <span id="" class="input-group-text">
+                            <i class='bx bx-file' ></i>
+                        </span>
+                        <input type="text" class="form-control" id="currentFileName" value="" disabled>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label" for="">New File Name</label>
-                        <div class="input-group input-group-merge">
-                            <span id="" class="input-group-text">
-                                <i class='bx bx-rename' ></i>
-                            </span>
-                            <input type="text" class="form-control" id="newFileName" placeholder="Enter new file name">
-                            <button class="btn btn-primary d-flex gap-2" id="renameFileBtn">
-                                Rename
-                            </button>
-                        </div>
+                </div>
+                <div class="">
+                    <label class="form-label" for="">New File Name</label>
+                    <div class="input-group input-group-merge">
+                        <span id="" class="input-group-text">
+                            <i class='bx bx-rename' ></i>
+                        </span>
+                        <input type="text" class="form-control" id="newFileName" placeholder="Enter new file name">
                     </div>
-                </form>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button class="btn btn-primary d-flex gap-2" id="renameFileBtn">Rename</button>
             </div>
         </div>
     </div>

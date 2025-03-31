@@ -23,6 +23,16 @@ fileUpload.addEventListener("change", (e) => {
 
 function handleFiles(files) {
     Array.from(files).forEach((file) => {
+        const fileType = file.name.split('.').pop().toLowerCase();
+        
+        // Allowed file types: PDF, CSV, Excel (.xls, .xlsx)
+        const allowedExtensions = ['pdf', 'csv','xls', 'xlsx'];
+
+        if (!allowedExtensions.includes(fileType)) {
+            showAlert('danger', 'Unsupported File', 'Only PDF and Excel files (.pdf, .csv, .xls, .xlsx) are allowed.")');
+            return; 
+        }
+
         if (!uploadedProposalFiles.some(f => f.name === file.name)) {
             uploadedProposalFiles.push(file);
             displayFile(file);
@@ -30,6 +40,7 @@ function handleFiles(files) {
         }
     });
 }
+
 
 function displayFile(file) {
     const listItem = document.createElement("li");

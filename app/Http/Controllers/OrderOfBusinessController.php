@@ -38,7 +38,6 @@ class OrderOfBusinessController extends Controller
             $proposals = collect();
             $matters = [0 => 'Financial Matters'] + config('proposals.matters');
             $meeting = null;
-
             
             $meetingTypes = [
                 'Local' => ['agendaModel' => LocalMeetingAgenda::class, 
@@ -781,8 +780,18 @@ class OrderOfBusinessController extends Controller
             }
 
             foreach ($orderData as $item) {
-                $agendaModel::where($this->getProposalAgendaColumn($level), $item['id'])
-                    ->update(['order_no' => $item['position']]);
+                // Convert 'isGroup' to a boolean
+                $isGroup = filter_var($item['isGroup'], FILTER_VALIDATE_BOOLEAN);
+
+                if( $item['isGroup'] == 'false'){   
+                    $agendaModel::where($this->getProposalAgendaColumn($level), $item['id'])
+                    ->update(['order_no' => $item['order']]);
+                }else{
+                    $group = GroupProposal::where('id',$item['id'])
+                    ->update([
+                        'order_no' => $item['order'],
+                    ]);
+                }
             }
 
             DB::commit();
@@ -803,11 +812,10 @@ class OrderOfBusinessController extends Controller
             // Validate the request
             $data = $request->validate([
                 'group_title' => 'required|string',
-                // 'order_no' => 'required',
                 'proposals' => 'required|array',
                 'proposals.*' => 'integer|exists:proposals,id',
             ]);
-    
+
             // Determine the correct agenda model
             $agendaModel = match ($level) {
                 'Local' => LocalMeetingAgenda::class,
@@ -815,17 +823,29 @@ class OrderOfBusinessController extends Controller
                 'BOR' => BoardMeetingAgenda::class,
                 default => null
             };
-    
+
             if (!$agendaModel) {
                 return response()->json(['error' => 'Invalid meeting level'], 400);
             }
-    
+
+            // Check if any proposal is already part of a group
+            $existingGroupProposal = $agendaModel::whereIn($this->getProposalAgendaColumn($level), $data['proposals'])
+                ->whereNotNull('group_proposal_id')
+                ->first();
+
+            if ($existingGroupProposal) {
+                return response()->json([
+                    'type' => 'danger',
+                    'message' => 'One or more proposals are already assigned to a group.',
+                    'title' => 'Group Creation Failed'
+                ]);
+            }
+
             // Create new group
             $group = GroupProposal::create([
                 'group_title' => $data['group_title'],
-                // 'order_no' => $data['order_no']
             ]);
-    
+
             // Assign group and update order
             foreach ($data['proposals'] as $index => $proposalId) {
                 $agendaModel::where($this->getProposalAgendaColumn($level), $proposalId)
@@ -834,16 +854,21 @@ class OrderOfBusinessController extends Controller
                         'order_no' => $index + 1 
                     ]);
             }
-    
+
             DB::commit(); 
 
-            return response()->json(['type'=> 'success','message' => 'Group created and order updated successfully!', 'title' => 'Success']);
+            return response()->json([
+                'type' => 'success',
+                'message' => 'Group created and order updated successfully!',
+                'title' => 'Success'
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
 
             return response()->json(['error' => $th->getMessage()], 500);
         }
     }
+
     
     // UNGROUP PROPOSAL
     public function ungroupProposal(Request $request, String $level)
@@ -888,14 +913,14 @@ class OrderOfBusinessController extends Controller
             $data = $request->validate([
                 'group_id' => 'required|integer|exists:group_proposals,id',
                 'group_title' => 'required|string',
-                'order_no' => 'required',
+                // 'order_no' => 'required',
             ]);
 
             // Update the group
             $group = GroupProposal::findOrFail($data['group_id']);
             $group->update([
                 'group_title' => $data['group_title'],
-                'order_no' => $data['order_no']
+                // 'order_no' => $data['order_no']
             ]);
 
             return response()->json(['type' => 'success', 'message' => 'Group updated successfully!', 'title' => 'Success']);

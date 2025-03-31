@@ -40,15 +40,7 @@
         </div>
     </div>
 </div>
-
-
-
-
-
-
-
 <div class="card p-4">
-
     <div class="mt-3 mb-3">
         <button type="button" id="exportOOB" class="btn btn-secondary d-flex gap-2 {{$orderOfBusiness->status == 0 ? 'd-none' : ''}}">
             <a href="{{ route('oob.export.pdf', ['level' => $orderOfBusiness->meeting->getMeetingLevel(), 'oob_id' => encrypt($orderOfBusiness->id)]) }}" class="text-white d-flex align-items-center gap-2" target="_blank"><i class='bx bx-export'></i> Export OOB</a>
@@ -91,54 +83,51 @@
         <!-- Preliminaries Section -->
         <div class="mb-3">
             <div class="d-flex justify-content-between mb-2 gap-2">
-            <label class="form-label">1. Preliminaries</label>
-            
-            <div class="d-flex align-items-center gap-2">
-                @if (in_array(auth()->user()->role, [3, 4, 5]))
-                    @if(empty($orderOfBusiness->previous_minutes))
-                    <button class="btn btn-sm btn-primary d-flex align-items-center gap-2" 
-                    id="openMinutesModal">
-                        <i class='bx bx-upload'></i>
-                        Upload Previous Minutes
-                    </button>
-                        @endif
-        
-                
-                    {{-- Show View Button only if there is a file --}}
-                    @if(!empty($orderOfBusiness->previous_minutes))
-                    <a href="{{ asset('storage/previous_minutes/' . $orderOfBusiness->previous_minutes) }}" 
-                        target="_blank" 
-                        class="btn btn-sm btn-success d-flex align-items-center gap-2" 
-                        id="viewButton">
-                        <i class='bx bx-file'></i>
-                        View Previous Minutes
-                    </a>
-                    @endif
-
-                    {{-- EDIT FILE --}}
+                <label class="form-label">1. Preliminaries</label>
+                <div class="d-flex align-items-center gap-2">
                     @if (in_array(auth()->user()->role, [3, 4, 5]))
-                    <button type="button" class="btn btn-sm btn-warning d-flex align-items-center gap-2" id="editMinutesButton" style="display: none;">
-                        <i class='bx bx-edit'></i> Edit File
-                    </button>
-                    @endif
-                @endif 
-            </div>  
-        </div>
-        
-        <div class="input-group input-group-merge">
-            <textarea
-                id="preliminaries" 
-                class="form-control"
-                placeholder="Enter preliminaries."
-                aria-label="Enter preliminaries."
-                name="preliminaries"
-                rows="6"
-                @if(session('isProponent') ||(session('isSecretary') && session('secretary_level') != $meeting->getMeetingCouncilType())) 
-                    disabled 
-                @endif
-            >    {{$orderOfBusiness->preliminaries}}
-            </textarea>
+                        @if(empty($orderOfBusiness->previous_minutes))
+                            <button class="btn btn-sm btn-primary d-flex align-items-center gap-2" 
+                            id="openMinutesModal">
+                                <i class='bx bx-upload'></i>
+                                Upload Previous Minutes
+                            </button>
+                        @endif
+            
+                        {{-- Show View Button only if there is a file --}}
+                        @if(!empty($orderOfBusiness->previous_minutes))
+                            <a href="{{ asset('storage/previous_minutes/' . $orderOfBusiness->previous_minutes) }}" 
+                                target="_blank" 
+                                class="btn btn-sm btn-success d-flex align-items-center gap-2" 
+                                id="viewButton">
+                                <i class='bx bx-file'></i>
+                                View Previous Minutes
+                            </a>
+                        @endif
 
+                        {{-- EDIT FILE --}}
+                        @if (in_array(auth()->user()->role, [3, 4, 5]))
+                            <button type="button" class="btn btn-sm btn-warning d-flex align-items-center gap-2" id="editMinutesButton" style="display: none;">
+                                <i class='bx bx-edit'></i> Edit File
+                            </button>
+                        @endif
+                    @endif
+                </div>
+            </div>
+        
+            <div class="input-group input-group-merge">
+                <textarea
+                    id="preliminaries" 
+                    class="form-control"
+                    placeholder="Enter preliminaries."
+                    aria-label="Enter preliminaries."
+                    name="preliminaries"
+                    rows="6"
+                    @if(session('isProponent') ||(session('isSecretary') && session('secretary_level') != $meeting->getMeetingCouncilType())) 
+                        disabled 
+                    @endif
+                >    {{$orderOfBusiness->preliminaries}}
+                </textarea>
 
                 @error('preliminaries')
                     <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
@@ -178,142 +167,84 @@
             </div>
         @endif
 
+        <div class="mb-3">
+            <label class="form-label">2. New Business</label>
 
-    <div class="mb-3">
-        <label class="form-label">2. New Business</label>
-
-        @php 
-            $counter = 1; 
-            $groupCounter = 1;
-            $actionColors = ['secondary', 'success', 'warning', 'danger', 'info']; 
-            $noProposals = collect($categorizedProposals)->flatten()->isEmpty();
-            $proposalKey = match ($meeting->getMeetingLevel()) {
-                'Local' => 'local_proposal_id',
-                'University' => 'university_proposal_id',
-                'BOR' => 'board_proposal_id',
-                default => ''
-            };
-
-            $allProposalIds = collect($categorizedProposals)->flatten()->pluck($proposalKey);
-            $otherMattersProposalIds = collect($otherMattersProposals)->pluck($proposalKey);
-
-
-        @endphp
-
-        @foreach ($matters as $type => $title)
             @php 
-                // Group proposals and standalone proposals together based on order_no
-                $allProposals = collect();
+                $counter = 1; 
+                $groupCounter = 1;
+                $actionColors = ['secondary', 'success', 'warning', 'info']; 
+                $noProposals = collect($categorizedProposals)->flatten()->isEmpty();
+                $proposalKey = match ($meeting->getMeetingLevel()) {
+                    'Local' => 'local_proposal_id',
+                    'University' => 'university_proposal_id',
+                    'BOR' => 'board_proposal_id',
+                    default => ''
+                };
 
-                // Add standalone proposals to collection
-                foreach ($categorizedProposals[$type]->whereNull('group_proposal_id') as $proposal) {
-                    $allProposals->push([
-                        'type' => 'individual',
-                        'order_no' => $proposal->order_no,
-                        'data' => $proposal
-                    ]);
-                }
+                $allProposalIds = collect($categorizedProposals)->flatten()->pluck($proposalKey);
+                $otherMattersProposalIds = collect($otherMattersProposals)->pluck($proposalKey);
 
-                // Add grouped proposals to collection
-                foreach ($categorizedProposals[$type]->whereNotNull('group_proposal_id')->groupBy('group_proposal_id') as $groupID => $proposals) {
-                    $groupOrderNo = $proposals->first()->proposal_group->order_no ?? 9999;
-                    $allProposals->push([
-                        'type' => 'group',
-                        'order_no' => $groupOrderNo,
-                        'group_id' => $groupID,
-                        'data' => $proposals
-                    ]);
-                }
 
-                // Sort by order_no
-                $allProposals = $allProposals->sortBy('order_no');
             @endphp
-            
-            @if ($categorizedProposals[$type]->count() > 0)
-                <div class="table-responsive text-nowrap mb-4">
-                    <table class="table table-bordered sortable" id="{{ session('isSecretary') && (session('secretary_level') == $meeting->getMeetingCouncilType()) ? 'oobTable' :  ''}}">
-                        <thead>
-                            <tr style="background-color: var(--bs-primary) !important; border-color: var(--bs-primary)  !important;">
-                                <th colspan="5" class="p-4 text-white">{{ $title }}</th>
-                            </tr>
-                            <tr>
-                                <th style="width: 50px;">No.</th>
-                                <th style="width: 700px;">Title of the Proposal</th>
-                                <th style="width: 200px;">Presenters</th>
-                                <th style="width: 150px;">Requested Action</th>
-                                <th style="width: 100px;">File</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($allProposals as $proposal)
-                                @if ($proposal['type'] === 'individual')
-                                    <tr class="selectable-row" data-id="{{ $proposal['data']->proposal->id }}">
-                                        <td>2.<span class="order_no">{{ $counter }}</span></td>
-                                        <td>
-                                            <span>{{ $proposal['data']->proposal->title }}</span>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex flex-column gap-3">
-                                                @foreach ($proposal['data']->proposal->proponents ?? [] as $proponent)
-                                                    <div class="d-flex align-items-center gap-3">
-                                                        <img class="rounded-circle avatar-sm" src="{{ $proponent->image ?? '/default-avatar.png' }}" alt="Avatar">
-                                                        <span>{{ $proponent->name }}</span>
-                                                    </div>
-                                                @endforeach
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span class="d-flex gap-2 align-items-center">
-                                                <i class='bx bx-up-arrow-circle text-{{ $actionColors[$proposal['data']->proposal->action] ?? 'primary' }}'></i>
-                                                {{ config('proposals.requested_action.'.$proposal['data']->proposal->action) }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            @if ($proposal['data']->proposal->files->isNotEmpty())
-                                                <button class="btn btn-sm btn-secondary view-files d-flex gap-2" data-files="{{ json_encode($proposal['data']->proposal->files) }}" data-title="{{ $proposal['data']->proposal->title }}">
-                                                    <i class='bx bx-file'></i> VIEW FILES
-                                                </button>
-                                            @else
-                                                <button class="btn btn-sm btn-danger d-flex gap-2" disabled>
-                                                    <i class='bx bx-file'></i> NO FILES
-                                                </button>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                    @php $counter++; @endphp
-                                @else
-                                <tr class="tr-group selectable-row group position-relative" data-id="{{ $proposal['data']->first()->proposal_group->id }}">
-                                    <td>2.<span class="order_no">{{ $counter }}</span></td>
-                                    <td colspan="4">
-                                        <strong>{{ $proposal['data']->first()->proposal_group->group_title ?? 'Group Proposal' }}</strong>
 
-                                        <!-- Dropdown inside the row (hidden by default) -->
-                                                <!-- New Business Section -->
-                                        @if (session('isSecretary') && (session('secretary_level') == $meeting->getMeetingCouncilType()))
-                                            <div class="dropdown position-absolute" style="right: 10px; top: 50%; transform: translateY(-50%);">
-                                                <button class="btn btn-sm btn-warning dropdown-toggle d-none group-menu-btn" type="button" data-bs-toggle="dropdown">
-                                                    Actions
-                                                </button>
-                                                <ul class="dropdown-menu">
-                                                    <li><button class="dropdown-item ungroup-btn">Ungroup</button></li>
-                                                    <li><button class="dropdown-item edit-group-btn">Edit</button></li>
-                                                </ul>
-                                            </div>
-                                        @endif
-                                    </td>
+            @foreach ($matters as $type => $title)
+                @php 
+                    // Group proposals and standalone proposals together based on order_no
+                    $allProposals = collect();
+
+                    // Add standalone proposals to collection
+                    foreach ($categorizedProposals[$type]->whereNull('group_proposal_id') as $proposal) {
+                        $allProposals->push([
+                            'type' => 'individual',
+                            'order_no' => $proposal->order_no,
+                            'data' => $proposal
+                        ]);
+                    }
+
+                    // Add grouped proposals to collection
+                    foreach ($categorizedProposals[$type]->whereNotNull('group_proposal_id')->groupBy('group_proposal_id') as $groupID => $proposals) {
+                        $groupOrderNo = $proposals->first()->proposal_group->order_no ?? 9999;
+                        $allProposals->push([
+                            'type' => 'group',
+                            'order_no' => $groupOrderNo,
+                            'group_id' => $groupID,
+                            'data' => $proposals
+                        ]);
+                    }
+
+                    // Sort by order_no
+                    $allProposals = $allProposals->sortBy('order_no');
+                @endphp
+                
+                @if ($categorizedProposals[$type]->count() > 0)
+                    <div class="table-responsive text-nowrap mb-4">
+                        <table class="table table-bordered sortable" id="{{ session('isSecretary') && (session('secretary_level') == $meeting->getMeetingCouncilType()) ? 'oobTable' :  ''}}">
+                            <thead>
+                                <tr style="background-color: var(--bs-primary) !important; border-color: var(--bs-primary)  !important;">
+                                    <th colspan="5" class="p-4 text-white">{{ $title }}</th>
                                 </tr>
-
-                                    @foreach ($proposal['data'] as $groupedProposal)
-                                        <tr class="selectable-row group-items" data-id="{{ $groupedProposal->proposal->id }}">
-                                            <td class="ps-5 pe-1">
-                                                <span class="order_no">2.{{ $counter }}.{{ $groupCounter }}</span>
+                                <tr>
+                                    <th style="width: 50px;">No.</th>
+                                    <th>Title of the Proposal</th>
+                                    <th style="width: 200px;">Presenters</th>
+                                    <th style="width: 150px;">Requested Action</th>
+                                    <th style="width: 100px;">File</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($allProposals as $proposal)
+                                    @if ($proposal['type'] === 'individual')
+                                        <tr class="selectable-row" data-group="false" data-id="{{ $proposal['data']->proposal->id }}">
+                                            <td>2.<span class="order_no">{{ $counter }}</span></td>
+                                            <td>
+                                                <div style="white-space: wrap;">
+                                                    <span style="color: #697A8D;">{{ $proposal['data']->proposal->title }}</span>
+                                                </div>
                                             </td>
                                             <td>
-                                                <span>{{ $groupedProposal->proposal->title }}</span>
-                                            </td>
-                                            <td>  
                                                 <div class="d-flex flex-column gap-3">
-                                                    @foreach ($groupedProposal->proposal->proponents ?? [] as $proponent)
+                                                    @foreach ($proposal['data']->proposal->proponents ?? [] as $proponent)
                                                         <div class="d-flex align-items-center gap-3">
                                                             <img class="rounded-circle avatar-sm" src="{{ $proponent->image && trim($proponent->image) !== '' ? $proponent->image : asset('assets/img/avatars/default-avatar.jpg') }}" alt="Avatar">
                                                             <span>{{ $proponent->name }}</span>
@@ -323,50 +254,107 @@
                                             </td>
                                             <td>
                                                 <span class="d-flex gap-2 align-items-center">
-                                                    <i class='bx bx-up-arrow-circle text-{{ $actionColors[$groupedProposal->proposal->action] ?? 'primary' }}'></i>
-                                                    {{ config('proposals.requested_action.'.$groupedProposal->proposal->action) }}
+                                                    <i class='bx bx-up-arrow-circle text-{{ $actionColors[$proposal['data']->proposal->action] ?? 'primary' }}'></i>
+                                                    {{ config('proposals.requested_action.'.$proposal['data']->proposal->action) }}
                                                 </span>
                                             </td>
                                             <td>
-                                                @if ($groupedProposal->proposal->files->isNotEmpty())
-                                                    <button class="btn btn-sm btn-secondary view-files d-flex gap-2" data-files="{{ json_encode($groupedProposal->proposal->files) }}" data-title="{{ $groupedProposal->proposal->title  }}">
+                                                @if ($proposal['data']->proposal->files->isNotEmpty())
+                                                    <button class="btn btn-sm btn-secondary view-files d-flex gap-2" data-files="{{ json_encode($proposal['data']->proposal->files) }}" data-title="{{ $proposal['data']->proposal->title }}">
                                                         <i class='bx bx-file'></i> VIEW FILES
                                                     </button>
-                                                @else 
+                                                @else
                                                     <button class="btn btn-sm btn-danger d-flex gap-2" disabled>
                                                         <i class='bx bx-file'></i> NO FILES
                                                     </button>
                                                 @endif
                                             </td>
                                         </tr>
-                                        @php $groupCounter++; @endphp
-                                    @endforeach
-                                    @php $counter++; $groupCounter = 1; @endphp
-                                @endif
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @endif
-        @endforeach
+                                        @php $counter++; @endphp
+                                    @else
+                                        <tr class="tr-group selectable-row group position-relative" data-group="true" data-id="{{ $proposal['data']->first()->proposal_group->id }}">
+                                            <td>2.<span class="order_no">{{ $counter }}</span></td>
+                                            <td colspan="4">
+                                                <strong>{{ $proposal['data']->first()->proposal_group->group_title ?? 'Group Proposal' }}</strong>
 
+                                                <!-- Dropdown inside the row (hidden by default) -->
+                                                        <!-- New Business Section -->
+                                                @if (session('isSecretary') && (session('secretary_level') == $meeting->getMeetingCouncilType()))
+                                                    <div class="dropdown position-absolute" style="right: 10px; top: 50%; transform: translateY(-50%);">
+                                                        <button class="btn btn-sm btn-warning dropdown-toggle d-none group-menu-btn" type="button" data-bs-toggle="dropdown">
+                                                            Actions
+                                                        </button>
+                                                        <ul class="dropdown-menu">
+                                                            <li><button class="dropdown-item ungroup-btn">Ungroup</button></li>
+                                                            <li><button class="dropdown-item edit-group-btn">Edit</button></li>
+                                                        </ul>
+                                                    </div>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                        @foreach ($proposal['data'] as $groupedProposal)
+                                            <tr class="selectable-row group-items" data-group="false" data-id="{{ $groupedProposal->proposal->id }}">
+                                                <td class="ps-5 pe-1">
+                                                    <span class="g_order_no">2.{{ $counter }}.{{ $groupCounter }}</span>
+                                                </td>
+                                                <td>
+                                                    <div style="white-space: wrap;">
+                                                        <span style="color: #697A8D;">{{ $groupedProposal->proposal->title }}</span>
+                                                    </div>
+                                                </td>
+                                                
+                                                <td>  
+                                                    <div class="d-flex flex-column gap-3">
+                                                        @foreach ($groupedProposal->proposal->proponents ?? [] as $proponent)
+                                                            <div class="d-flex align-items-center gap-3">
+                                                                <img class="rounded-circle avatar-sm" src="{{ $proponent->image && trim($proponent->image) !== '' ? $proponent->image : asset('assets/img/avatars/default-avatar.jpg') }}" alt="Avatar">
+                                                                <span>{{ $proponent->name }}</span>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="d-flex gap-2 align-items-center">
+                                                        <i class='bx bx-up-arrow-circle text-{{ $actionColors[$groupedProposal->proposal->action] ?? 'primary' }}'></i>
+                                                        {{ config('proposals.requested_action.'.$groupedProposal->proposal->action) }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    @if ($groupedProposal->proposal->files->isNotEmpty())
+                                                        <button class="btn btn-sm btn-secondary view-files d-flex gap-2" data-files="{{ json_encode($groupedProposal->proposal->files) }}" data-title="{{ $groupedProposal->proposal->title  }}">
+                                                            <i class='bx bx-file'></i> VIEW FILES
+                                                        </button>
+                                                    @else 
+                                                        <button class="btn btn-sm btn-danger d-flex gap-2" disabled>
+                                                            <i class='bx bx-file'></i> NO FILES
+                                                        </button>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                            @php $groupCounter++; @endphp
+                                        @endforeach
+                                        @php $counter++; $groupCounter = 1; @endphp
+                                    @endif
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+            @endforeach
 
-        <script>
-            var postedToAgendaProposalIDS = @json($allProposalIds);
-        </script>
+            <script>
+                var postedToAgendaProposalIDS = @json($allProposalIds);
+            </script>
     </div>
-
-        <div class="mb-3">
-            <div class="d-flex align-items-center">
-
+    <div class="mb-3">
+        <div class="d-flex align-items-center">
             <label class="form-label">3. Other Matters</label>
             <button id="addOtherMatterBtn" class="btn btn-primary btn-xs ms-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Add Other Matter">
                 <i class='bx bx-plus'></i>
             </button>
-                
-            </div>
+        </div>
 
-            @if ($otherMattersProposals->isNotEmpty())
+        @if ($otherMattersProposals->isNotEmpty())
         <div class="table-responsive text-nowrap mb-4">
             <table class="table table-bordered">
                 <thead>
@@ -375,7 +363,7 @@
                     </tr>
                     <tr>
                         <th style="width: 50px;">No.</th>
-                        <th style="width: 700px;">Title of the Proposal</th>
+                        <th>Title of the Proposal</th>
                         <th style="width: 200px;">Presenter</th>
                         <th style="width: 150px;">Requested Action</th>
                         <th style="width: 100px;">File</th>
@@ -386,12 +374,16 @@
                     @foreach ($otherMattersProposals as $otherMatter)
                         <tr>
                             <td>3.{{ $counter }}</td>
-                            <td>{{ $otherMatter->proposal->title }}</td>
+                            <td>
+                                <div style="white-space: wrap;">
+                                    <span style="color: #697A8D;">{{ $otherMatter->proposal->title }}</span>
+                                </div>
+                            </td>
                             <td>
                                 <div class="d-flex flex-column gap-3">
                                     @foreach ($otherMatter->proposal->proponents ?? [] as $proponent)
                                         <div class="d-flex align-items-center gap-3">
-                                            <img class="rounded-circle avatar-sm" src="{{ $proponent->image ?? '/default-avatar.png' }}" alt="Avatar">
+                                            <img class="rounded-circle avatar-sm" src="{{ $proponent->image && trim($proponent->image) !== '' ? $proponent->image : asset('assets/img/avatars/default-avatar.jpg') }}" alt="Avatar">
                                             <span>{{ $proponent->name }}</span>
                                         </div>
                                     @endforeach
@@ -442,9 +434,8 @@
     </form>
     @endif
 
-
     <!-- ADD OTHER MATTERS MODAL -->
-<div class="modal fade" id="otherMattersModal" tabindex="-1" aria-labelledby="otherMattersModalLabel" aria-hidden="true">
+    <div class="modal fade" id="otherMattersModal" tabindex="-1" aria-labelledby="otherMattersModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -573,13 +564,13 @@
                 </div>
             </div>
         </div>
-</div>
+    </div>
 
 
     <!-- Modal Preview File -->
     <div class="modal fade" id="fileModal" tabindex="-1" aria-labelledby="fileModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
+        <div class="modal-dialog modal-xl" style="height: 95%; display: flex; align-items: center;">
+            <div class="modal-content" style="height: 100%;">
                 <div class="modal-header">
                     <div class="d-flex align-items-center gap-3">
                         <h5 class="modal-title" id="fileModalLabel">File Preview</h5>
@@ -589,8 +580,8 @@
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <iframe id="fileIframe" src="" width="100%" height="600px" frameborder="0"></iframe>
+                <div class="modal-body" style="flex-grow: 1; overflow: hidden;">
+                    <iframe id="fileIframe" src="" width="100%" height="100%" style="height: 100%;" frameborder="0"></iframe>
                 </div>
             </div>
         </div>
@@ -637,59 +628,55 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-           let emailInput = document.getElementById("proponent_email_matter");
-           let tagify = new Tagify(emailInput, {
-               enforceWhitelist: false,
-               maxTags: 1,
-               whitelist: [],
-               dropdown: {
-                   maxItems: 10,   // Show up to 10 results
-                   enabled: 1,     // Show dropdown on input
-                   closeOnSelect: false
-               }
-           });
-   
-           document.querySelector("#otherMattersFrm").addEventListener("submit", function (e) {
-           let tagifiedEmails = tagify.value.map(tag => tag.value);
-           let emailValue = tagifiedEmails[0] || "";
-   
-           // Validate email format before submitting
-           if (!emailValue.match(/^[\w\.-]+@[\w\.-]+\.\w+$/)) {
-               e.preventDefault(); // Prevent form submission
-               toastr.error("Please enter a valid email address.");
-               return;
-           }
-   
-           emailInput.value = emailValue;
-       });
-   
-        // Fetch proponent emails dynamically
-        function fetchProponents(query) {
-               $.ajax({
-                   url: "{{route(getUserRole().'.fetchProponents')}}",
-                   type: "GET",
-                   data: { search: query },
-                   success: function (response) {
-                       tagify.settings.whitelist = response;
-                       tagify.dropdown.show(); // Show dropdown
-                   }
-               });
-           }
-       
-           // Listen for input event to fetch data
-           tagify.on("input", function (e) {
-               let value = e.detail.value;
-               if (value.length >= 2) { // Fetch only if at least 2 characters are typed
-                   fetchProponents(value);
-               }
-           });
-       });
-</script>
+        let emailInput = document.getElementById("proponent_email_matter");
+        let tagify = new Tagify(emailInput, {
+            enforceWhitelist: false,
+            maxTags: 1,
+            whitelist: [],
+            dropdown: {
+                maxItems: 10,   // Show up to 10 results
+                enabled: 1,     // Show dropdown on input
+                closeOnSelect: false
+            }
+        });
 
-<script>
+        document.querySelector("#otherMattersFrm").addEventListener("submit", function (e) {
+        let tagifiedEmails = tagify.value.map(tag => tag.value);
+        let emailValue = tagifiedEmails[0] || "";
 
-var proposalStatus = @json(config('proposals.status'));
+        // Validate email format before submitting
+        if (!emailValue.match(/^[\w\.-]+@[\w\.-]+\.\w+$/)) {
+            e.preventDefault(); // Prevent form submission
+            toastr.error("Please enter a valid email address.");
+            return;
+        }
 
+        emailInput.value = emailValue;
+    });
+
+    // Fetch proponent emails dynamically
+    function fetchProponents(query) {
+            $.ajax({
+                url: "{{route(getUserRole().'.fetchProponents')}}",
+                type: "GET",
+                data: { search: query },
+                success: function (response) {
+                    tagify.settings.whitelist = response;
+                    tagify.dropdown.show(); // Show dropdown
+                }
+            });
+        }
+    
+        // Listen for input event to fetch data
+        tagify.on("input", function (e) {
+            let value = e.detail.value;
+            if (value.length >= 2) { // Fetch only if at least 2 characters are typed
+                fetchProponents(value);
+            }
+        });
+    });
+
+    var proposalStatus = @json(config('proposals.status'));
     $(document).ready(function () {
 
         // Open Add Other Matter Modal
@@ -699,181 +686,179 @@ var proposalStatus = @json(config('proposals.status'));
         });
 
         $("#otherMattersFrm").on("submit", function (e) {
-        e.preventDefault(); // Prevent default form submission
-        
-        let formData = new FormData(this);
-        let submitButton = $("#addMatter");
-        submitButton.prop("disabled", true); // Disable button to prevent duplicate submissions
-
-        $.ajax({
-            url: $(this).attr("action"),
-            type: "POST",
-            data: formData,
-            processData: false,
-            contentType: false,
-            beforeSend: function () {
+            e.preventDefault(); // Prevent default form submission
+            
+            let formData = new FormData(this);
+            let submitButton = $("#addMatter");
             submitButton.prop("disabled", true); // Disable button to prevent duplicate submissions
-            submitButton.text("Adding..."); // Optionally change button text
-         },
-            success: function (response) {
-                if (response.type === "success") {
-                    toastr.success(response.message, "Success");
-                    $("#otherMattersModal").modal("hide"); // Close the modal
-                    $("#otherMattersFrm")[0].reset(); // Reset the form
 
-                    // Optionally refresh the list of Other Matters without reloading
-                    loadOtherMatters();
-                } else {
-                    toastr.error(response.message, "Error");
-                }
+            $.ajax({
+                url: $(this).attr("action"),
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                beforeSend: function () {
+                submitButton.prop("disabled", true); // Disable button to prevent duplicate submissions
+                submitButton.text("Adding..."); // Optionally change button text
             },
-            error: function (xhr) {
-                let response = xhr.responseJSON;
-                if (response && response.message) {
-                    toastr.error(response.message, "Error");
-                } else {
-                    toastr.error("An unexpected error occurred.", "Error");
+                success: function (response) {
+                    if (response.type === "success") {
+                        toastr.success(response.message, "Success");
+                        $("#otherMattersModal").modal("hide"); // Close the modal
+                        $("#otherMattersFrm")[0].reset(); // Reset the form
+
+                        // Optionally refresh the list of Other Matters without reloading
+                        loadOtherMatters();
+                    } else {
+                        toastr.error(response.message, "Error");
+                    }
+                },
+                error: function (xhr) {
+                    let response = xhr.responseJSON;
+                    if (response && response.message) {
+                        toastr.error(response.message, "Error");
+                    } else {
+                        toastr.error("An unexpected error occurred.", "Error");
+                    }
+                },
+                complete: function () {
+                    submitButton.prop("disabled", false); // Re-enable button
                 }
-            },
-            complete: function () {
-                submitButton.prop("disabled", false); // Re-enable button
-            }
+            });
         });
-    });
 
 
 
-         // Open Upload Modal
-                $("#openMinutesModal").click(function(e) {
-                    e.preventDefault();
-                    $("#previousMinModal").modal("show");
-                });
+        // Open Upload Modal
+        $("#openMinutesModal").click(function(e) {
+            e.preventDefault();
+            $("#previousMinModal").modal("show");
+        });
 
-                // Upload Previous Minutes Form Submission
-                $('#uploadMinutesForm').on('submit', function(e) {
-                    e.preventDefault();
+        // Upload Previous Minutes Form Submission
+        $('#uploadMinutesForm').on('submit', function(e) {
+            e.preventDefault();
 
-                    let formData = new FormData(this);
+            let formData = new FormData(this);
 
-                    $.ajax({
-                        url: "{{ route(getUserRole().'.upload.minutes') }}", 
-                        type: "POST",
-                        data: formData,
-                        processData: false,
-                        contentType: false,
-                        headers: {
-                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                        },
-                        beforeSend: function() {
-                            toastr.info("Uploading previous minutes...", "", { timeOut: 0, extendedTimeOut: 0 });
-                        },
-                        success: function(response) {
-                            toastr.clear();
-                            if (response.success) {
-                                toastr.success(response.message);
+            $.ajax({
+                url: "{{ route(getUserRole().'.upload.minutes') }}", 
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                beforeSend: function() {
+                    toastr.info("Uploading previous minutes...", "", { timeOut: 0, extendedTimeOut: 0 });
+                },
+                success: function(response) {
+                    toastr.clear();
+                    if (response.success) {
+                        toastr.success(response.message);
 
-                                $('#previousMinModal').modal('hide');
-                                $("#uploadMinutesForm")[0].reset();
+                        $('#previousMinModal').modal('hide');
+                        $("#uploadMinutesForm")[0].reset();
 
-                                // Refresh the minutes view without reloading the page
-                                checkPreviousMinutes();
-                            } else {
-                                toastr.error(response.message);
-                            }
-                        },
-                        error: function(xhr) {
-                            let errorMessage = "An error occurred. Please try again.";
-                            if (xhr.responseJSON && xhr.responseJSON.message) {
-                                errorMessage = xhr.responseJSON.message;
-                            }
-                            toastr.error(errorMessage);
-                        }
-                    });
-                });
+                        // Refresh the minutes view without reloading the page
+                        checkPreviousMinutes();
+                    } else {
+                        toastr.error(response.message);
+                    }
+                },
+                error: function(xhr) {
+                    let errorMessage = "An error occurred. Please try again.";
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
+                    toastr.error(errorMessage);
+                }
+            });
+        });
 
         // Check if previous minutes exist and update buttons accordingly
-            function checkPreviousMinutes() {
-                let meetingId = $("input[name='meeting_id']").val();
+        function checkPreviousMinutes() {
+            let meetingId = $("input[name='meeting_id']").val();
 
-                $.ajax({
-                    url: "{{ route('get.previous.minutes', ':meeting_id') }}".replace(':meeting_id', meetingId),
-                    type: "GET",
-                    success: function(response) {
-                        if (response.success && response.previous_minutes) {
-                            console.log("Previous Minutes Found:", response.previous_minutes);
+            $.ajax({
+                url: "{{ route('get.previous.minutes', ':meeting_id') }}".replace(':meeting_id', meetingId),
+                type: "GET",
+                success: function(response) {
+                    if (response.success && response.previous_minutes) {
+                        console.log("Previous Minutes Found:", response.previous_minutes);
 
-                            // Update View Button
-                            $("#viewButton")
-                                .attr("href", "/storage/previous_minutes/" + response.previous_minutes)
-                                .show();
+                        // Update View Button
+                        $("#viewButton")
+                            .attr("href", "/storage/previous_minutes/" + response.previous_minutes)
+                            .show();
 
-                            // Show Edit Button
-                            $("#editMinutesButton").show();
+                        // Show Edit Button
+                        $("#editMinutesButton").show();
 
-                            // Hide Upload Button
-                            $("#openMinutesModal").hide();
+                        // Hide Upload Button
+                        $("#openMinutesModal").hide();
 
-                        } else {
-                            console.log("No Previous Minutes Found");
+                    } else {
+                        console.log("No Previous Minutes Found");
 
-                            // Show Upload Button & hide others
-                            $("#openMinutesModal").show();
-                            $("#viewButton").hide();
-                            $("#editMinutesButton").hide();
-                        }
-                    },
-                    error: function() {
-                        console.error("Failed to fetch previous minutes.");
+                        // Show Upload Button & hide others
+                        $("#openMinutesModal").show();
+                        $("#viewButton").hide();
+                        $("#editMinutesButton").hide();
                     }
-                });
-            }
-
-            // Edit Previous Minutes
-            $("#editMinutesButton").click(function(e) {
-                e.preventDefault();
-                $("#editMinutesModal").modal("show");
+                },
+                error: function() {
+                    console.error("Failed to fetch previous minutes.");
+                }
             });
+        }
 
-            $('#editMinutesForm').on('submit', function(e) {
-                e.preventDefault();
+        // Edit Previous Minutes
+        $("#editMinutesButton").click(function(e) {
+            e.preventDefault();
+            $("#editMinutesModal").modal("show");
+        });
 
-                let formData = new FormData(this);
+        $('#editMinutesForm').on('submit', function(e) {
+            e.preventDefault();
 
-                $.ajax({
-                    url: "{{ route(getUserRole().'.upload.minutes') }}", 
-                    type: "POST",
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                    },
-                    beforeSend: function() {
-                        toastr.info("Uploading new file...", "", { timeOut: 0, extendedTimeOut: 0 });
-                    },
-                    success: function(response) {
-                        toastr.clear();
-                        if (response.success) {
-                            toastr.success(response.message);
+            let formData = new FormData(this);
 
-                            $('#editMinutesModal').modal('hide');
-                            $("#editMinutesForm")[0].reset();
+            $.ajax({
+                url: "{{ route(getUserRole().'.upload.minutes') }}", 
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                beforeSend: function() {
+                    toastr.info("Uploading new file...", "", { timeOut: 0, extendedTimeOut: 0 });
+                },
+                success: function(response) {
+                    toastr.clear();
+                    if (response.success) {
+                        toastr.success(response.message);
 
-                            checkPreviousMinutes();
-                        } else {
-                            toastr.error(response.message);
-                        }
-                    },
-                    error: function(jqXHR) {
-                        console.error(jqXHR);
+                        $('#editMinutesModal').modal('hide');
+                        $("#editMinutesForm")[0].reset();
+
+                        checkPreviousMinutes();
+                    } else {
+                        toastr.error(response.message);
                     }
-                });
+                },
+                error: function(jqXHR) {
+                    console.error(jqXHR);
+                }
             });
+        });
 
-            // Initialize Check on Page Load
-            checkPreviousMinutes();
-
-
+        // Initialize Check on Page Load
+        checkPreviousMinutes();
 
         // Right-click event for group rows
         $(document).on("contextmenu", ".tr-group", function (event) {
@@ -918,7 +903,6 @@ var proposalStatus = @json(config('proposals.status'));
             });
         });
 
-        // Handle 'Edit' click
         $(".edit-group-btn").click(function (e) {
             e.preventDefault();
             let groupId = $(this).closest(".tr-group").data("id");
@@ -927,7 +911,7 @@ var proposalStatus = @json(config('proposals.status'));
 
             // Set the values in the modal
             $("#groupModal #group_title").val(groupTitle);
-            $("#groupModal #orderNo").val(orderNo);
+            // $("#groupModal #orderNo").val(orderNo);
             $("#groupModal #group_id").val(groupId);
             $("#groupModal #saveGroup").hide();
             $("#groupModal #updateGroup").show();
@@ -941,7 +925,7 @@ var proposalStatus = @json(config('proposals.status'));
         $("#oobTable tbody").each(function () {
             new Sortable(this, {
                 animation: 150,
-                handle: "td",
+                handle: "tr",
                 ghostClass: "sortable-ghost",
                 onEnd: function (evt) {
                     updateOrder();
@@ -951,23 +935,33 @@ var proposalStatus = @json(config('proposals.status'));
 
         function updateOrder() {
             let order = [];
+            let position = 1; 
+
             $("#oobTable tbody tr").each(function (index) {
                 let proposalId = $(this).data("id");
-                order.push({ id: proposalId, position: index + 1 });
+                let isGroup = $(this).data("group") === true; 
+                
+                if ($(this).find(".order_no").length) {
+                    order.push({ id: proposalId, isGroup: isGroup, order: index + 1,position: position });
 
-                // Update the UI immediately
-                $(this).find("td:first .order_no").text(index + 1);
+                    $(this).find("td:first .order_no").text(position);
+                    position++;
+                }else{
+                    order.push({ id: proposalId, isGroup: isGroup, order: index + 1, position: position });
+
+                    $(this).find("td:first .order_no").text(position);
+                }
             });
+            
+            console.log("Ordered Proposals: ");
+            console.log(order);
 
-            console.log(order); // Debugging (Remove later)
-
-            // Send AJAX request to update the database
             $.ajax({
                 url: "{{ route('update_proposal_order', ['level' => $orderOfBusiness->meeting->getMeetingLevel()]) }}",
                 method: "POST",
                 data: {
                     orderData: order,
-                    _token: "{{ csrf_token() }}" // CSRF token for security
+                    _token: "{{ csrf_token() }}" 
                 },
                 success: function (response) {
                     console.log("Order updated successfully!", response);
@@ -1003,6 +997,12 @@ var proposalStatus = @json(config('proposals.status'));
 
             let rowId = $(this).attr("data-id");
 
+            let isGroup = $(this).data("group") === true; 
+            if(isGroup ==  true){
+                showAlert('danger', 'Invalid Row', 'Selection of a Group Proposal is not allowed');
+                return;
+            }
+
             if (selectedProposalRows.includes(rowId)) {
                 selectedProposalRows = selectedProposalRows.filter(id => id !== rowId);
                 $(this).removeClass("selected-row");
@@ -1027,6 +1027,13 @@ var proposalStatus = @json(config('proposals.status'));
             let groupFrm = $("#groupFrm");
             var actionUrl = groupFrm.attr("action");
 
+            if (selectedProposalRows.length < 2) {
+                showAlert('danger', 'Group Creation Failed', 'You must select at least two proposals to create a group.');
+                $("#groupModal").modal("hide");
+                return; 
+            }
+
+
             // Create FormData object
             var formData = new FormData(groupFrm[0]);
 
@@ -1042,11 +1049,11 @@ var proposalStatus = @json(config('proposals.status'));
                 processData: false,
                 contentType: false,
                 success: function (response) {
+                    showAlert(response.type, response.title, response.message);
                     if (response.type == 'success') {
-                        showAlert(response.type, response.title, response.message);
+                        selectedProposalRows = [];
+                        $(".selectable-row").removeClass("selected-row");
                         location.reload(); // Refresh to reflect changes
-                    } else {
-                        showAlert('danger', 'Error', response.message);
                     }
                     console.log(response);
                 },
@@ -1055,8 +1062,6 @@ var proposalStatus = @json(config('proposals.status'));
                 }
             });
 
-            selectedProposalRows = [];
-            $(".selectable-row").removeClass("selected-row");
             $("#groupModal").modal("hide");
         });
 
@@ -1173,45 +1178,45 @@ var proposalStatus = @json(config('proposals.status'));
         });
 
         $('#uploadMinutesForm').on('submit', function(e) {
-                e.preventDefault(); 
+            e.preventDefault(); 
 
-                let formData = new FormData(this);
+            let formData = new FormData(this);
 
-                $.ajax({
-                    url: "{{ route(getUserRole().'.upload.minutes') }}", 
-                    type: "POST",
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                    },
-                    beforeSend: function() {
-                        toastr.info("Uploading previous minutes...", "", { timeOut: 0, extendedTimeOut: 0 }); // Show infinite loading
-                    },
-                    success: function(response) {
-                        toastr.clear();
-                        if (response.success) {
-                            toastr.success(response.message);
+            $.ajax({
+                url: "{{ route(getUserRole().'.upload.minutes') }}", 
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                beforeSend: function() {
+                    toastr.info("Uploading previous minutes...", "", { timeOut: 0, extendedTimeOut: 0 }); // Show infinite loading
+                },
+                success: function(response) {
+                    toastr.clear();
+                    if (response.success) {
+                        toastr.success(response.message);
 
-                            $('#previousMinModal').modal('hide');
-                            $("#uploadMinutesForm")[0].reset();
-                            $("#openMinutesModal").remove();
+                        $('#previousMinModal').modal('hide');
+                        $("#uploadMinutesForm")[0].reset();
+                        $("#openMinutesModal").remove();
 
-                        } else {
-                            toastr.error(response.message);
-                        }
-                    },
-                    error: function(xhr) {
-                        let errorMessage = "An error occurred. Please try again.";
-                    if (xhr.responseJSON && xhr.responseJSON.message) {
-                        errorMessage = xhr.responseJSON.message;
+                    } else {
+                        toastr.error(response.message);
                     }
-                    toastr.error(errorMessage);
+                },
+                error: function(xhr) {
+                    let errorMessage = "An error occurred. Please try again.";
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                }
+                toastr.error(errorMessage);
 
-                    }
-                });
+                }
             });
+        });
 
     });
 
@@ -1289,9 +1294,6 @@ var proposalStatus = @json(config('proposals.status'));
                 return "{{ asset('assets/img/icons/file-icons/file.png') }}";
         }
     }
-
-
-   
 </script>
 <script src="{{asset('assets/js/customFileUplaod.js')}}"></script>
 <script src="{{asset('assets/js/orderOfBusiness.js')}}"></script>

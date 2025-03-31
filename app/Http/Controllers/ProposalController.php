@@ -89,7 +89,7 @@ class ProposalController extends Controller
                 $q->where('name', 'LIKE', "%{$query}%")
                 ->orWhere('email', 'LIKE', "%{$query}%");
             })
-                    ->get();
+           ->get();
         }
         
       
@@ -815,6 +815,13 @@ class ProposalController extends Controller
             }
             
 
+            $fileStatus = 1;
+            $reuploadedFileStatus = 4;
+
+            if(session('isSecretary')){
+                $fileStatus = 2;
+                $reuploadedFileStatus = 2;
+            }
             // Handle New Attachments
             $file_order_no = ProposalFile::where('proposal_id', $proposal->id)->where('is_active', true)->max('order_no') ?? 1;
             if ($request->hasFile('proposal_files')) {
@@ -826,7 +833,7 @@ class ProposalController extends Controller
                         'proposal_id' => $proposal->id,
                         'file' => $filename,
                         'version' => 1,
-                        'file_status' => 1,
+                        'file_status' => $fileStatus,
                         'is_active' => true,
                         'order_no' => ++$file_order_no,
                     ]);
@@ -847,7 +854,7 @@ class ProposalController extends Controller
                             'proposal_id' => $proposal->id,
                             'file' => $filename,
                             'version' => $oldFile->version + 1,
-                            'file_status' => 4,
+                            'file_status' => $reuploadedFileStatus,
                             'file_reference_id' => $fileId,
                             'is_active' => true,
                             'order_no' => $oldFile->order_no,
@@ -1064,6 +1071,13 @@ class ProposalController extends Controller
                     'level' => $level,
                     'action' => $request->input('action'),
                     'file_id' => "",
+                ]);
+
+                ProposalFile::where('proposal_id', $proposal_id)
+                ->where('is_active', true)
+                ->update([
+                    'proposal_id' => $proposal_id,
+                    'file_status' => 2,
                 ]);
             }
 

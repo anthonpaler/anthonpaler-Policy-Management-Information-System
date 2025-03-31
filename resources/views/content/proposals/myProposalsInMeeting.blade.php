@@ -126,7 +126,7 @@
                             </td>
                             <td>
                                 @if($proposal->proposal->files->count() > 0)
-                                    <button class="btn btn-sm btn-success d-flex gap-2 view-files"
+                                    <button class="btn btn-sm btn-primary d-flex gap-2 view-files"
                                             data-files="{{ json_encode($proposal->proposal->files) }}" 
                                             data-title="{{ $proposal->title }}">
                                         <i class='bx bx-file'></i> VIEW FILES
@@ -178,9 +178,10 @@
             </div>
         </div>
     </div>
+   <!-- Modal Preview File -->
     <div class="modal fade" id="fileModal" tabindex="-1" aria-labelledby="fileModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
+        <div class="modal-dialog modal-xl" style="height: 90%; display: flex; align-items: center;">
+            <div class="modal-content" style="height: 100%;">
                 <div class="modal-header">
                     <div class="d-flex align-items-center gap-3">
                         <h5 class="modal-title" id="fileModalLabel">File Preview</h5>
@@ -190,8 +191,8 @@
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <iframe id="fileIframe" src="" width="100%" height="600px" frameborder="0"></iframe>
+                <div class="modal-body" style="flex-grow: 1; overflow: hidden;">
+                    <iframe id="fileIframe" src="" width="100%" height="100%" style="height: 100%;" frameborder="0"></iframe>
                 </div>
             </div>
         </div>

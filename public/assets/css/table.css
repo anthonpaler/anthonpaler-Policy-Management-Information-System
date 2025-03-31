@@ -72,6 +72,12 @@ tr{
 } */
 
 .files-table{
-    max-height: 400px;
-    overflow: auto;
+    max-height: 500px;
+    overflow: hidden;
+    border-radius: 5px;
+    overflow-y: auto;
+    
+}
+.files-table thead{
+    background-color: var(--bs-secondary-bg-subtle);
 }

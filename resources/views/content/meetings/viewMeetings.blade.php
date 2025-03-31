@@ -97,11 +97,11 @@
                             <th>Campus</th>
                             <th>Submission</th>
                             <th>Meeting Date</th>
-                            <th>Has OOB?</th>
-                            <th>Status</th>
                             @if(session('isProponent'))
                                 <th>My Proposals</th>
                             @endif
+                            <th>Has OOB?</th>
+                            <th>Status</th>
                             <!-- <th>Actions</th> -->
                         </tr>
                     </thead>

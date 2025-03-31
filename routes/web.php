@@ -158,7 +158,7 @@ Route::middleware(['auth', 'university_secretary'])->prefix('university-secretar
 
   Route::post('/order-of-business/upload-minutes', [OrderOfBusinessController::class, 'uploadPreviousMinutes'])->name('univ_sec.upload.minutes');
 
-
+  Route::post('/add-other-matters/{meeting_id}', [ProposalController::class, 'addOtherMatters'])->name('univ_sec.addOtherMatters');
 });
 
 // BOARD SECRETARY ROUTES 
@@ -198,8 +198,7 @@ Route::middleware(['auth', 'board_secretary'])->prefix('board-secretary')->group
 
   Route::post('/order-of-business/upload-minutes', [OrderOfBusinessController::class, 'uploadPreviousMinutes'])->name('board_sec.upload.minutes');
 
-
-
+  Route::post('/add-other-matters/{meeting_id}', [ProposalController::class, 'addOtherMatters'])->name('board_sec.addOtherMatters');
 });
 
 
