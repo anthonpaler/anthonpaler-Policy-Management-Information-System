@@ -47,10 +47,10 @@ class ProposalController extends Controller
     public function searchUsers(Request $request)
     {
         $query = trim($request->input('query'));
-    
+
         $campus_id = session('campus_id');
 
-        $userRole = session('user_role'); 
+        $userRole = session('user_role');
         $roles = match ($userRole) {
             0 => [0, 2, 6],
             1 => [1, 2, 6],
@@ -61,7 +61,7 @@ class ProposalController extends Controller
             6 => [0, 1, 2, 6],
             default => [],
         };
-    
+
         if (empty($roles)) {
             return response()->json([]);
         }
@@ -69,7 +69,7 @@ class ProposalController extends Controller
 
         if(session('isProponent')){
             if (!$campus_id) {
-                return response()->json([]); 
+                return response()->json([]);
             }
 
             $users = User::whereIn('role', $roles)
@@ -82,7 +82,7 @@ class ProposalController extends Controller
                 })
                 ->get();
         }
-        
+
         if(session('isSecretary')){
             $users = User::whereIn('role', $roles)
             ->where(function ($q) use ($query) {
@@ -91,22 +91,20 @@ class ProposalController extends Controller
             })
            ->get();
         }
-        
-      
-    
+
         return response()->json($users);
     }
-    
-  
+
+
     // SUBMIT PROPOSAL FOR PROPONENT (PROPONENT CAN ONLY SUBMIT IN LOCAL MEETING)
     public function submitProposal(Request $request, String $meeting_id)
     {
         DB::beginTransaction(); // Start transaction
-    
+
         try {
             $meetingID = decrypt($meeting_id);
             $meeting = LocalCouncilMeeting::find($meetingID);
-    
+
             if ($meeting->getIsSubmissionClosedAttribute() || ($meeting->status == 1)) {
                 return response()->json([
                     'type' => 'danger',
@@ -114,19 +112,19 @@ class ProposalController extends Controller
                     'title' => "Meeting Closed!"
                 ]);
             }
-    
+
             $request->validate([
                 'title' => 'required|string|max:255',
                 'action' => 'required|string|max:255',
                 'proposal_files' => 'required|array',
                 'proposal_files.*' => 'file|mimes:pdf,xls,xlsx,csv|max:100000',
-                'proponents' => 'required', 
+                'proponents' => 'required',
                 'matter' => 'required|integer',
                 'sub_type' => 'nullable|integer',
             ]);
-    
+
             $campus_id = session('campus_id');
-    
+
             // Create proposal
             $proposal = Proposal::create([
                 'campus_id' => $campus_id,
@@ -136,35 +134,35 @@ class ProposalController extends Controller
                 'sub_type' => $request->input('sub_type'),
                 'status' => 0,
             ]);
-    
+
             // Insert into LocalMeetingAgenda
             LocalMeetingAgenda::create([
                 'local_council_meeting_id' => $meetingID,
                 'local_proposal_id' => $proposal->id,
                 'status' => 0,
             ]);
-    
+
             // Handle file uploads
             $fileIds = [];
             $file_order_no = 1;
-    
+
             if ($request->hasFile('proposal_files')) {
                 foreach ($request->file('proposal_files') as $file) {
                     $originalNameWithExt = $file->getClientOriginalName();
                     $extension = $file->getClientOriginalExtension();
-    
+
                     preg_match('/^(.*?)(\(\d+\))?(\.\w+)?$/', $originalNameWithExt, $matches);
                     $baseName = trim($matches[1]);
                     $filename = "{$baseName}.{$extension}";
-    
+
                     $i = 1;
                     while (Storage::disk('public')->exists("proposals/{$filename}")) {
                         $filename = "{$baseName} ({$i}).{$extension}";
                         $i++;
                     }
-    
+
                     $filePath = $file->storeAs('proposals', $filename, 'public');
-    
+
                     $proposalFile = ProposalFile::create([
                         'proposal_id' => $proposal->id,
                         'file' => $filename,
@@ -174,15 +172,15 @@ class ProposalController extends Controller
                         'is_active' => true,
                         'order_no' => $file_order_no,
                     ]);
-    
+
                     $fileIds[] = $proposalFile->id;
                     $file_order_no++;
                 }
             }
-    
+
             // Save file IDs in proposal logs
             $fileIdsString = implode(',', $fileIds);
-    
+
             ProposalLog::create([
                 'proposal_id' => $proposal->id,
                 'employee_id' => session('employee_id'),
@@ -192,9 +190,9 @@ class ProposalController extends Controller
                 'action' => 7,
                 'file_id' => $fileIdsString,
             ]);
-    
+
             $proponentIds = explode(',', $request->input('proponents'));
-            
+
             foreach ($proponentIds as $employeeId) {
                 ProposalProponent::create([
                     'proposal_id' => $proposal->id,
@@ -222,9 +220,9 @@ class ProposalController extends Controller
             }
 
 
-    
+
             DB::commit(); // Commit transaction if everything is successful
-    
+
             return response()->json([
                 'type' => 'success',
                 'message' => 'Proposal submitted successfully!',
@@ -232,7 +230,7 @@ class ProposalController extends Controller
             ]);
         } catch (\Throwable $th) {
             DB::rollBack(); // Rollback transaction if something fails
-    
+
             return response()->json([
                 'type' => 'danger',
                 'message' => $th->getMessage(),
@@ -244,7 +242,7 @@ class ProposalController extends Controller
     public function fetchProponents(Request $request)
     {
       $query = $request->input('search');
-        
+
       $users = User::whereIn('role', [0, 1, 2])
                    ->where('email', 'LIKE', "%{$query}%")
                    ->pluck('email')
@@ -252,7 +250,7 @@ class ProposalController extends Controller
                        return filter_var($email, FILTER_VALIDATE_EMAIL);
                    })
                    ->values(); // Ensure it returns an indexed array
-    
+
       return response()->json($users);
     }
 
@@ -298,7 +296,7 @@ class ProposalController extends Controller
 
             $campus_id = session('campus_id');
 
-           
+
             // Create proposal
             $proposal = Proposal::create([
                 'employee_id' => $proponent->id,
@@ -381,7 +379,7 @@ class ProposalController extends Controller
             ]);
 
             $proponentIds = explode(',', $request->input('proponent_email'));
-                
+
             foreach ($proponentIds as $employeeId) {
                 $proponent = Employee::where('EmailAddress', $request->input('proponent_email'))->first();
 
@@ -393,14 +391,13 @@ class ProposalController extends Controller
 
             DB::commit();
 
-
             return redirect()->back()->with('toastr', [
                 'type' => 'success',
                 'message' => 'Proposal added successfully!',
-            ]);   
-            
+            ]);
+
         } catch (\Throwable $th) {
-            DB::rollBack(); 
+            DB::rollBack();
 
             return response()->json(['type' => 'danger', 'message' => $th->getMessage(), 'title' => "Something went wrong!"]);
         }
@@ -465,26 +462,26 @@ class ProposalController extends Controller
 
             $meetingID = decrypt($meeting_id);
             $user = auth()->user();
-    
+
             // Ensure the user has the correct role (Secretary: Local=3, University=4, Board=5)
             if (!in_array($user->role, [3, 4, 5])) {
                 return response()->json([
-                    'type' => 'danger', 
-                    'message' => 'You are not authorized to submit other matters!', 
+                    'type' => 'danger',
+                    'message' => 'You are not authorized to submit other matters!',
                     'title' => "Unauthorized"
                 ]);
             }
-    
+
             // Retrieve meeting model based on role
             $meeting = $this->getMeetingModel($meetingID, $user->role);
             if (!$meeting) {
                 return response()->json([
-                    'type' => 'danger', 
-                    'message' => 'Invalid meeting ID.', 
+                    'type' => 'danger',
+                    'message' => 'Invalid meeting ID.',
                     'title' => "Error"
                 ]);
             }
-    
+
             // Validate input
             $request->validate([
                 'proponent_email' => 'required|email|exists:employees,EmailAddress',
@@ -499,7 +496,7 @@ class ProposalController extends Controller
             $proponent = Employee::where('EmailAddress', $request->input('proponent_email'))->first();
 
             $campus_id = session('campus_id');
-    
+
             // Create Proposal Entry
             $proposal = Proposal::create([
                 'employee_id' => $proponent->id,
@@ -531,7 +528,7 @@ class ProposalController extends Controller
 
         // Attach the proposal to the Other Matters table
         $this->attachProposalToOtherMatter($proposal->id, $user->role);
-    
+
             // Handle File Uploads
             $fileIds = [];
             $file_order_no = 1;
@@ -539,21 +536,21 @@ class ProposalController extends Controller
                 foreach ($request->file('proposal_files') as $file) {
                     $originalNameWithExt = $file->getClientOriginalName();
                     $extension = $file->getClientOriginalExtension();
-    
+
                     // Extract filename without final extension
                     preg_match('/^(.*?)(\(\d+\))?(\.\w+)?$/', $originalNameWithExt, $matches);
                     $baseName = trim($matches[1]);
                     $filename = "{$baseName}.{$extension}";
-    
+
                     $i = 1;
                     while (Storage::disk('public')->exists("proposals/{$filename}")) {
                         $filename = "{$baseName} ({$i}).{$extension}";
                         $i++;
                     }
-    
+
                     // Store the file
                     $filePath = $file->storeAs('proposals', $filename, 'public');
-    
+
                     // Save file record in DB
                     $proposalFile = ProposalFile::create([
                         'proposal_id' => $proposal->id,
@@ -564,15 +561,15 @@ class ProposalController extends Controller
                         'is_active' => true,
                         'order_no' => $file_order_no,
                     ]);
-    
+
                     $fileIds[] = $proposalFile->id;
                     $file_order_no++;
                 }
             }
-    
+
             // Save file IDs in proposal logs
             $fileIdsString = implode(',', $fileIds);
-    
+
             ProposalLog::create([
                 'proposal_id' => $proposal->id,
                 'employee_id' => session('employee_id'),
@@ -584,7 +581,7 @@ class ProposalController extends Controller
             ]);
 
             $proponentIds = explode(',', $request->input('proponent_email'));
-                
+
             foreach ($proponentIds as $employeeId) {
                 $proponent = Employee::where('EmailAddress', $request->input('proponent_email'))->first();
 
@@ -593,19 +590,19 @@ class ProposalController extends Controller
                     'employee_id' => $proponent->id,
                 ]);
             }
-    
+
             DB::commit();
-    
+
             return response()->json([
                 'type' => 'success',
                 'message' => 'Other Matter added successfully!',
             ]);
-    
+
         } catch (\Throwable $th) {
             DB::rollBack();
             return response()->json([
-                'type' => 'danger', 
-                'message' => $th->getMessage(), 
+                'type' => 'danger',
+                'message' => $th->getMessage(),
                 'title' => "Something went wrong!"
             ]);
         }
@@ -615,11 +612,11 @@ class ProposalController extends Controller
     private function attachProposalToOtherMatter($proposalID, $roleID)
     {
         if ($roleID == 3) {
-            OtherMatter::create([               
+            OtherMatter::create([
                 'proposal_id' => $proposalID,
             ]);
         } elseif ($roleID == 4) {
-            OtherMatter::create([               
+            OtherMatter::create([
                 'proposal_id' => $proposalID,
             ]);
         } elseif ($roleID == 5) {
@@ -628,11 +625,11 @@ class ProposalController extends Controller
             ]);
         }
     }
-    
 
 
 
-    
+
+
 
     // RENAME FILE
     public function renameFile(Request $request)
@@ -640,9 +637,9 @@ class ProposalController extends Controller
         try{
             $request->validate([
                 'file_id' => 'required|exists:proposal_files,id',
-                'new_file_name' => 'required|string|max:255'       
+                'new_file_name' => 'required|string|max:255'
             ]);
-            
+
 
             $file = ProposalFile::findOrFail($request->file_id);
             $oldPath = "proposals/{$file->file}";
@@ -679,7 +676,7 @@ class ProposalController extends Controller
             $files = $request->input('files');
 
             foreach ($files as $file) {
-            
+
                 ProposalFile::where('id', $file['id'])
                     ->update(['order_no' => $file['order_no']]);
             }
@@ -703,31 +700,31 @@ class ProposalController extends Controller
             })
             ->orderBy('created_at', 'desc')
             ->get();
-    
-        $employeeId = session('employee_id'); 
+
+        $employeeId = session('employee_id');
         $proposalCounts = Proposal::proposalsCountByEmployeeInLevel($employeeId);
-            
+
 
 
         return view('content.proposals.myProposals', compact('proposals', 'proposalCounts'));
     }
-    
-    
+
+
 
     // VIEW PROPOSAL DETAILS
     public function viewProposalDetails(Request $request, String $proposal_id)
     {
         $proposalID = decrypt($proposal_id);
-    
+
         $proposal = Proposal::with(['proponents'])->findOrFail($proposalID);
-    
+
         $proposal_logs = ProposalLog::where('proposal_id', $proposalID)
             ->orderBy('created_at', 'asc')
             ->get();
-    
+
         return view('content.proposals.viewProposalDetails', compact('proposal', 'proposal_logs'));
     }
-    
+
 
     // VIEW EDIT PROPOSAL
     public function viewEditProposal(Request $request, String $proposal_id){
@@ -736,7 +733,7 @@ class ProposalController extends Controller
         $proposal = Proposal::with(['proponents'])->where('id', $proposalID)->first();
 
         $proposal_logs = ProposalLog::where('proposal_id', $proposalID)
-        ->with('user') 
+        ->with('user')
         ->orderBy('created_at', 'asc')
         ->get();
 
@@ -774,7 +771,7 @@ class ProposalController extends Controller
                 'title' => $validated['title'],
                 'action' => $validated['action'],
                 'type' => $validated['matter'],
-                'sub_type' => $validated['sub_type'] ?? null, 
+                'sub_type' => $validated['sub_type'] ?? null,
                 'status' => $new_status,
             ]);
 
@@ -792,7 +789,7 @@ class ProposalController extends Controller
             }
 
             $proponentIds = explode(',', $validated['proponents']);
-            
+
             // Get existing proponents for the proposal
             $existingProponents = ProposalProponent::where('proposal_id', $proposal->id)
             ->pluck('employee_id')
@@ -816,7 +813,7 @@ class ProposalController extends Controller
                     'employee_id' => $employee_id,
                 ]);
             }
-            
+
 
             $fileStatus = 1;
             $reuploadedFileStatus = 4;
@@ -882,16 +879,16 @@ class ProposalController extends Controller
                 ]);
             }
 
-            DB::commit(); 
+            DB::commit();
 
             return response()->json(['type' => 'success', 'message' => 'Proposal updated successfully!', 'title' => 'Success!']);
         } catch (\Throwable $th) {
-            DB::rollBack(); 
+            DB::rollBack();
             return response()->json(['type' => 'danger', 'message' => $th->getMessage(), 'title' => 'Something went wrong!']);
         }
     }
 
-    // NEW DELETE PROPOSAL 
+    // NEW DELETE PROPOSAL
     public function deleteProposal(Request $request)
     {
         try {
@@ -925,8 +922,8 @@ class ProposalController extends Controller
         }
     }
 
-    
-    // DELETE PROPOSAL FILE 
+
+    // DELETE PROPOSAL FILE
 
     public function deleteFile(Request $request)
     {
@@ -942,7 +939,7 @@ class ProposalController extends Controller
         } catch (\Throwable $th) {
             return response()->json(['type' => 'danger', 'message' => $th->getMessage(), 'title'=> "Something went wrong!"]);
         }
-    }   
+    }
 
     // VIEW MEETINGS WITH NUMBER FOR PROPOSALS
     public function viewMeetingsWithProposalCount(Request $request){
@@ -950,14 +947,14 @@ class ProposalController extends Controller
         $employeeId = session('employee_id');
         $campus_id = session('campus_id');
         $level = $role == 3 ? 0 : ($role == 4 ? 1 : ($role == 5 ? 2 : 0));
-    
+
         if($role == 3 && $level == 0){
             $meetings = LocalCouncilMeeting::where('campus_id', $campus_id)
             ->withCount('proposals')
             ->orderBy('created_at', 'desc')
             ->get();
         }
-    
+
         if($role == 4 && $level == 1){
             $meetings = UniversityCouncilMeeting::withCount('proposals')
             ->orderBy('created_at', 'desc')
@@ -979,7 +976,7 @@ class ProposalController extends Controller
         $meetingID = decrypt($meeting_id);
         $proposals = collect(); // Initialize as an empty collection
         $meeting = null; // Initialize the meeting variable
-    
+
         if ($level == 'Local') {
             $meeting = LocalCouncilMeeting::find($meetingID);
             $proposals = LocalMeetingAgenda::where("local_council_meeting_id", $meetingID)
@@ -996,10 +993,10 @@ class ProposalController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->get();
         }
-    
+
         return view('content.proposals.viewMeetingProposal', compact('proposals', 'meeting'));
     }
-    
+
     // VIEW PROPSOSAL DEATILS (SECRETRARY POV)
     public function viewProposalDetails_Secretary(Request $request, String $proposal_id)
     {
@@ -1007,13 +1004,13 @@ class ProposalController extends Controller
         $proposal = Proposal::with(['proponents'])->where('id', $proposalID)->first();
 
         $meeting = $proposal->meeting;
-       
+
         $proposal_logs = ProposalLog::where('proposal_id', $proposalID)
             ->with('user')
             ->orderBy('created_at', 'asc')
             ->get();
 
-    
+
         // dd($proposal);
 
         return view('content.proposals.viewProposal', compact('proposal', 'proposal_logs', 'meeting'));
@@ -1070,7 +1067,7 @@ class ProposalController extends Controller
                     'proposal_id' => $proposal_id,
                     'employee_id' => session('employee_id'),
                     'status' => $status,
-                    'comments' => '',
+                    'comments' => NULL,
                     'level' => $level,
                     'action' => $request->input('action'),
                     'file_id' => "",
@@ -1096,7 +1093,7 @@ class ProposalController extends Controller
     // UPDATE SPECIFIC PROPOSAL STATUS - SECRETARY POV
     public function updateProposalStatus(Request $request)
     {
-        DB::beginTransaction(); 
+        DB::beginTransaction();
         try {
             $level =session('secretary_level');
             $status = $request->input('action') + 1;
@@ -1139,7 +1136,7 @@ class ProposalController extends Controller
 
             // Update the proposal status
             $proposal->update(['status' => $status]);
-            
+
             if ($proposal->getCurrentLevelAttribute() == 0) {
             LocalMeetingAgenda::where('local_proposal_id', $proposal_id)->update(['status' => $status]);
             } elseif ($proposal->getCurrentLevelAttribute() == 1) {
@@ -1175,15 +1172,15 @@ class ProposalController extends Controller
                             'file_status' => 2,
                         ]);
             }
-            
-            DB::commit(); 
+
+            DB::commit();
             return response()->json([
                 'type' => 'success',
                 'message' => 'Status updated successfully',
                 'title' => 'Success'
             ]);
         } catch (\Throwable $th) {
-            DB::rollBack(); 
+            DB::rollBack();
 
             return response()->json([
                 'type' => 'danger',
@@ -1192,7 +1189,7 @@ class ProposalController extends Controller
             ]);
         }
     }
-    
+
 
     // VIEW SUBMIT PROPOSAL - SECRETARY POV
     public function viewSubmitProposalSecretary(Request $request, String $level, String $meeting_id)
@@ -1211,8 +1208,8 @@ class ProposalController extends Controller
             if($level == 'BOR'){
                 $meeting = BorMeeting::find($meetingID);
             }
-            
-            if ($level == 'University') {  // LOCAL PROPOSALS THAT WILL BE SUBMITTED TO UNIVERSITY 
+
+            if ($level == 'University') {  // LOCAL PROPOSALS THAT WILL BE SUBMITTED TO UNIVERSITY
                 $proposals = LocalMeetingAgenda::with('proposal')
                 // ->where('status', 4)
                 ->whereHas('proposal', function ($query): void  {
@@ -1223,7 +1220,7 @@ class ProposalController extends Controller
                 })
                 ->orderBy('created_at', 'desc')
                 ->get();
-            } elseif ($level == 'BOR') { // UNIVERSITY PROPOSALS THAT WILL BE SUBMITTED TO BOR 
+            } elseif ($level == 'BOR') { // UNIVERSITY PROPOSALS THAT WILL BE SUBMITTED TO BOR
                 $proposals = UniversityMeetingAgenda::with('proposal')
                     // ->where('status', 4)
                     ->whereHas('proposal', function ($query)  {
@@ -1231,8 +1228,8 @@ class ProposalController extends Controller
                     })
                     ->orderBy('created_at', 'desc')
                     ->get();
-            } 
-          
+            }
+
             // // Get meeting type
             // $councilType = $meeting->council_type ?? null;
             // $councilTypesConfig = config('proposals.council_types');
@@ -1241,7 +1238,7 @@ class ProposalController extends Controller
             // foreach ($matters as $type => $title) {
             //     // Ensure every type exists in the categorizedProposals array
             //     $categorizedProposals[$type] = collect();
-            
+
             //     if ($meeting->getMeetingCouncilType() == 2 || $meeting->council_type == 1) {
             //         $categorizedProposals[$type] = $proposals->filter(fn($p) => $p->proposal->type === $type);
             //     } elseif ($meeting->council_type == 2) {
@@ -1250,7 +1247,7 @@ class ProposalController extends Controller
             //         $categorizedProposals[2] = $proposals->filter(fn($p) => $p->proposal->type === 2);
             //     }
             // }
-            
+
 
             // if (!isset($categorizedProposals[$type])) {
             //     $categorizedProposals[$type] = collect();
@@ -1265,7 +1262,7 @@ class ProposalController extends Controller
             foreach ($matters as $type => $title) {
                 $categorizedProposals[$type] = collect();
             }
-            
+
             // Categorize proposals
             foreach ($proposals as $proposal) {
                 $type = $proposal->proposal->type;
@@ -1277,7 +1274,7 @@ class ProposalController extends Controller
 
                 // Separate Financial Matters from Administrative Matters
                 if ($type == 2 && $subType == 0) {
-                    $type = 0; 
+                    $type = 0;
                 }
             }
 
@@ -1313,7 +1310,7 @@ class ProposalController extends Controller
             if($level == 'BOR'){
                 $meeting = BorMeeting::find($meetingID);
             }
-           
+
             if ($meeting->getIsSubmissionClosedAttribute() || ($meeting->status == 1)){
                 return response()->json(['type' => 'danger','message' => 'The meeting is already closed!', 'title'=> "Meeting Closed!"]);
             } else{
@@ -1330,8 +1327,8 @@ class ProposalController extends Controller
                 foreach($proposalIDs as $proposal_ID){
                     Proposal::where('id', $proposal_ID)->update([
                         'status' => $status,
-                        ]);   
-                        
+                        ]);
+
                     UniversityMeetingAgenda::create([
                         'university_proposal_id' => $proposal_ID,
                         'university_meeting_id' => $meeting ->id,
@@ -1354,8 +1351,8 @@ class ProposalController extends Controller
                 foreach($proposalIDs as $proposal_ID){
                     Proposal::where('id', $proposal_ID)->update([
                         'status' => $status,
-                        ]);   
-                        
+                        ]);
+
                     BoardMeetingAgenda::create([
                         'board_proposal_id' => $proposal_ID,
                         'bor_meeting_id' => $meeting->id,
@@ -1371,7 +1368,7 @@ class ProposalController extends Controller
                         'action' => 7,
                     ]);
                 }
-            } 
+            }
             DB::commit();
             return response()->json([
                 'type' => 'success',

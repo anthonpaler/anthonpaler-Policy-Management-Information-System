@@ -29,12 +29,12 @@
                 <div class="card-body">
                     <form action="{{ route(getUserRole().'.proposal.edit.save', ['proposal_id' => encrypt($proposal->id)]) }}" method="post" id="editProposalFrm">
                         <div class="d-flex justify-content-between gap-2 mb-3">
-                            <h6 class="m-0">PROPOSAL DETAILS </h6>                       
+                            <h6 class="m-0">PROPOSAL DETAILS </h6>
                             <span class="badge bg-label-{{ in_array($proposal->status, [2,5,6,7]) ? 'danger' : 'primary'}}">{{ config('proposals.status.'.$proposal->status) }}</span>
                         </div>
                         <div class="mb-3">
                             <label class="form-label" for="title">Proposal Title <span class="ms-1 text-danger">*</span></label>
-                              
+
                             <textarea
                                 id="title"
                                 name="title"
@@ -93,7 +93,7 @@
                                                 @else
                                                     <div class="">
                                                         <small class="badge bg-label-danger d-flex align-items-center gap-2 remove" data-id="{{$proponent->employee_id}}"><i class='bx bx-trash'></i>Remove</small>
-                                                    </div> 
+                                                    </div>
                                                 @endif
                                             </div>
                                         </li>
@@ -111,7 +111,7 @@
                                     @endphp
 
                                     <script>
-                                        window.selectedProponents = @json($selectedProponents); 
+                                        window.selectedProponents = @json($selectedProponents);
                                     </script>
                                 </ul>
                             </div>
@@ -141,7 +141,7 @@
                                     @error('matter')
                                         <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
                                     @enderror
-                                </div>           
+                                </div>
                             </div>
                             <div class="col">
                                 <div class="mb-3">
@@ -232,17 +232,17 @@
 
                                                     // DYNAMIC FILE ICON
                                                     $fileExtension = pathinfo($file->file, PATHINFO_EXTENSION);
-                                                                $iconPath = asset('assets/img/icons/file-icons/' . ($fileExtension === 'pdf' ? 'pdf.png' : 
-                                                                            ($fileExtension === 'xls' ? 'xls.png' : 
-                                                                            ($fileExtension === 'xlsx' ? 'xlsx.png' : 
+                                                                $iconPath = asset('assets/img/icons/file-icons/' . ($fileExtension === 'pdf' ? 'pdf.png' :
+                                                                            ($fileExtension === 'xls' ? 'xls.png' :
+                                                                            ($fileExtension === 'xlsx' ? 'xlsx.png' :
                                                                             ($fileExtension === 'csv' ? 'csv-file.png' : 'file.png')))));
                                                     // FILE STATUS COLOR
-                                                    $statusColors = [ 'secondary','warning', 'success', 'danger', 'primary']; 
+                                                    $statusColors = [ 'secondary','warning', 'success', 'danger', 'primary'];
                                                 @endphp
                                                 <tr>
                                                     <td>
                                                         <div class="d-flex gap-3">
-                                                            <input type="checkbox" class="form-check-input select-proposal-file d-none" data-id="{{ $file->id }}"> 
+                                                            <input type="checkbox" class="form-check-input select-proposal-file d-none" data-id="{{ $file->id }}">
                                                             <span class="text-muted file_order_no">
                                                                 {{  $file->order_no }}
                                                             </span>
@@ -254,7 +254,7 @@
                                                                 <img src="{{ $iconPath }}" class="file-icon" alt="File Icon">
                                                             </div>
                                                             <div class="file-name">
-                                                                <span style="color: #3E4043;" class="text-wrap view-single-file-preview" 
+                                                                <span style="color: #3E4043;" class="text-wrap view-single-file-preview"
                                                                 data-file-url="/storage/proposals/{{$file->file}}">{{$file->file}}</span>
                                                                 <div class="d-flex gap-2">
                                                                     <small class="text-muted version">Version  {{ $file->version }}</small>
@@ -265,21 +265,21 @@
                                                     </td>
                                                     <td>
                                                         <div class="d-flex align-items-center gap-2">
-                                                            <button 
-                                                                class="action-btn success rename-file-btn" 
-                                                                data-bs-toggle="modal" 
+                                                            <button
+                                                                class="action-btn success rename-file-btn"
+                                                                data-bs-toggle="modal"
                                                                 data-bs-target="#renameFileModal"
                                                                 data-id="{{ $file->id }}"
                                                                 data-filename="{{ $file->file }}">
                                                                 <i class='bx bx-rename'></i>
                                                                 <span class="tooltiptext">Rename</span>
                                                             </button>
-                                                            
+
                                                             <button class="action-btn danger delete-proposal-file"  data-id="{{ $file->id }}" >
                                                                 <i class='bx bx-trash-alt'></i>
                                                                 <span class="tooltiptext">Delete</span>
                                                             </button>
-                                                            
+
                                                             <button class="action-btn primary resubmit-proposal" data-id="{{ $file->id }}" >
                                                                 <i class='bx bx-upload' ></i>
                                                                 <span class="tooltiptext">Reupload</span>
@@ -306,10 +306,10 @@
                                 $countOldVersion = 0;
                                 // DYNAMIC FILE ICON
                                 $fileExtension = pathinfo($file->file, PATHINFO_EXTENSION);
-                                $iconPath = asset('assets/img/icons/file-icons/' . 
-                                    ($fileExtension === 'pdf' ? 'pdf.png' : 
-                                    ($fileExtension === 'xls' ? 'xls.png' : 
-                                    ($fileExtension === 'xlsx' ? 'xlsx.png' : 
+                                $iconPath = asset('assets/img/icons/file-icons/' .
+                                    ($fileExtension === 'pdf' ? 'pdf.png' :
+                                    ($fileExtension === 'xls' ? 'xls.png' :
+                                    ($fileExtension === 'xlsx' ? 'xlsx.png' :
                                     ($fileExtension === 'csv' ? 'csv-file.png' : 'file.png')))));
                             @endphp
                             <div class="table-responsive text-nowrap old-version-files d-none files-table">
@@ -326,10 +326,10 @@
                                                     $countOldVersion++;
                                                     // DYNAMIC FILE ICON
                                                     $fileExtension = pathinfo($file->file, PATHINFO_EXTENSION);
-                                                    $iconPath = asset('assets/img/icons/file-icons/' . 
-                                                        ($fileExtension === 'pdf' ? 'pdf.png' : 
-                                                        ($fileExtension === 'xls' ? 'xls.png' : 
-                                                        ($fileExtension === 'xlsx' ? 'xlsx.png' : 
+                                                    $iconPath = asset('assets/img/icons/file-icons/' .
+                                                        ($fileExtension === 'pdf' ? 'pdf.png' :
+                                                        ($fileExtension === 'xls' ? 'xls.png' :
+                                                        ($fileExtension === 'xlsx' ? 'xlsx.png' :
                                                         ($fileExtension === 'csv' ? 'csv-file.png' : 'file.png')))));
                                                 @endphp
                                                 <tr>
@@ -339,7 +339,7 @@
                                                                 <img src="{{ $iconPath }}" class="file-icon" alt="File Icon">
                                                             </div>
                                                             <div class="file-name">
-                                                                <span style="color: #3E4043;" class="text-wrap view-single-file-preview" 
+                                                                <span style="color: #3E4043;" class="text-wrap view-single-file-preview"
                                                                 data-file-url="/storage/proposals/{{$file->file}}">{{$file->file}}</span>
                                                                 <div class="d-flex gap-2">
                                                                     <small class="text-muted version">Version  {{ $file->version }}</small>
@@ -389,7 +389,7 @@
                     </form>
                 </div>
             </div>
-        </div> 
+        </div>
         <div class="col mb-4" sty>
             <div class="card mb-4 proposal-action-wrapper">
                 <div class="card-header com-sec-header ">
@@ -418,7 +418,7 @@
                                                         <small class="text-wrap">{{ config('usersetting.role.'.$log->user->role) }}</small>
                                                     </div>
                                                 </div>
-                                               
+
                                                 <div class="d-flex flex-column">
                                                     <small class="text-{{ in_array($log->status, [2,5, 6,7]) ? 'danger' : 'primary'}} {{ $log->user->employee_id == session('employee_id') ? 'align-self-start' : 'align-self-end' }}">{{ config('proposals.status.'.$log->status) }}</small>
                                                     <small class="text-muted {{ $log->user->employee_id == session('employee_id') ? 'align-self-start' : 'align-self-end' }}">{{ $log->created_at->format('F d, Y') }}</small>
@@ -445,7 +445,7 @@
 
                     </div>
                 </div>
-            
+
                 <div class="p-4 porposal-action-con">
                     <div class="">
                         <!-- <small class="text-light fw-medium">Comment</small> -->
@@ -465,15 +465,15 @@
                                     <ul class="dropdown-menu">
                                         @foreach (array_slice(config('proposals.proposal_action'), 0, 7, true) as $index => $item)
                                             @php
-                                               
+
                                                 if(session('user_role') == 5 ){
                                                     if (in_array($index, [3,5])) {
                                                         continue;
                                                     }
                                                 }
 
-                                                $isDisabled = true; 
-                                                
+                                                $isDisabled = true;
+
                                                 if ($meetingDateTime) {
                                                     if ($currentDateTime->greaterThan($meetingDateTime)) {
                                                         $isDisabled = in_array($index, [0, 1]); // Enable 0 & 1 if current date is before meeting date
@@ -486,25 +486,25 @@
                                                     }
                                                 }
                                             @endphp
-                                            
+
                                             <li>
-                                                <span class="dropdown-item proposal-action {{ $isDisabled ? 'disabled' : '' }}" 
-                                                    data-id="{{ $index }}" 
+                                                <span class="dropdown-item proposal-action {{ $isDisabled ? 'disabled' : '' }}"
+                                                    data-id="{{ $index }}"
                                                     data-label="{{ $item }}">
                                                     {{ $item }}
                                                 </span>
                                             </li>
 
-                                            @if (in_array($index, [1, 5, 9])) 
+                                            @if (in_array($index, [1, 5, 9]))
                                                 <li><hr class="dropdown-divider"></li>
                                             @endif
                                         @endforeach
-                                        
-                                        
+
+
                                         @if($proposal->type == 3)
                                             <li>
-                                                <span class="dropdown-item proposal-action {{ $isDisabled ? 'disabled' : '' }}" 
-                                                    data-id="9" 
+                                                <span class="dropdown-item proposal-action {{ $isDisabled ? 'disabled' : '' }}"
+                                                    data-id="9"
                                                     data-label="Confirm">
                                                     Confirm
                                                 </span>
@@ -516,11 +516,11 @@
                                 <!-- <div class="flex-grow-1">
                                     <input type="text" class="form-control flex-grow-1" data-id="" value="Select Action" id="proposalStatusInput"  disabled>
                                 </div> -->
-                                <button class="btn btn-{{ $proposal->meeting->status == 1 ? 'danger': 'primary' }} d-flex align-items-center gap-2 text-nowrap" 
-                                        id="updateProposalStatus" 
-                                        data-id="{{ encrypt($proposal->id) }}" 
+                                <button class="btn btn-{{ $proposal->meeting->status == 1 ? 'danger': 'primary' }} d-flex align-items-center gap-2 text-nowrap"
+                                        id="updateProposalStatus"
+                                        data-id="{{ encrypt($proposal->id) }}"
                                         {{ $proposal->meeting->status == 1 ? 'disabled' : '' }}>
-                                    
+
                                     {!! $proposal->meeting->status == 1 ? "<i class='bx bxs-lock-alt'></i>" : "<i class='bx bx-send'></i>" !!}
                                     Update Proposal Status
                                 </button>
@@ -552,7 +552,7 @@
     </div>
 </div>
 <!-- Modal for Renaming File -->
-<div class="modal fade" id="renameFileModal" tabindex="-1" aria-labelledby="renameFileModallLabel" 
+<div class="modal fade" id="renameFileModal" tabindex="-1" aria-labelledby="renameFileModallLabel"
      aria-hidden="true" data-file-id="">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -651,7 +651,7 @@
 
     let deletedFiles = [];
     let reuploadedFiles = [];
-    
+
 
     function getImageByFileType(fileType) {
         switch (fileType) {

@@ -35,7 +35,7 @@ class ProposalLogSeeder extends Seeder
             if (isset($userMap[$row['user_id']])) {
                 ProposalLog::create([
                     'status' => $row['status'],
-                    'comments' => ($row['comments'] === 'NULL' || empty($row['comments'])) ? null : $row['comments'],
+                    'comments' => empty($row['comments']) || strtolower($row['comments']) == 'null' ? null : $row['comments'],
                     'level' => $row['level'],
                     'action' => !empty($row['action']) ? $row['action'] : null,
                     'file_id' => !empty($row['file_id']) ? $row['file_id'] : null,

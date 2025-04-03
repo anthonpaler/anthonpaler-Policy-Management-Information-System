@@ -26,6 +26,8 @@ class DatabaseSeeder extends Seeder
             ProposalLogSeeder::class,
             ProposalProponentsSeeder::class,
             AdministrativeCouncilMembershipSeeder::class,
+            AcademicCouncilMembershipSeeder::class,
+            UserSeeder::class,
         ]);
     }
 }

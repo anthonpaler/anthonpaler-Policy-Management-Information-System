@@ -12,9 +12,9 @@
     <i class='bx bx-chevron-right' ></i>
     <a href="#">Meetings</a>
 </div>
-@php 
-    $actionColors = [ 'secondary', 'primary', 'success', 'warning', 'info', 'danger']; 
-@endphp 
+@php
+    $actionColors = [ 'secondary', 'primary', 'success', 'warning', 'info', 'danger'];
+@endphp
 <div class="card mb-3">
     <div class="d-flex flex-wrap justify-content-between align-items-center custom_tab_wrapper">
         <div class="">
@@ -58,7 +58,7 @@
                 <h5 class="mb-0">List of Meetings</h5>
                 <small class="text-muted">Scheduled submissions and meetings.</small>
             </div>
-            
+
             <div class="d-flex align-items-center gap-3 flex-wrap">
                 <div class="flex-grow-1">
                     <div class="input-group input-group-merge">
@@ -83,7 +83,7 @@
                 </div>
             </div>
         </div>
- 
+
         <div class="card-datatable pt-4">
             <div class="table-responsive text-nowrap">
                 <table id="meetingTable" class="table table-striped">
@@ -137,20 +137,20 @@
                                                     </a>
                                                 @else
                                                     @if(!$meeting->has_order_of_business)
-                                                        @if($meeting->meeting_date_time) 
+                                                        @if($meeting->meeting_date_time)
                                                             <a class="action-btn warning" href="{{ route(getUserRole().'.order_of_business.view-generate', ['level' => $meeting->getMeetingLevel(), 'meeting_id'=> encrypt($meeting->id)]) }}">
-                                                                <i class='bx bx-up-arrow-circle'></i> 
+                                                                <i class='bx bx-up-arrow-circle'></i>
                                                                 <span class="tooltiptext">Generate OOB</span>
                                                             </a>
                                                         @else
                                                             <a class="action-btn warning" onclick="showCantGenerateOOBWarning()">
-                                                                <i class='bx bx-up-arrow-circle'></i> 
+                                                                <i class='bx bx-up-arrow-circle'></i>
                                                                 <span class="tooltiptext">Generate OOB</span>
                                                             </a>
                                                         @endif
                                                     @else
                                                         <a class="action-btn danger" onclick="showhasOOBWarning()">
-                                                            <i class='bx bx-up-arrow-circle'></i> 
+                                                            <i class='bx bx-up-arrow-circle'></i>
                                                             <span class="tooltiptext">Generate OOB</span>
                                                         </a>
                                                     @endif
@@ -178,7 +178,7 @@
                                                         {{ config('meetings.council_types.university_level.'.$meeting->council_type) }}
                                                     @elseif ($meeting->getMeetingCouncilType() == 2)
                                                         {{ config('meetings.council_types.board_level.'.$meeting->council_type) }}
-                                                    @endif 
+                                                    @endif
                                             </span>
                                         </div>
                                     </td>
@@ -190,9 +190,12 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <span>
+                                        {{-- <span>
                                             {{ $meeting->meeting_date_time ? \Carbon\Carbon::parse($meeting->meeting_date_time)->format('F d, Y, h:i A') : 'Not yet set' }}
-                                        </span>  
+                                        </span> --}}
+                                        <a  style="color: #697A8D;" href="{{ route(getUserRole().'.meetings.details', ['level' => $meeting->getMeetingLevel(), 'meeting_id'=> encrypt($meeting->id)]) }}">
+                                          {{ $meeting->meeting_date_time ? \Carbon\Carbon::parse($meeting->meeting_date_time)->format('F d, Y, h:i A') : 'Not yet set' }}
+                                        </a>
                                     </td>
                                     @if(session('isProponent'))
                                         <td>
@@ -232,7 +235,7 @@
                                                         <i class='bx bx-send'></i> SUBMIT
                                                     </a>
                                                 @endif
-                        
+
                                                 <a class="btn btn-sm btn-success d-flex align-items-center gap-1"
                                                     data-meetingStatus="{{ $meeting->status }}"
                                                    href="{{ route(getUserRole().'.meetings.details', ['level' => $meeting->getMeetingLevel(), 'meeting_id'=> encrypt($meeting->id)]) }}"
@@ -240,11 +243,11 @@
                                                     <i class='bx bx-right-top-arrow-circle'></i>VIEW
                                                 </a>
                                             @endif
-                                           
+
                                             @if(session('isSecretary'))
 
                                                 <a class="btn btn-sm btn-primary d-flex align-items-center gap-1"
-                                                   href="{{ route(getUserRole().'.meetings.details', ['level' => $meeting->getMeetingLevel(), 'meeting_id'=> encrypt($meeting->id)]) }}" 
+                                                   href="{{ route(getUserRole().'.meetings.details', ['level' => $meeting->getMeetingLevel(), 'meeting_id'=> encrypt($meeting->id)]) }}"
                                                 >
                                                     <i class='bx bx-right-top-arrow-circle'></i>VIEW
                                                 </a>
@@ -267,7 +270,7 @@
                                                         <div class="dropdown-menu">
 
                                                         @if(!$meeting->has_order_of_business)
-                                                            @if($meeting->meeting_date_time) 
+                                                            @if($meeting->meeting_date_time)
                                                                 <a class="dropdown-item" href="{{ route(getUserRole().'.order_of_business.view-generate', ['level' => $meeting->getMeetingLevel(), 'meeting_id'=> encrypt($meeting->id)]) }}">
                                                                     <i class='bx bx-up-arrow-circle me-1'></i> Generate OOB
                                                                 </a>

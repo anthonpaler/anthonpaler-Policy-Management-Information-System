@@ -1,4 +1,4 @@
-<?php
+ <?php
 return [
     'matters' => [
         1 => 'Academic Matters',
@@ -26,7 +26,7 @@ return [
         10 => 'Confirmed',
     ],
     'requested_action' => [
-        // PROPONENT 
+        // PROPONENT
         4 => 'Endorsement for Local ACAD',
         5 => 'Endorsement for Local ADCO',
 

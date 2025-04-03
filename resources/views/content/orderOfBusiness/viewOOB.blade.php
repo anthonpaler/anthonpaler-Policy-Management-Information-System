@@ -46,22 +46,22 @@
             <a href="{{ route('oob.export.pdf', ['level' => $orderOfBusiness->meeting->getMeetingLevel(), 'oob_id' => encrypt($orderOfBusiness->id)]) }}" class="text-white d-flex align-items-center gap-2" target="_blank"><i class='bx bx-export'></i> Export OOB</a>
         </button>
     </div>
-    
+
     @if (session('isSecretary'))
     <form action="{{ route(getUserRole().'.order_of_business.save', ['level' => $meeting->getMeetingLevel(), 'oob_id' => encrypt($orderOfBusiness->id)]) }}" method="post" id="oobFrm" meeting-id="{{encrypt($orderOfBusiness->meeting->id)}}">
     @endif
         <div class="d-flex flex-column justify-content-center align-items-center">
             <h4 class="card-header p-0 mb-2 text-center">
-                {{ config('meetings.quaterly_meetings.'.$meeting->quarter) }} 
+                {{ config('meetings.quaterly_meetings.'.$meeting->quarter) }}
                 @if ($meeting->getMeetingCouncilType() == 0)
                     {{ config('meetings.council_types.local_level.'.$meeting->council_type) }}
                 @elseif ($meeting->getMeetingCouncilType() == 1)
                     {{ config('meetings.council_types.university_level.'.$meeting->council_type) }}
                 @elseif ($meeting->getMeetingCouncilType() == 2)
                     {{ config('meetings.council_types.board_level.'.$meeting->council_type) }}
-                @endif 
+                @endif
                 {{ $meeting->year }}
-            </h4> 
+            </h4>
             <div class="d-flex align-items-center gap-2 flex-wrap justify-content-center ">
                 <span class="text-muted fw-light text-center">{{ \Carbon\Carbon::parse($meeting->meeting_date_time)->format('F d, Y, l, h:i A') }}</span>
 
@@ -76,7 +76,7 @@
                 @endif
             </div>
             <div class="d-flex align-items-center gap-2 mt-3 mb-3">
-                <h5 class="card-header p-0 ">ORDER OF BUSINESS</h5> 
+                <h5 class="card-header p-0 ">ORDER OF BUSINESS</h5>
             </div>
         </div>
 
@@ -87,18 +87,18 @@
                 <div class="d-flex align-items-center gap-2">
                     @if (in_array(auth()->user()->role, [3, 4, 5]))
                         @if(empty($orderOfBusiness->previous_minutes))
-                            <button class="btn btn-sm btn-primary d-flex align-items-center gap-2" 
+                            <button class="btn btn-sm btn-primary d-flex align-items-center gap-2"
                             id="openMinutesModal">
                                 <i class='bx bx-upload'></i>
                                 Upload Previous Minutes
                             </button>
                         @endif
-            
+
                         {{-- Show View Button only if there is a file --}}
                         @if(!empty($orderOfBusiness->previous_minutes))
-                            <a href="{{ asset('storage/previous_minutes/' . $orderOfBusiness->previous_minutes) }}" 
-                                target="_blank" 
-                                class="btn btn-sm btn-success d-flex align-items-center gap-2" 
+                            <a href="{{ asset('storage/previous_minutes/' . $orderOfBusiness->previous_minutes) }}"
+                                target="_blank"
+                                class="btn btn-sm btn-success d-flex align-items-center gap-2"
                                 id="viewButton">
                                 <i class='bx bx-file'></i>
                                 View Previous Minutes
@@ -115,17 +115,17 @@
 
                 </div>
             </div>
-        
+
             <div class="input-group input-group-merge">
                 <textarea
-                    id="preliminaries" 
+                    id="preliminaries"
                     class="form-control"
                     placeholder="Enter preliminaries."
                     aria-label="Enter preliminaries."
                     name="preliminaries"
                     rows="6"
-                    @if(session('isProponent') ||(session('isSecretary') && session('secretary_level') != $meeting->getMeetingCouncilType())) 
-                        disabled 
+                    @if(session('isProponent') ||(session('isSecretary') && session('secretary_level') != $meeting->getMeetingCouncilType()))
+                        disabled
                     @endif
                 >    {{$orderOfBusiness->preliminaries}}
                 </textarea>
@@ -144,7 +144,7 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body" id="modalFiles">
-                    
+
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -160,7 +160,7 @@
                         <i class='bx bx-square'></i>
                         <span class="tooltiptext">Group Proposals</span>
                     </button>
-                    <button id="cancelSelection" class="action-btn danger"> 
+                    <button id="cancelSelection" class="action-btn danger">
                         <i class='bx bx-revision' ></i>
                         <span class="tooltiptext">Cancel</span>
                     </button>
@@ -171,10 +171,10 @@
         <div class="mb-3">
             <label class="form-label">2. New Business</label>
 
-            @php 
-                $counter = 1; 
+            @php
+                $counter = 1;
                 $groupCounter = 1;
-                $actionColors = ['secondary', 'success', 'warning', 'info']; 
+                $actionColors = ['secondary', 'success', 'warning', 'info'];
                 $noProposals = collect($categorizedProposals)->flatten()->isEmpty();
                 $proposalKey = match ($meeting->getMeetingLevel()) {
                     'Local' => 'local_proposal_id',
@@ -190,7 +190,7 @@
             @endphp
 
             @foreach ($matters as $type => $title)
-                @php 
+                @php
                     // Group proposals and standalone proposals together based on order_no
                     $allProposals = collect();
 
@@ -217,7 +217,7 @@
                     // Sort by order_no
                     $allProposals = $allProposals->sortBy('order_no');
                 @endphp
-                
+
                 @if ($categorizedProposals[$type]->count() > 0)
                     <div class="table-responsive text-nowrap mb-4">
                         <table class="table table-bordered sortable" id="{{ session('isSecretary') && (session('secretary_level') == $meeting->getMeetingCouncilType()) ? 'oobTable' :  ''}}">
@@ -303,8 +303,8 @@
                                                         <span style="color: #697A8D;">{{ $groupedProposal->proposal->title }}</span>
                                                     </div>
                                                 </td>
-                                                
-                                                <td>  
+
+                                                <td>
                                                     <div class="d-flex flex-column gap-3">
                                                         @foreach ($groupedProposal->proposal->proponents ?? [] as $proponent)
                                                             <div class="d-flex align-items-center gap-3">
@@ -325,7 +325,7 @@
                                                         <button class="btn btn-sm btn-secondary view-files d-flex gap-2" data-files="{{ json_encode($groupedProposal->proposal->files) }}" data-title="{{ $groupedProposal->proposal->title  }}">
                                                             <i class='bx bx-file'></i> VIEW FILES
                                                         </button>
-                                                    @else 
+                                                    @else
                                                         <button class="btn btn-sm btn-danger d-flex gap-2" disabled>
                                                             <i class='bx bx-file'></i> NO FILES
                                                         </button>
@@ -348,14 +348,13 @@
             </script>
     </div>
     <div class="mb-3">
-        <div class="d-flex align-items-center">
-            <label class="form-label">3. Other Matters</label>
-            <button id="addOtherMatterBtn" class="btn btn-primary btn-xs ms-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Add Other Matter">
-                <i class='bx bx-plus'></i>
-            </button>
-        </div>
-
-        @if ($otherMattersProposals->isNotEmpty())
+      <div class="d-flex align-items-center gap-2">
+          <label class="form-label">3. Other Matters</label>
+          <button id="addOtherMatterBtn" class="btn btn-primary btn-xs" data-bs-toggle="tooltip" data-bs-placement="top" title="Add Other Matter">
+              <i class='bx bx-plus'></i>
+          </button>
+      </div>
+      @if ($otherMattersProposals->isNotEmpty())
         <div class="table-responsive text-nowrap mb-4">
             <table class="table table-bordered">
                 <thead>
@@ -413,22 +412,22 @@
                 </tbody>
             </table>
         </div>
-            @else
-                <p class="text-muted">No other matters recorded.</p>
-            @endif
-        </div>
+      @else
+          <p class="text-muted">No other matters recorded.</p>
+      @endif
+    </div>
 
-        
+
         @if(session('isSecretary') && (session('secretary_level') == $meeting->getMeetingCouncilType()))
             <div class="d-flex gap-3 align-items-center flex-wrap">
                 <button type="submit" class="btn btn-primary d-flex gap-2" id="saveOOBBtn">
                     <i class='bx bx-save' ></i>
                     <span class="text-nowrap">Save Changes</span>
-                </button> 
+                </button>
                 <button type="buttton" class="btn btn-success d-flex gap-2" id="disseminateOOBBtn" data-id="{{encrypt($orderOfBusiness->id)}}" data-action = "{{ route(getUserRole().'.dissemenate.order_of_business', ['level' => $meeting->getMeetingLevel(), 'oob_id' => encrypt($orderOfBusiness->id)]) }}">
                     <i class='bx bx-send'></i>
                     <span class="text-nowrap">{{$orderOfBusiness->status == 1 ? 'Redisseminate OOB' : 'Disseminate OOB'}}</span>
-                </button> 
+                </button>
             </div>
         @endif
     @if (session('isSecretary'))
@@ -458,11 +457,11 @@
                             <label class="form-label" for="proponent_email">Proponent<span class="ms-1 text-danger">*</span></label>
                             <div class="input-group">
                                 <span id="email-icon" class="input-group-text"><i class="bx bx-envelope"></i></span>
-                                <input 
-                                    type="text" 
-                                    id="proponent_email_matter" 
-                                    name="proponent_email" 
-                                    class="form-control @error('proponent_email') is-invalid @enderror" 
+                                <input
+                                    type="text"
+                                    id="proponent_email_matter"
+                                    name="proponent_email"
+                                    class="form-control @error('proponent_email') is-invalid @enderror"
                                     placeholder="Enter proponent's email"
                                     required
                                 >
@@ -667,7 +666,7 @@
                 }
             });
         }
-    
+
         // Listen for input event to fetch data
         tagify.on("input", function (e) {
             let value = e.detail.value;
@@ -688,7 +687,7 @@
 
         $("#otherMattersFrm").on("submit", function (e) {
             e.preventDefault(); // Prevent default form submission
-            
+
             let formData = new FormData(this);
             let submitButton = $("#addMatter");
             submitButton.prop("disabled", true); // Disable button to prevent duplicate submissions
@@ -744,7 +743,7 @@
             let formData = new FormData(this);
 
             $.ajax({
-                url: "{{ route(getUserRole().'.upload.minutes') }}", 
+                url: "{{ route(getUserRole().'.upload.minutes') }}",
                 type: "POST",
                 data: formData,
                 processData: false,
@@ -828,7 +827,7 @@
             let formData = new FormData(this);
 
             $.ajax({
-                url: "{{ route(getUserRole().'.upload.minutes') }}", 
+                url: "{{ route(getUserRole().'.upload.minutes') }}",
                 type: "POST",
                 data: formData,
                 processData: false,
@@ -882,7 +881,7 @@
         $(".ungroup-btn").click(function (e) {
             e.preventDefault();
             let groupId = $(this).closest(".tr-group").data("id");
-           
+
             $.ajax({
                 url: "{{ route('ungroup_proposal', ['level' => $orderOfBusiness->meeting->getMeetingLevel()]) }}",
                 method: "POST",
@@ -936,12 +935,12 @@
 
         function updateOrder() {
             let order = [];
-            let position = 1; 
+            let position = 1;
 
             $("#oobTable tbody tr").each(function (index) {
                 let proposalId = $(this).data("id");
-                let isGroup = $(this).data("group") === true; 
-                
+                let isGroup = $(this).data("group") === true;
+
                 if ($(this).find(".order_no").length) {
                     order.push({ id: proposalId, isGroup: isGroup, order: index + 1,position: position });
 
@@ -953,7 +952,7 @@
                     $(this).find("td:first .order_no").text(position);
                 }
             });
-            
+
             console.log("Ordered Proposals: ");
             console.log(order);
 
@@ -962,7 +961,7 @@
                 method: "POST",
                 data: {
                     orderData: order,
-                    _token: "{{ csrf_token() }}" 
+                    _token: "{{ csrf_token() }}"
                 },
                 success: function (response) {
                     console.log("Order updated successfully!", response);
@@ -998,7 +997,7 @@
 
             let rowId = $(this).attr("data-id");
 
-            let isGroup = $(this).data("group") === true; 
+            let isGroup = $(this).data("group") === true;
             if(isGroup ==  true){
                 showAlert('danger', 'Invalid Row', 'Selection of a Group Proposal is not allowed');
                 return;
@@ -1031,7 +1030,7 @@
             if (selectedProposalRows.length < 2) {
                 showAlert('danger', 'Group Creation Failed', 'You must select at least two proposals to create a group.');
                 $("#groupModal").modal("hide");
-                return; 
+                return;
             }
 
 
@@ -1137,7 +1136,7 @@
                 let formData = new FormData(this);
 
                 $.ajax({
-                    url: "{{ route(getUserRole().'.upload.minutes') }}", 
+                    url: "{{ route(getUserRole().'.upload.minutes') }}",
                     type: "POST",
                     data: formData,
                     processData: false,
@@ -1179,12 +1178,12 @@
         });
 
         $('#uploadMinutesForm').on('submit', function(e) {
-            e.preventDefault(); 
+            e.preventDefault();
 
             let formData = new FormData(this);
 
             $.ajax({
-                url: "{{ route(getUserRole().'.upload.minutes') }}", 
+                url: "{{ route(getUserRole().'.upload.minutes') }}",
                 type: "POST",
                 data: formData,
                 processData: false,
