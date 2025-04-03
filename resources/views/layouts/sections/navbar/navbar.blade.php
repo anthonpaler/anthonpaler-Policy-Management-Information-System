@@ -18,7 +18,7 @@ $navbarDetached = ($navbarDetached ?? '');
 
     <div class="navbar-nav flex-column navbar-nav-text">
         <div class="nav-item d-flex align-items-center">
-            <h6 class="m-0">Policy Management Information System - 
+            <h6 class="m-0">Policy Management Information System -
             {{ auth()->user()->campus->name ?? 'No Campus Assigned' }}
 
             </h6>
@@ -29,13 +29,26 @@ $navbarDetached = ($navbarDetached ?? '');
         </div>
     </div>
 
-   
+
     <ul class="navbar-nav flex-row align-items-center ms-auto gap-3">
-        <div class="d-flex align-items-center gap-3">
-            <i class="bx bx-fullscreen" onclick="toggleFullscreen()" id="fullScreenBtn"></i>
-        </div>
-        <!-- User -->
-        <li class="nav-item navbar-dropdown dropdown-user dropdown">
+      <div class="">
+          <i class="bx bx-fullscreen" onclick="toggleFullscreen()" id="fullScreenBtn"></i>
+      </div>
+
+      {{-- FOR MULTU ROLE USERS --}}
+      {{-- <div class="btn-group">
+        <button type="button" class="btn btn-sm btn-primary">VIEW AS</button>
+        <button type="button" class="btn btn-sm btn-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+          <span class="visually-hidden">Toggle Dropdown</span>
+        </button>
+        <ul class="dropdown-menu" style="position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate3d(0px, 40px, 0px);" data-popper-placement="bottom-start">
+          <li><a class="dropdown-item" href="javascript:void(0);">Local Secretary</a></li>
+          <li><a class="dropdown-item" href="javascript:void(0);">University Secretary</a></li>
+          <li><a class="dropdown-item" href="javascript:void(0);">Board Secretary</a></li>
+        </ul>
+      </div> --}}
+      <!-- User -->
+      <li class="nav-item navbar-dropdown dropdown-user dropdown">
         <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
             <div class="d-flex gap-3">
                 <div class="flex-grow-1 user-info">
@@ -43,8 +56,8 @@ $navbarDetached = ($navbarDetached ?? '');
                     <small class="text-muted d-flex justify-content-end">{{ config('usersetting.role.'.session('user_role')) }}</small>
                 </div>
                 <div class="avatar avatar-online">
-                    <img src="{{ session('profile_photo') && trim(session('profile_photo')) !== '' ? session('profile_photo') : asset('assets/img/avatars/default-avatar.jpg') }}" 
-     alt="Profile Photo" 
+                    <img src="{{ session('profile_photo') && trim(session('profile_photo')) !== '' ? session('profile_photo') : asset('assets/img/avatars/default-avatar.jpg') }}"
+     alt="Profile Photo"
      class="w-px-40 h-auto rounded-circle" />
                 </div>
             </div>
@@ -55,8 +68,8 @@ $navbarDetached = ($navbarDetached ?? '');
                 <div class="d-flex">
                     <div class="flex-shrink-0 me-3">
                         <div class="avatar avatar-online">
-                        <img src="{{ session('profile_photo') && trim(session('profile_photo')) !== '' ? session('profile_photo') : asset('assets/img/avatars/default-avatar.jpg') }}" 
-     alt="Profile Photo" 
+                        <img src="{{ session('profile_photo') && trim(session('profile_photo')) !== '' ? session('profile_photo') : asset('assets/img/avatars/default-avatar.jpg') }}"
+     alt="Profile Photo"
      class="w-px-40 h-auto rounded-circle" />
                         </div>
                     </div>
@@ -68,10 +81,10 @@ $navbarDetached = ($navbarDetached ?? '');
             </a>
             </li>
             <li>
-                <a class="dropdown-item" href="/logout">
-                    <i class="bx bx-power-off me-2"></i>
-                    <span class="align-middle">Log Out</span>
-                </a>
+              <a class="dropdown-item" href="/logout">
+                <i class="bx bx-power-off me-2"></i>
+                <span class="align-middle">Log Out</span>
+              </a>
             </li>
         </ul>
         </li>
@@ -79,7 +92,7 @@ $navbarDetached = ($navbarDetached ?? '');
     </ul>
     </div>
     <script>
-        
+
         function toggleFullscreen() {
             let elem = document.documentElement;
             let btn = document.getElementById("fullScreenBtn");
@@ -87,12 +100,12 @@ $navbarDetached = ($navbarDetached ?? '');
             if (!document.fullscreenElement) {
                 elem.requestFullscreen().then(() => {
                     btn.classList.remove("bx-fullscreen");
-                    btn.classList.add("bx-exit-fullscreen"); 
+                    btn.classList.add("bx-exit-fullscreen");
                 });
             } else {
                 document.exitFullscreen().then(() => {
                     btn.classList.remove("bx-exit-fullscreen");
-                    btn.classList.add("bx-fullscreen"); 
+                    btn.classList.add("bx-fullscreen");
                 });
             }
         }
@@ -101,11 +114,11 @@ $navbarDetached = ($navbarDetached ?? '');
             const now = new Date();
             const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
             const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
-            
+
             document.getElementById('date').textContent = now.toLocaleDateString(undefined, dateOptions);
             document.getElementById('time').textContent = now.toLocaleTimeString(undefined, timeOptions);
         }
-        
+
         setInterval(updateDateTime, 1000);
         updateDateTime();
     </script>

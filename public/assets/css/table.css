@@ -22,7 +22,7 @@
     /* transition: .5s; */
 }
 .custom_tab_item{
-    padding: 20px 25px; 
+    padding: 20px 25px;
     cursor: pointer;
 }
 .custom_tab_item div{
@@ -75,8 +75,8 @@ tr{
     max-height: 500px;
     overflow: hidden;
     border-radius: 5px;
-    overflow-y: auto;
-    
+       
+
 }
 .files-table thead{
     background-color: var(--bs-secondary-bg-subtle);

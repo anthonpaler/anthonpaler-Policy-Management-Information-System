@@ -128,7 +128,7 @@
                                         aria-label="Action to be taken"
                                         aria-describedby="action-icon"
                                     >
-                                        @switch(auth()->user()->role)
+                                        @switch  (auth()->user()->role)
                                             @case(0)
                                                 <option value="1" >{{ config('proposals.requested_action.1') }}</option>
                                                 <option value="3" >{{ config('proposals.requested_action.3') }}</option>
@@ -266,7 +266,7 @@
 
 <script>
 
-$('#matter').on('change', function() {
+    $('#matter').on('change', function() {
         var matter = $(this).val();
         var subType = $('#sub_type');
         var actionSelect = $('#action');

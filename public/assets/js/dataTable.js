@@ -23,7 +23,7 @@ $(document).ready(function() {
 
     // Year filter
     $('select[name="year"]').on('change', function () {
-        let selectedYear = $(this).val(); 
+        let selectedYear = $(this).val();
 
         if (selectedYear) {
             table.column(3).search(selectedYear).draw();
@@ -57,7 +57,7 @@ $(document).ready(function() {
     });
 
     $('select[name="proposalStatus"]').on('change', function () {
-        let status = $(this).val(); 
+        let status = $(this).val();
 
         if (status) {
             proposalTable.column(6).search(status).draw();
@@ -67,7 +67,7 @@ $(document).ready(function() {
     });
 
     $('select[name="proposalMatter"]').on('change', function () {
-        let matter = $(this).val(); 
+        let matter = $(this).val();
 
         if (matter) {
             proposalTable.column(4).search(matter).draw();
@@ -77,7 +77,7 @@ $(document).ready(function() {
     });
 
     $('select[name="proposalAction"]').on('change', function () {
-        let action = $(this).val(); 
+        let action = $(this).val();
 
         if (action) {
             proposalTable.column(5).search(action).draw();
@@ -112,7 +112,7 @@ $(document).ready(function() {
 
     // Year filter
     $('select[name="year"]').on('change', function () {
-        let selectedYear = $(this).val(); 
+        let selectedYear = $(this).val();
 
         if (selectedYear) {
             obbTable.column(3).search(selectedYear).draw();
