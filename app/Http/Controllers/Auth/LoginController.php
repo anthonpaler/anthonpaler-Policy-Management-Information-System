@@ -130,8 +130,12 @@ class LoginController extends Controller
                 $role = null;
             }
 
-            
+            if ($role === null) {
+                return response()->json(['error' => 'You are not authorize to Log in.'], 403);
+            }
 
+            
+           
 
             // Check if the user already exists in the users table
             $user = User::where('email', $request->email)->first();
