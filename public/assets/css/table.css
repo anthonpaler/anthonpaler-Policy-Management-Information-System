@@ -75,7 +75,7 @@ tr{
     max-height: 500px;
     overflow: hidden;
     border-radius: 5px;
-       
+    overflow-y: auto;
 
 }
 .files-table thead{

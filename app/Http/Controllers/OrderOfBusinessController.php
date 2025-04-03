@@ -38,19 +38,19 @@ class OrderOfBusinessController extends Controller
             $proposals = collect();
             $matters = [0 => 'Financial Matters'] + config('proposals.matters');
             $meeting = null;
-            
+
             $meetingTypes = [
-                'Local' => ['agendaModel' => LocalMeetingAgenda::class, 
+                'Local' => ['agendaModel' => LocalMeetingAgenda::class,
                             'meeting_key' => 'local_council_meeting_id',
                             'meetingModel' => LocalCouncilMeeting::class],
-                'University' => ['agendaModel' => UniversityMeetingAgenda::class, 
+                'University' => ['agendaModel' => UniversityMeetingAgenda::class,
                             'meeting_key' => 'university_meeting_id',
                             'meetingModel' => UniversityCouncilMeeting::class],
                 'BOR' => ['agendaModel' => BoardMeetingAgenda::class,
                             'meeting_key' => 'bor_meeting_id',
                             'meetingModel' => BorMeeting::class],
             ];
-            
+
 
             if (isset($meetingTypes[$level])) {
                 $agendaModel = $meetingTypes[$level]['agendaModel'];
@@ -75,7 +75,7 @@ class OrderOfBusinessController extends Controller
             foreach ($matters as $type => $title) {
                 $categorizedProposals[$type] = collect();
             }
-            
+
             // Categorize proposals
             foreach ($proposals as $proposal) {
                 $type = $proposal->proposal->type;
@@ -87,12 +87,12 @@ class OrderOfBusinessController extends Controller
 
                 // Separate Financial Matters from Administrative Matters
                 if ($type == 2 && $subType == 0) {
-                    $type = 0; 
+                    $type = 0;
                 }
 
                 $categorizedProposals[$type][] = $proposal;
             }
-        
+
             // dd($categorizedProposals);
             return view('content.orderOfBusiness.generateOOB', compact('meeting', 'categorizedProposals', 'matters'));
 
@@ -149,7 +149,7 @@ class OrderOfBusinessController extends Controller
                 'status' => 0,
             ]);
 
-            DB::commit(); 
+            DB::commit();
 
             return response()->json([
                 'type' => 'success',
@@ -174,37 +174,37 @@ class OrderOfBusinessController extends Controller
             'previous_minutes' => 'required|mimes:pdf,doc,docx|max:10240',
             'meeting_id' => 'required|integer',
         ]);
-    
+
         $file = $request->file('previous_minutes');
         $fileName = time() . '_' . $file->getClientOriginalName();
         $file->storeAs('public/previous_minutes', $fileName);
-    
+
         $meetingId = $request->meeting_id;
-    
+
         // Map meeting types to their corresponding Oob models
         $meetingMapping = [
             'local' => [LocalCouncilMeeting::class, LocalOob::class, 'local_council_meeting_id'],
             'university' => [UniversityCouncilMeeting::class, UniversityOob::class, 'university_council_meeting_id'],
             'board' => [BorMeeting::class, BoardOob::class, 'bor_meeting_id']
         ];
-    
+
         $oob = null;
-    
+
         foreach ($meetingMapping as $type => [$meetingModel, $oobModel, $foreignKey]) {
             if ($meetingModel::where('id', $meetingId)->exists()) {
                 $oob = $oobModel::where($foreignKey, $meetingId)->first();
-    
+
                 // If OOB doesn't exist, create it
                 if (!$oob) {
                     $oob = $oobModel::create([$foreignKey => $meetingId]);
                 }
-    
+
                 break;
             }
         }
 
-        
-    
+
+
         if (!$oob) {
             return response()->json(['success' => false, 'message' => 'Meeting not found'], 404);
         }
@@ -213,10 +213,10 @@ class OrderOfBusinessController extends Controller
         if (!empty($oob->previous_minutes)) {
             Storage::delete("public/previous_minutes/{$oob->previous_minutes}");
         }
-    
+
         // Update the OOB record with the uploaded file
         $oob->update(['previous_minutes' => $fileName]);
-    
+
         return response()->json(['success' => true, 'message' => 'Previous minutes uploaded successfully']);
     }
 
@@ -259,9 +259,9 @@ class OrderOfBusinessController extends Controller
     //         $request->validate([
     //             'preliminaries' => 'required|string',
     //         ]);
-    
+
     //         $meetingID = decrypt($meeting_id);
-    
+
     //         // Determine the correct models dynamically
     //         $oobModel = match ($level) {
     //             'Local' => LocalOob::class,
@@ -269,14 +269,14 @@ class OrderOfBusinessController extends Controller
     //             'BOR' => BoardOob::class,
     //             default => null
     //         };
-    
+
     //         $agendaModel = match ($level) {
     //             'Local' => LocalMeetingAgenda::class,
     //             'University' => UniversityMeetingAgenda::class,
     //             'BOR' => BoardMeetingAgenda::class,
     //             default => null
     //         };
-    
+
     //         if (!$oobModel || !$agendaModel) {
     //             return response()->json([
     //                 'type' => 'danger',
@@ -284,7 +284,7 @@ class OrderOfBusinessController extends Controller
     //                 'title' => "Error!"
     //             ]);
     //         }
-    
+
     //         // Check if an Order of Business already exists
     //         if ($oobModel::where($this->getMeetingColumn($level), $meetingID)->exists()) {
     //             return response()->json([
@@ -293,19 +293,19 @@ class OrderOfBusinessController extends Controller
     //                 'title' => "Duplicate Entry"
     //             ]);
     //         }
-    
+
     //         // Create the Order of Business (OOB)
     //         $oob = $oobModel::create([
     //             $this->getMeetingColumn($level) => $meetingID,
     //             'preliminaries' => $request->input('preliminaries'),
     //             'status' => 0,
     //         ]);
-    
+
     //         // Retrieve proposals with status = 1
     //         $proposals = $agendaModel::where($this->getMeetingColumn($level), $meetingID)
     //             ->where('status', 1)
     //             ->get();
-    
+
     //         // Assign order_no sequentially
     //         foreach ($proposals as $index => $proposal) {
     //             $proposal->update([
@@ -313,7 +313,7 @@ class OrderOfBusinessController extends Controller
     //                 'order_no' => $index + 1,
     //             ]);
     //         }
-    
+
     //         return response()->json([
     //             'type' => 'success',
     //             'message' => 'Order of Business generated successfully with proposals!',
@@ -352,7 +352,7 @@ class OrderOfBusinessController extends Controller
 
         if(session('isProponent')){
             $orderOfBusiness = $oobModel::with('meeting')
-            ->whereHas('meeting', function ($query) use ($campus_id) { 
+            ->whereHas('meeting', function ($query) use ($campus_id) {
                 $query->where('campus_id', $campus_id);
             })
             ->where('status', 1)
@@ -361,7 +361,7 @@ class OrderOfBusinessController extends Controller
         } else{
             if(session('user_role') == 3){
                 $orderOfBusiness = $oobModel::with('meeting' )
-                ->whereHas('meeting', function ($query) use ($campus_id) { 
+                ->whereHas('meeting', function ($query) use ($campus_id) {
                     $query->where('campus_id', $campus_id);
                 })
                 ->orderBy('created_at', 'desc')
@@ -382,8 +382,9 @@ class OrderOfBusinessController extends Controller
         try {
             $oobID = decrypt($oob_id);
             $proposals = collect();
+            $otherMattersProposals = collect();
             $matters = [0 => 'Financial Matters'] + config('proposals.matters');
-            $otherMattersTitle = 'Other Matters'; 
+            $otherMattersTitle = 'Other Matters';
             $orderOfBusiness = null;
             $meeting = null;
 
@@ -404,8 +405,8 @@ class OrderOfBusinessController extends Controller
             }
 
             // Retrieve previous minutes if available
-            $previousMinutes = $orderOfBusiness->previous_minutes 
-            ? asset("storage/previous_minutes/{$orderOfBusiness->previous_minutes}") 
+            $previousMinutes = $orderOfBusiness->previous_minutes
+            ? asset("storage/previous_minutes/{$orderOfBusiness->previous_minutes}")
             : null;
 
             $meetingTypes = [
@@ -413,47 +414,31 @@ class OrderOfBusinessController extends Controller
                 'University' => ['model' => UniversityMeetingAgenda::class, 'meeting_key' => 'university_meeting_id', 'oob_key' => 'university_oob_id'],
                 'BOR' => ['model' => BoardMeetingAgenda::class, 'meeting_key' => 'bor_meeting_id', 'oob_key' => 'board_oob_id'],
             ];
-            
             if (isset($meetingTypes[$level])) {
-                $model = $meetingTypes[$level]['model'];
-                $meetingKey = $meetingTypes[$level]['meeting_key'];
-                $oobKey = $meetingTypes[$level]['oob_key'];
-            
-                // $query = $model::where($meetingKey, $meeting->id)
-                //     ->with('proposal')
-                //     ->orderBy('order_no', 'asc');
-            
-                // if ($orderOfBusiness->status == 1) {
-                //     $query->where($oobKey, $orderOfBusiness->id);
-                    
-                // } else {
-                //     $query->where('status', 1);
-                // }
+              $model = $meetingTypes[$level]['model'];
+              $meetingKey = $meetingTypes[$level]['meeting_key'];
+              $oobKey = $meetingTypes[$level]['oob_key'];
 
-                $query = $model::where($meetingKey, $meeting->id)
-                ->with('proposal')
-                ->orderBy('order_no', 'asc')
-                ->where(function ($q) use ($oobKey, $orderOfBusiness) {
-                    $q->where($oobKey, $orderOfBusiness->id)
-                      ->orWhere('status', 1);
-                });
-            
+              $query = $model::where($meetingKey, $meeting->id)
+                  ->with('proposal')
+                  ->orderBy('order_no', 'asc')
+                  ->where(function ($q) use ($oobKey, $orderOfBusiness) {
+                      $q->where($oobKey, $orderOfBusiness->id)
+                          ->orWhere('status', 1);
+                  });
 
-                $proposals = $query->get();
+              // Fetch all proposals
+              $allProposals = $query->get();
+
+              // Separate proposals into regular ones and other matters
+              foreach ($allProposals as $proposal) {
+                  if ($proposal->proposal->isOtherMatter()) {
+                      $otherMattersProposals->push($proposal); // for other matter proposals
+                  } else {
+                      $proposals->push($proposal); // for proposals under new business
+                  }
+              }
             }
-            
-            // Fetch "Other Matters" Proposals
-            $otherMattersProposals = OtherMatter::with('proposal')
-            ->whereHas('proposal', function ($query) {
-                $query->whereNotNull('id'); 
-            })
-            ->get();
-
-            $otherMattersProposalIds = $otherMattersProposals->pluck('proposal_id')->toArray();
-
-            
-
-
             // Get meeting type
             $councilType = $meeting->council_type ?? null;
             $councilTypesConfig = config('proposals.council_types');
@@ -463,7 +448,7 @@ class OrderOfBusinessController extends Controller
             foreach ($matters as $type => $title) {
                 $categorizedProposals[$type] = collect();
             }
-            
+
             // Categorize proposals
             foreach ($proposals as $proposal) {
                 $type = $proposal->proposal->type;
@@ -475,7 +460,7 @@ class OrderOfBusinessController extends Controller
 
                 // Separate Financial Matters from Administrative Matters
                 if ($type == 2 && $subType == 0) {
-                    $type = 0; 
+                    $type = 0;
                 }
 
                 $groupId = $proposal->proposal->group_proposal_id ?? null;
@@ -490,13 +475,6 @@ class OrderOfBusinessController extends Controller
                 }
             }
 
-            foreach ($categorizedProposals as $type => $proposals) {
-                $categorizedProposals[$type] = collect($proposals)->reject(function ($proposal) use ($otherMattersProposalIds) {
-                    return in_array($proposal->proposal->id, $otherMattersProposalIds);
-                })->values();
-            }
-
-            
 
             return view('content.orderOfBusiness.viewOOB', compact(
                 'orderOfBusiness',
@@ -506,7 +484,6 @@ class OrderOfBusinessController extends Controller
                 'matters',
                 'otherMattersProposals',
                 'otherMattersTitle'
-
             ));
 
         } catch (\Throwable $th) {
@@ -561,7 +538,7 @@ class OrderOfBusinessController extends Controller
                     BoardMeetingAgenda::where('board_proposal_id', $proposal_id)
                     ->update(['board_oob_id' => $oobID]);
                 }
-                
+
             }
 
             $orderOfBusiness->update([
@@ -615,8 +592,8 @@ class OrderOfBusinessController extends Controller
             //         ];
 
             //     $levelKey = $levelMapping[$level] ?? null;
-            //     $councilType = ($levelKey && isset(config('meetings.council_types')[$levelKey][$meeting->council_type])) 
-            //     ? config('meetings.council_types')[$levelKey][$meeting->council_type] 
+            //     $councilType = ($levelKey && isset(config('meetings.council_types')[$levelKey][$meeting->council_type]))
+            //     ? config('meetings.council_types')[$levelKey][$meeting->council_type]
             //     : 'Unknown Council Type';
             //     $meetingDateTime = date('M j, Y g:i A', strtotime($orderOfBusiness->meeting->meeting_date_time));
 
@@ -639,7 +616,7 @@ class OrderOfBusinessController extends Controller
             //     }
 
 
-            DB::commit(); 
+            DB::commit();
 
             return response()->json([
                 'type' => 'success',
@@ -683,18 +660,18 @@ class OrderOfBusinessController extends Controller
     //             'University' => ['model' => UniversityMeetingAgenda::class, 'meeting_key' => 'university_meeting_id', 'oob_key' => 'university_oob_id'],
     //             'BOR' => ['model' => BoardMeetingAgenda::class, 'meeting_key' => 'bor_meeting_id', 'oob_key' => 'board_oob_id'],
     //         ];
-            
+
     //         if (isset($meetingTypes[$level])) {
     //             $model = $meetingTypes[$level]['model'];
     //             $meetingKey = $meetingTypes[$level]['meeting_key'];
     //             $oobKey = $meetingTypes[$level]['oob_key'];
-            
+
     //             $query = $model::where($meetingKey, $meeting->id)->with('proposal')
     //             ->where($oobKey, $orderOfBusiness->id)
     //             ->orderBy('created_at', 'desc');
-            
+
     //             $proposals = $query->get();
-    //         }            
+    //         }
 
     //         // Get meeting type
     //         $councilType = $meeting->council_type ?? null;
@@ -719,7 +696,7 @@ class OrderOfBusinessController extends Controller
 
     //             // Separate Financial Matters from Administrative Matters
     //             if ($type == 2 && $subType == 0) {
-    //                 $type = 0; 
+    //                 $type = 0;
     //             }
 
     //             $groupId = $proposal->proposal->group_proposal_id ?? null;
@@ -735,10 +712,10 @@ class OrderOfBusinessController extends Controller
     //         }
 
     //         // dd($categorizedProposals);
-            
+
     //         $pdf = Pdf::loadView('pdf.export_oob_pdf', compact('orderOfBusiness', 'categorizedProposals', 'meeting', 'matters'))
     //         ->setPaper('A4', 'portrait');
-            
+
     //         $oob_filename = "";
     //         if($meeting->getMeetingCouncilType() == 0){
     //             $oob_filename = config('meetings.quaterly_meetings.'.$meeting->quarter)." ".config('meetings.council_types.local_level.'.$meeting->council_type)." ".$meeting->year.'.pdf';
@@ -748,7 +725,7 @@ class OrderOfBusinessController extends Controller
     //         else  if($meeting->getMeetingCouncilType() == 2){
     //             $oob_filename = config('meetings.quaterly_meetings.'.$meeting->quarter)." ".config('meetings.council_types.board_level.'.$meeting->council_type)." ".$meeting->year.'.pdf';
     //         }
-        
+
     //         return $pdf->stream($oob_filename);
     //     } catch (\Throwable $th) {
     //         return response()->json([
@@ -783,7 +760,7 @@ class OrderOfBusinessController extends Controller
                 // Convert 'isGroup' to a boolean
                 $isGroup = filter_var($item['isGroup'], FILTER_VALIDATE_BOOLEAN);
 
-                if( $item['isGroup'] == 'false'){   
+                if( $item['isGroup'] == 'false'){
                     $agendaModel::where($this->getProposalAgendaColumn($level), $item['id'])
                     ->update(['order_no' => $item['order']]);
                 }else{
@@ -851,11 +828,11 @@ class OrderOfBusinessController extends Controller
                 $agendaModel::where($this->getProposalAgendaColumn($level), $proposalId)
                     ->update([
                         'group_proposal_id' => $group->id,
-                        'order_no' => $index + 1 
+                        'order_no' => $index + 1
                     ]);
             }
 
-            DB::commit(); 
+            DB::commit();
 
             return response()->json([
                 'type' => 'success',
@@ -869,7 +846,7 @@ class OrderOfBusinessController extends Controller
         }
     }
 
-    
+
     // UNGROUP PROPOSAL
     public function ungroupProposal(Request $request, String $level)
     {
@@ -895,11 +872,11 @@ class OrderOfBusinessController extends Controller
 
             // Soft delete the group proposal
             GroupProposal::where('id', $groupId)->delete();
-            
+
             DB::commit();
             return response()->json(['type' => 'success', 'message' => 'Proposals ungrouped successfully!', 'title' => 'Success']);
         } catch (\Throwable $th) {
-            DB::rollBack(); 
+            DB::rollBack();
 
             return response()->json(['error' => $th->getMessage()], 500);
         }
@@ -935,14 +912,14 @@ class OrderOfBusinessController extends Controller
         try {
             $role = session('user_role');
             $campus_id = session('campus_id');
-    
+
             // Validate level input
             $request->validate([
                 'level' => 'required|integer',
             ]);
-    
+
             $level = (int) $request->input('level');
-    
+
             // Determine the OOB level
             $oobLevel = match ($level) {
                 0 => 'Local',
@@ -950,7 +927,7 @@ class OrderOfBusinessController extends Controller
                 2 => 'BOR',
                 default => 'Local'
             };
-    
+
             // Select the appropriate model
             $oobModel = match ($oobLevel) {
                 'Local' => LocalOob::class,
@@ -958,32 +935,32 @@ class OrderOfBusinessController extends Controller
                 'BOR' => BoardOob::class,
                 default => null
             };
-    
+
             if (!$oobModel) {
                 return abort(404, 'Invalid Order of Business Level');
             }
-    
+
             // Base Query
             $orderOfBusinessQuery = $oobModel::with('meeting');
-    
+
             // Apply filters based on session role
             if (session('isProponent') && $oobLevel === 'Local') {
-                $orderOfBusinessQuery->whereHas('meeting', function ($query) use ($campus_id) { 
+                $orderOfBusinessQuery->whereHas('meeting', function ($query) use ($campus_id) {
                     $query->where('campus_id', $campus_id);
                 })->where('status', 1);
             } elseif ((session('user_role') == 3 || session('isProponent')) && $oobLevel === 'Local') {
-                $orderOfBusinessQuery->whereHas('meeting', function ($query) use ($campus_id) { 
+                $orderOfBusinessQuery->whereHas('meeting', function ($query) use ($campus_id) {
                     $query->where('campus_id', $campus_id);
                 });
             }
-    
+
             // Secretary-Level Permissions
             if (session('secretary_level') == $level && !session('isProponent')) {
                 $orderOfBusiness = $orderOfBusinessQuery->orderBy('created_at', 'desc')->get();
             } else {
                 $orderOfBusiness = $orderOfBusinessQuery->where('status', 1)->orderBy('created_at', 'desc')->get();
             }
-    
+
             // Return response
             return response()->json([
                 'type' => 'success',
@@ -997,7 +974,7 @@ class OrderOfBusinessController extends Controller
             ]);
         }
     }
-    
+
 
     public function saveOOB(Request $request, String $level ,String $oob_id){
         try{

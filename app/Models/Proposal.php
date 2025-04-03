@@ -30,11 +30,16 @@ class Proposal extends Model
 
     // GET PROPOSAL PROPONENTS
     public function proponents() {
-        return $this->belongsToMany(User::class, 'proposal_proponents', 'proposal_id', 'employee_id', 
-        'id', 
+        return $this->belongsToMany(User::class, 'proposal_proponents', 'proposal_id', 'employee_id',
+        'id',
         'employee_id');
     }
-    
+
+    // DETERMINE IF PROPOSAL IS OTHER MATTER
+    public function isOtherMatter()
+    {
+        return $this->hasOne(OtherMatter::class, 'proposal_id')->exists();
+    }
     // GET CURRENT LEVEL OF THE PROPOSAL
     public function localAgendas()
     {

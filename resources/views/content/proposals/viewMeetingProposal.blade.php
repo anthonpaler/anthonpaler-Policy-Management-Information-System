@@ -17,8 +17,8 @@
     </div>
 
 </div>
-@php 
-    $actionColors = ['secondary', 'primary', 'success', 'warning', 'info', 'danger']; 
+@php
+    $actionColors = ['secondary', 'primary', 'success', 'warning', 'info', 'danger'];
     $statusCounts = [
         'For Endorsement' => 0,
         'Posted to Agenda' => 0,
@@ -34,7 +34,7 @@
             $statusCounts[$status]++;
         }
     }
-@endphp 
+@endphp
 <div class="row">
 <!-- /single card  -->
   <div class="col-lg-2 col-sm-6 mb-3">
@@ -171,7 +171,7 @@
                                 {{ config('meetings.council_types.university_level.'.$meeting->council_type) }}
                                 @elseif ($meeting->getMeetingCouncilType() == 2)
                                 {{ config('meetings.council_types.board_level.'.$meeting->council_type) }}
-                            @endif 
+                            @endif
                             {{ $meeting->year }}
                             <!-- <span class="ms-2 badge bg-label-{{ $meeting->status == 0? 'success' : 'danger' }} me-1">
                                 {{ config('meetings.status.'.$meeting->status) }}
@@ -217,8 +217,8 @@
                                                             }
                                                         }
 
-                                                        $isDisabled = true; 
-                                                        
+                                                        $isDisabled = true;
+
                                                         if ($meetingDateTime) {
                                                             if ($currentDateTime->greaterThan($meetingDateTime)) {
                                                                 $isDisabled = in_array($index, [0, 1]); // Enable 0 & 1 if current date is before meeting date
@@ -228,16 +228,16 @@
                                                             }
                                                         }
                                                     @endphp
-                                                    
+
                                                     <li>
-                                                        <span class="dropdown-item proposal-action {{ $index === 6 ? 'text-danger' : '' }} {{ $isDisabled ? 'disabled' : '' }}" 
-                                                            data-id="{{ $index }}" 
+                                                        <span class="dropdown-item proposal-action {{ $index === 6 ? 'text-danger' : '' }} {{ $isDisabled ? 'disabled' : '' }}"
+                                                            data-id="{{ $index }}"
                                                             data-label="{{ $item }}">
                                                             {{ $item }}
                                                         </span>
                                                     </li>
 
-                                                    @if (in_array($index, [1, 5])) 
+                                                    @if (in_array($index, [1, 5]))
                                                         <li><hr class="dropdown-divider"></li>
                                                     @endif
                                                 @endforeach
@@ -248,10 +248,9 @@
                                         <input type="text" class="form-control flex-grow-1" data-id="" value="Select Action" id="proposalStatusInput"  disabled>
                                     </div> -->
                                     <div>
-                                        <button class="btn btn-{{ $meeting->status == 1 ? 'danger': 'primary' }} d-flex gap-2 align-items-center text-nowrap" 
-                                                id="updateMultiProposalBtn" >
-                                            
-                                            {!!$meeting->status == 1 ? "<i class='bx bx-lock-alt'></i>" : "<i class='bx bx-send'></i>" !!}
+                                        <button class="btn btn-{{ $meeting->status == 1 ? 'danger': 'primary' }} d-flex gap-2 align-items-center text-nowrap"
+                                            id="updateMultiProposalBtn" >
+                                            {!! $meeting->status == 1 ? "<i class='bx bx-lock-alt'></i>" : "<i class='bx bx-send'></i>" !!}
                                             Update Proposal Status
                                         </button>
                                     </div>
@@ -275,7 +274,7 @@
             <div class="d-flex gap-2">
                 <div>
                     <div class="input-group input-group-merge">
-                        <input type="text" class="form-control" id="proposalSearch" placeholder="Search...">    
+                        <input type="text" class="form-control" id="proposalSearch" placeholder="Search...">
                         <span  class="input-group-text">
                             <i class='bx bx-search' ></i>
                         </span>
@@ -305,7 +304,7 @@
                                     <option value="{{ $value }}" >
                                         {{ $value }}
                                     </option>
-                                @endforeach  
+                                @endforeach
                             </select>
                         </div>
 
@@ -317,7 +316,7 @@
                                     <option value="{{ $value }}" >
                                         {{ $value }}
                                     </option>
-                                @endforeach                       
+                                @endforeach
                             </select>
                         </div>
                     </ul>
@@ -347,7 +346,7 @@
                     </thead>
                     <tbody class="">
                         @if ($proposals->isEmpty())
-                        
+
                         @else
 
                             @foreach($proposals as $proposal)
@@ -367,25 +366,25 @@
                                 @if (session('isSecretary'))
                                     @if ($meeting->status == 1)
                                         <td>
-                                            <span class="text-danger"><i class='bx bx-lock-alt' ></i></span>       
-                                        </td>                 
+                                            <span class="text-danger"><i class='bx bx-lock-alt' ></i></span>
+                                        </td>
                                     @else
                                         @if($meetingDateTime && $currentDateTime->lessThan($meetingDateTime))
                                             <td>
-                                                <input type="checkbox" 
-                                                class="form-check-input select-proposal" 
-                                                data-id="{{ encrypt($proposal->proposal->id) }}" 
+                                                <input type="checkbox"
+                                                class="form-check-input select-proposal"
+                                                data-id="{{ encrypt($proposal->proposal->id) }}"
                                                 {{ (!in_array($proposal->status , [0, 8])) ? 'disabled' : '' }}>
                                             </td>
                                         @elseif($meetingDateTime && $currentDateTime->greaterThan($meetingDateTime))
                                             <td>
-                                                <input type="checkbox" 
-                                                class="form-check-input select-proposal" 
-                                                data-id="{{ encrypt($proposal->proposal->id) }}" 
+                                                <input type="checkbox"
+                                                class="form-check-input select-proposal"
+                                                data-id="{{ encrypt($proposal->proposal->id) }}"
                                                 {{ (!in_array($proposal->status , [1])) ? 'disabled' : '' }}>
                                             </td>
                                         @endif
-                                    @endif                            
+                                    @endif
                                 @endif
                                 <td>{{ $loop->iteration }}</td>
                                 <td>
@@ -407,13 +406,13 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="align-items-center d-flex gap-2"> 
+                                    <span class="align-items-center d-flex gap-2">
                                         {!! $proposal->proposal->type == 1 ? "<i class='bx bx-book-content text-primary'></i> " : "<i class='bx bxs-book-content text-danger' ></i>" !!}
 
-                                        {{ config('proposals.matters.'.$proposal->proposal->type) }}
+                                        {{ config('proposals.matters.'.$proposal->proposal->type)}} {{$proposal->proposal->isOtherMatter() ? '(OM)' : ''}}
                                     </span>
                                 </td>
-                                <td> 
+                                <td>
                                     <span class="d-flex gap-2 align-items-center">
                                         <i class='bx bx-up-arrow-circle text-{{ $actionColors[$proposal->proposal->action] ?? 'primary' }}'></i>
                                         {{ config('proposals.requested_action.'.$proposal->proposal->action) }}
@@ -431,13 +430,13 @@
                                 <td>
                                     @if($proposal->proposal->files->count() > 0)
                                         <!-- <button class="btn btn-sm btn-secondary d-flex gap-2 view-files"
-                                                data-files="{{ json_encode($proposal->proposal->files) }}" 
+                                                data-files="{{ json_encode($proposal->proposal->files) }}"
                                                 data-title="{{ $proposal->proposal->title }}">
                                             <i class='bx bx-file'></i> {{ $proposal->proposal->files->where('is_active', 1)->count() }}
                                             FILES
                                         </button> -->
                                         <button class="btn btn-sm btn-secondary d-flex gap-2 view-files"
-                                                data-files="{{ json_encode($proposal->proposal->files) }}" 
+                                                data-files="{{ json_encode($proposal->proposal->files) }}"
                                                 data-title="{{ $proposal->proposal->title }}">
                                             <i class='bx bx-file'></i> VIEW FILES
                                         </button>
@@ -469,7 +468,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body" id="modalFiles">
-            
+
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -498,7 +497,6 @@
     </div>
 </div>
 
-
 <!-- ADD PROOPOSAL MODAL -->
 <div class="modal fade" id="proposalModal" tabindex="-1" aria-labelledby="proposalModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -510,7 +508,7 @@
             <div class="modal-body">
                 <form method="POST" action="{{ route(getUserRole().'.addProposal', ['meeting_id' => encrypt($meeting->id)]) }}" enctype="multipart/form-data" id="proposalFrm">
                     @csrf
-              
+
                     <!-- Title -->
                     <div class="mb-3">
                         <label class="form-label" for="title">Title <span class="ms-1 text-danger">*</span></label>
@@ -525,11 +523,11 @@
                         <label class="form-label" for="proponent_email">Proponent<span class="ms-1 text-danger">*</span></label>
                         <div class="input-group">
                             <span id="email-icon" class="input-group-text"><i class="bx bx-envelope"></i></span>
-                            <input 
-                                type="text" 
-                                id="proponent_email" 
-                                name="proponent_email" 
-                                class="form-control @error('proponent_email') is-invalid @enderror" 
+                            <input
+                                type="text"
+                                id="proponent_email"
+                                name="proponent_email"
+                                class="form-control @error('proponent_email') is-invalid @enderror"
                                 placeholder="Enter proponent's email"
                                 required
                             >
@@ -609,7 +607,7 @@
                         @enderror
                     </div>
 
-                    
+
 
                     <!-- Proposal Files -->
                     <div class="">
@@ -643,11 +641,66 @@
     @if(session('toastr'))
         toastr["{{ session('toastr.type') }}"]("{{ session('toastr.message') }}");
     @endif
-</script>
-
-
-<script>
     var proposalStatus = @json(config('proposals.status'));
+    $('#matter').on('change', function() {
+        var matter = $(this).val();
+        var subType = $('#sub_type');
+        var actionSelect = $('#action');
+
+        actionSelect.empty();
+
+        if (matter == 1) {
+            actionSelect.append(`
+                @if (session('user_role') == 3)
+                    <option value="4">Endorsement for Local ACAD</option>
+                    <option value="1">Endorsement for UACAD</option>
+                @endif
+                @if (session('user_role') == 4)
+                    <option value="6">Approval for UACAD</option>
+                    <option value="3">Endorsement for BOR</option>
+                @endif
+                @if (session('user_role') == 5)
+                    <option value="8">BOR Approval</option>
+                @endif
+            `);
+            subType.prop('disabled', true);
+            $('#subTypeContainer').css('display', 'none');
+        } else if (matter == 2) {
+            subType.prop('disabled', false);
+            $('#subTypeContainer').css('display', 'block');
+
+            actionSelect.append(`
+                @if (session('user_role') == 3)
+                    <option value="5">Endorsement for Local ADCO</option>
+                    <option value="2">Endorsement for UADCO</option>
+                @endif
+                @if (session('user_role') == 4)
+                    <option value="7">Approval for UADCO</option>
+                    <option value="3">Endorsement for BOR</option>
+                @endif
+                @if (session('user_role') == 5)
+                    <option value="8">BOR Approval</option>
+                @endif
+            `);
+        }else if (matter == 3) {
+            subType.prop('disabled', true);
+            $('#subTypeContainer').css('display', 'none');
+
+            actionSelect.append(`
+                <option value="3">Endorsement for BOR</option>
+                <option value="9">BOR Confirmation</option>
+            `);
+        }
+        else if (matter == 4) {
+            subType.prop('disabled', true);
+            $('#subTypeContainer').css('display', 'none');
+
+            actionSelect.append(`
+                <option value="3">Endorsement for BOR</option>
+                <option value="10">BOR Information</option>
+            `);
+        }
+    });
 
     function getImageByFileType(fileType) {
         switch (fileType) {
@@ -704,7 +757,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
                 });
             }
-    
+
             // Listen for input event to fetch data
                 tagify.on("input", function (e) {
                     let value = e.detail.value;

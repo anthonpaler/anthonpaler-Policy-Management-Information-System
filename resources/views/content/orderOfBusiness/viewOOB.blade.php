@@ -348,68 +348,68 @@
             </script>
     </div>
     <div class="mb-3">
-      <div class="d-flex align-items-center gap-2">
-          <label class="form-label">3. Other Matters</label>
-          <button id="addOtherMatterBtn" class="btn btn-primary btn-xs" data-bs-toggle="tooltip" data-bs-placement="top" title="Add Other Matter">
+      <div class="d-flex align-items-center gap-2 mb-2">
+          <label class="form-label m-0">3. Other Matters</label>
+          <button id="addOtherMatterBtn" class="btn btn-primary btn-xs m-0" data-bs-toggle="tooltip" data-bs-placement="top" title="Add Other Matter">
               <i class='bx bx-plus'></i>
           </button>
       </div>
       @if ($otherMattersProposals->isNotEmpty())
         <div class="table-responsive text-nowrap mb-4">
-            <table class="table table-bordered">
-                <thead>
-                    <tr style="background-color: var(--bs-primary) !important; border-color: var(--bs-primary)  !important;">
-                        <th colspan="5" class="p-4 text-white">{{ $otherMattersTitle }}</th>
-                    </tr>
-                    <tr>
-                        <th style="width: 50px;">No.</th>
-                        <th>Title of the Proposal</th>
-                        <th style="width: 200px;">Presenter</th>
-                        <th style="width: 150px;">Requested Action</th>
-                        <th style="width: 100px;">File</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @php $counter = 1; @endphp
-                    @foreach ($otherMattersProposals as $otherMatter)
-                        <tr>
-                            <td>3.{{ $counter }}</td>
-                            <td>
-                                <div style="white-space: wrap;">
-                                    <span style="color: #697A8D;">{{ $otherMatter->proposal->title }}</span>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="d-flex flex-column gap-3">
-                                    @foreach ($otherMatter->proposal->proponents ?? [] as $proponent)
-                                        <div class="d-flex align-items-center gap-3">
-                                            <img class="rounded-circle avatar-sm" src="{{ $proponent->image && trim($proponent->image) !== '' ? $proponent->image : asset('assets/img/avatars/default-avatar.jpg') }}" alt="Avatar">
-                                            <span>{{ $proponent->name }}</span>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            </td>
-                            <td>
-                                <span class="d-flex gap-2 align-items-center">
-                                    <i class='bx bx-up-arrow-circle text-{{ $actionColors[$otherMatter->proposal->action] ?? 'primary' }}'></i>
-                                    {{ config('proposals.requested_action.'.$otherMatter->proposal->action) }}
-                                </span>
-                            </td>
-                            <td>
-                                @if ($otherMatter->proposal->files->isNotEmpty())
-                                    <button class="btn btn-sm btn-secondary view-files d-flex gap-2" data-files="{{ json_encode($otherMatter->proposal->files) }}" data-title="{{ $otherMatter->proposal->title }}">
-                                        <i class='bx bx-file'></i> VIEW FILES
-                                    </button>
-                                @else
-                                    <button class="btn btn-sm btn-danger d-flex gap-2" disabled>
-                                        <i class='bx bx-file'></i> NO FILES
-                                    </button>
-                                @endif
-                            </td>
-                        </tr>
-                        @php $counter++; @endphp
-                    @endforeach
-                </tbody>
+            <table class="table table-bordered sortable" id="{{ session('isSecretary') && (session('secretary_level') == $meeting->getMeetingCouncilType()) ? 'oobOtherMatterTable' :  ''}}">
+              <thead>
+                  <tr style="background-color: var(--bs-primary) !important; border-color: var(--bs-primary)  !important;">
+                      <th colspan="5" class="p-4 text-white">{{ $otherMattersTitle }}</th>
+                  </tr>
+                  <tr>
+                      <th style="width: 50px;">No.</th>
+                      <th>Title of the Proposal</th>
+                      <th style="width: 200px;">Presenter</th>
+                      <th style="width: 150px;">Requested Action</th>
+                      <th style="width: 100px;">File</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  @php $counter = 1; @endphp
+                  @foreach ($otherMattersProposals as $otherMatter)
+                      <tr class="selectable-row"  data-id="{{ $otherMatter->proposal->id }}">
+                          <td>3.<span class="order_no">{{ $counter }}</span></td>
+                          <td>
+                              <div style="white-space: wrap;">
+                                  <span style="color: #697A8D;">{{ $otherMatter->proposal->title }}</span>
+                              </div>
+                          </td>
+                          <td>
+                              <div class="d-flex flex-column gap-3">
+                                  @foreach ($otherMatter->proposal->proponents ?? [] as $proponent)
+                                      <div class="d-flex align-items-center gap-3">
+                                          <img class="rounded-circle avatar-sm" src="{{ $proponent->image && trim($proponent->image) !== '' ? $proponent->image : asset('assets/img/avatars/default-avatar.jpg') }}" alt="Avatar">
+                                          <span>{{ $proponent->name }}</span>
+                                      </div>
+                                  @endforeach
+                              </div>
+                          </td>
+                          <td>
+                              <span class="d-flex gap-2 align-items-center">
+                                  <i class='bx bx-up-arrow-circle text-{{ $actionColors[$otherMatter->proposal->action] ?? 'primary' }}'></i>
+                                  {{ config('proposals.requested_action.'.$otherMatter->proposal->action) }}
+                              </span>
+                          </td>
+                          <td>
+                              @if ($otherMatter->proposal->files->isNotEmpty())
+                                  <button class="btn btn-sm btn-secondary view-files d-flex gap-2" data-files="{{ json_encode($otherMatter->proposal->files) }}" data-title="{{ $otherMatter->proposal->title }}">
+                                      <i class='bx bx-file'></i> VIEW FILES
+                                  </button>
+                              @else
+                                  <button class="btn btn-sm btn-danger d-flex gap-2" disabled>
+                                      <i class='bx bx-file'></i> NO FILES
+                                  </button>
+                              @endif
+                          </td>
+                      </tr>
+                      @php $counter++; @endphp
+                  @endforeach
+              </tbody>
             </table>
         </div>
       @else
@@ -923,53 +923,66 @@
 
         // Initialize Sortable.js
         $("#oobTable tbody").each(function () {
-            new Sortable(this, {
-                animation: 150,
-                handle: "tr",
-                ghostClass: "sortable-ghost",
-                onEnd: function (evt) {
-                    updateOrder();
-                }
-            });
+          $tableTr =  "#oobTable tbody tr";
+          new Sortable(this, {
+              animation: 150,
+              handle: "tr",
+              ghostClass: "sortable-ghost",
+              onEnd: function (evt) {
+                  updateOrder($tableTr);
+              }
+          });
         });
 
-        function updateOrder() {
-            let order = [];
-            let position = 1;
+        $("#oobOtherMatterTable tbody").each(function () {
+          $OtherMatterTableTr =  "#oobOtherMatterTable tbody tr";
+          new Sortable(this, {
+              animation: 150,
+              handle: "tr",
+              ghostClass: "sortable-ghost",
+              onEnd: function (evt) {
+                  updateOrder($OtherMatterTableTr);
+              }
+          });
+        });
 
-            $("#oobTable tbody tr").each(function (index) {
-                let proposalId = $(this).data("id");
-                let isGroup = $(this).data("group") === true;
+        function updateOrder($tableTr) {
+          let order = [];
+          let position = 1;
 
-                if ($(this).find(".order_no").length) {
-                    order.push({ id: proposalId, isGroup: isGroup, order: index + 1,position: position });
+          $($tableTr).each(function (index) {
+              let proposalId = $(this).data("id");
+              let isGroup = $(this).data("group") === true;
 
-                    $(this).find("td:first .order_no").text(position);
-                    position++;
-                }else{
-                    order.push({ id: proposalId, isGroup: isGroup, order: index + 1, position: position });
+              if ($(this).find(".order_no").length) {
+                  order.push({ id: proposalId, isGroup: isGroup, order: index + 1,position: position });
 
-                    $(this).find("td:first .order_no").text(position);
-                }
-            });
+                  $(this).find("td:first .order_no").text(position);
+                  position++;
+              }else{
+                  order.push({ id: proposalId, isGroup: isGroup, order: index + 1, position: position });
 
-            console.log("Ordered Proposals: ");
-            console.log(order);
+                  $(this).find("td:first .order_no").text(position);
+              }
+          });
 
-            $.ajax({
-                url: "{{ route('update_proposal_order', ['level' => $orderOfBusiness->meeting->getMeetingLevel()]) }}",
-                method: "POST",
-                data: {
-                    orderData: order,
-                    _token: "{{ csrf_token() }}"
-                },
-                success: function (response) {
-                    console.log("Order updated successfully!", response);
-                },
-                error: function (xhr, status, error) {
-                    console.error("Error updating order:", error);
-                }
-            });
+          console.log("Ordered Proposals: ");
+          console.log(order);
+
+          $.ajax({
+              url: "{{ route('update_proposal_order', ['level' => $orderOfBusiness->meeting->getMeetingLevel()]) }}",
+              method: "POST",
+              data: {
+                  orderData: order,
+                  _token: "{{ csrf_token() }}"
+              },
+              success: function (response) {
+                  console.log("Order updated successfully!", response);
+              },
+              error: function (xhr, status, error) {
+                  console.error("Error updating order:", error);
+              }
+          });
         }
 
         let selectionEnabled = false;
