@@ -10,6 +10,8 @@ use App\Models\BoardMeetingAgenda;
 use App\Models\LocalOob;
 use App\Models\UniversityOob;
 use App\Models\BoardOob;
+use App\Models\OtherMatter;
+
 
 class PdfController extends Controller
 {
@@ -19,6 +21,7 @@ class PdfController extends Controller
             $oobID = decrypt($oob_id);
             $proposals = collect();
             $matters = [0 => 'Financial Matters'] + config('proposals.matters');
+            $otherMattersTitle = 'Other Matters'; 
             $orderOfBusiness = null;
             $meeting = null;
 
@@ -60,6 +63,15 @@ class PdfController extends Controller
             $councilType = $meeting->council_type ?? null;
             $councilTypesConfig = config('proposals.council_types');
 
+                // Fetch "Other Matters" Proposals
+                $otherMattersProposals = OtherMatter::with('proposal')
+                ->whereHas('proposal', function ($query) {
+                    $query->whereNotNull('id'); 
+                })
+                ->get();
+    
+                $otherMattersProposalIds = $otherMattersProposals->pluck('proposal_id')->toArray();
+
             // Initialize categorized proposals
             $categorizedProposals = [];
 
@@ -94,6 +106,13 @@ class PdfController extends Controller
                 }
             }
 
+            foreach ($categorizedProposals as $type => $proposals) {
+                $categorizedProposals[$type] = collect($proposals)->reject(function ($proposal) use ($otherMattersProposalIds) {
+                    return in_array($proposal->proposal->id, $otherMattersProposalIds);
+                })->values();
+            }
+          
+  
             // dd($categorizedProposals);
           
             
@@ -108,7 +127,7 @@ class PdfController extends Controller
             }
             
         
-            $this->oob_layout_PDF( $categorizedProposals, $oob_filename, $meeting, $matters, $orderOfBusiness);
+            $this->oob_layout_PDF( $categorizedProposals, $oob_filename, $meeting, $matters, $orderOfBusiness,  $otherMattersProposals, $otherMattersTitle);
             
         } catch (\Throwable $th) {
             return response()->json([
@@ -119,7 +138,7 @@ class PdfController extends Controller
         }
     }
     
-    public function oob_layout_PDF($categorizedProposals, $oob_filename, $meeting,  $matters, $orderOfBusiness)
+    public function oob_layout_PDF($categorizedProposals, $oob_filename, $meeting,  $matters, $orderOfBusiness, $otherMattersProposals, $otherMattersTitle)
     {
         $pdf = new CustomHeaderFooterTCPDF();
 
@@ -201,7 +220,7 @@ class PdfController extends Controller
         $noProposals = collect($categorizedProposals)->flatten()->isEmpty();
         $allProposalIds = collect($categorizedProposals)->flatten()->pluck('id');
         
-        $html = '<style>
+        $style = '<style>
                     table {
                         border-collapse: collapse;
                         width: 100%;
@@ -232,6 +251,8 @@ class PdfController extends Controller
                         padding-left: 30px;
                     }
                 </style>';
+        
+        $html = $style;
         
         if ($noProposals) {
             $html .= '<p style="color: red; text-align: center;">No new order of business available at the moment.</p>';
@@ -329,10 +350,62 @@ class PdfController extends Controller
                     $html .= '<div> </div>';
                 }
             }
-            
+
         }
-        
+
         $pdf->writeHTML($html, true, false, true, false, '');
+
+        $html2 = $style;
+
+         // Other Matters Section
+        if ($otherMattersProposals->isNotEmpty()) {
+            $pdf->SetFont($cambria, 'B', 9);
+            $pdf->Cell(0, 6, '3. Other Matters', 0, 1, 'L');
+            $pdf->Ln(3);
+            $pdf->SetFont($cambria, '', 8);
+
+            $html2 .= '<table cellpadding="5">
+                    <thead>
+                        <tr>
+                            <th colspan="4" class="table-header">' .  mb_strtoupper($otherMattersTitle, 'UTF-8') . '</th>
+                        </tr>
+                        <tr>
+                            <th width="10%">No.</th>
+                            <th width="45%">Title of the Proposal</th>
+                            <th width="25%">Presenters</th>
+                            <th width="20%">Requested Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>';
+
+            $counter = 1;
+            foreach ($otherMattersProposals as $otherMatter){
+
+                $presenters = isset($otherMatter->proposal->proponents) && $otherMatter->proposal->proponents->isNotEmpty()
+                ? implode(', ', $otherMatter->proposal->proponents->pluck('name')->toArray())
+                : '<span>No presenters</span>';
+        
+                $html2 .= '
+                    <tr>
+                        <td width="10%">3.' . $counter . '</td>
+                        <td width="45%">' .  str_replace('₱', '<span style="font-family: dejavusans;">₱</span>', $otherMatter->proposal->title) . '</td>
+                        <td width="25%">' . $presenters . '</td>
+                    <td width="20%">'.config('proposals.requested_action.' . $otherMatter->proposal->action).'</td>
+
+                    
+
+                    </tr>';
+                    
+            
+                    $counter++;
+            }
+            $html2 .= '</tbody></table>'; // Close the table properly
+        } else {
+            // Show message if no proposals are available
+            $html2 .= '<p style="color: red; text-align: center;">No other matters available at the moment.</p>';
+        }
+        $pdf->writeHTML($html2, true, false, true, false, '');
+
         
 
         // Output the PDF

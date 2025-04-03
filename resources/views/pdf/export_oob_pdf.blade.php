@@ -271,6 +271,70 @@
             @endif
         @endforeach
     @endif
+
+      @if ($otherMattersProposals->isNotEmpty())
+        <div class="table-responsive text-nowrap mb-4">
+            <table class="table table-bordered">
+                <thead>
+                    <tr style="background-color: var(--bs-primary) !important; border-color: var(--bs-primary)  !important;">
+                        <th colspan="5" class="p-4 text-white">{{ $otherMattersTitle }}</th>
+                    </tr>
+                    <tr>
+                        <th style="width: 50px;">No.</th>
+                        <th>Title of the Proposal</th>
+                        <th style="width: 200px;">Presenter</th>
+                        <th style="width: 150px;">Requested Action</th>
+                        <th style="width: 100px;">File</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @php $counter = 1; @endphp
+                    @foreach ($otherMattersProposals as $otherMatter)
+                        <tr>
+                            <td>3.{{ $counter }}</td>
+                            <td>
+                                <div style="white-space: wrap;">
+                                    <span style="color: #697A8D;">{{ $otherMatter->proposal->title }}</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex flex-column gap-3">
+                                    @foreach ($otherMatter->proposal->proponents ?? [] as $proponent)
+                                        <div class="d-flex align-items-center gap-3">
+                                            <img class="rounded-circle avatar-sm" src="{{ $proponent->image && trim($proponent->image) !== '' ? $proponent->image : asset('assets/img/avatars/default-avatar.jpg') }}" alt="Avatar">
+                                            <span>{{ $proponent->name }}</span>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </td>
+                            <td>
+                                <span class="d-flex gap-2 align-items-center">
+                                    <i class='bx bx-up-arrow-circle text-{{ $actionColors[$otherMatter->proposal->action] ?? 'primary' }}'></i>
+                                    {{ config('proposals.requested_action.'.$otherMatter->proposal->action) }}
+                                </span>
+                            </td>
+                            <td>
+                                @if ($otherMatter->proposal->files->isNotEmpty())
+                                    <button class="btn btn-sm btn-secondary view-files d-flex gap-2" data-files="{{ json_encode($otherMatter->proposal->files) }}" data-title="{{ $otherMatter->proposal->title }}">
+                                        <i class='bx bx-file'></i> VIEW FILES
+                                    </button>
+                                @else
+                                    <button class="btn btn-sm btn-danger d-flex gap-2" disabled>
+                                        <i class='bx bx-file'></i> NO FILES
+                                    </button>
+                                @endif
+                            </td>
+                        </tr>
+                        @php $counter++; @endphp
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+            @else
+                <p class="text-muted">No other matters recorded.</p>
+            @endif
+        </div>
+        
     <small class="time-generated">Generated on: {{ now()->format('F d, Y h:i A') }}</small>
     <small class="watermark">Generated through Policy Management Information System</small>
 

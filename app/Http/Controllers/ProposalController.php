@@ -311,14 +311,15 @@ class ProposalController extends Controller
             ]);
 
             $oobID = null; // Default to null
+            $userRole = session('user_role');
 
-            if ($user->role == 3) { // Local Secretary
+            if ($userRole == 3) { // Local Secretary
                 $oob = LocalOoB::where('local_council_meeting_id', $meetingID)->first();
                 $oobID = $oob ? $oob->id : null;
-            } elseif ($user->role == 4) { // University Secretary
+            } elseif ($userRole == 4) { // University Secretary
                 $oob = UniversityOoB::where('university_council_meeting_id', $meetingID)->first();
                 $oobID = $oob ? $oob->id : null;
-            } elseif ($user->role == 5) { // Board Secretary
+            } elseif ($userRole == 5) { // Board Secretary
                 $oob = BoardOoB::where('bor_meeting_id', $meetingID)->first();
                 $oobID = $oob ? $oob->id : null;
             }
@@ -512,17 +513,19 @@ class ProposalController extends Controller
 
             $oobID = null; // Default to null
 
-            if ($user->role == 3) { // Local Secretary
+            $userRole = session('user_role');
+
+            if ($userRole == 3) { // Local Secretary
                 $oob = LocalOoB::where('local_council_meeting_id', $meetingID)->first();
                 $oobID = $oob ? $oob->id : null;
-            } elseif ($user->role == 4) { // University Secretary
+            } elseif ($userRole == 4) { // University Secretary
                 $oob = UniversityOoB::where('university_council_meeting_id', $meetingID)->first();
                 $oobID = $oob ? $oob->id : null;
-            } elseif ($user->role == 5) { // Board Secretary
+            } elseif ($userRole == 5) { // Board Secretary
                 $oob = BoardOoB::where('bor_meeting_id', $meetingID)->first();
                 $oobID = $oob ? $oob->id : null;
             }
-    
+
             // Attach the proposal to the appropriate meeting agenda
         $this->attachProposalToAgenda($meetingID, $proposal->id, $user->role, $oobID);
 
@@ -621,7 +624,7 @@ class ProposalController extends Controller
             ]);
         } elseif ($roleID == 5) {
             OtherMatter::create([               
-                'proposals_id' => $proposalID,
+                'proposal_id' => $proposalID,
             ]);
         }
     }

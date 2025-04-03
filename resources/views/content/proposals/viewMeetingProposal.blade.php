@@ -249,11 +249,9 @@
                                     </div> -->
                                     <div>
                                         <button class="btn btn-{{ $meeting->status == 1 ? 'danger': 'primary' }} d-flex gap-2 align-items-center text-nowrap" 
-                                                id="updateMultiProposalBtn" 
-                                                data-id="{{ encrypt($proposal->id) }}" 
-                                                {{ $proposal->meeting->status == 1 ? 'disabled' : '' }}>
+                                                id="updateMultiProposalBtn" >
                                             
-                                            {!! $proposal->meeting->status == 1 ? "<i class='bx bx-lock-alt'></i>" : "<i class='bx bx-send'></i>" !!}
+                                            {!!$meeting->status == 1 ? "<i class='bx bx-lock-alt'></i>" : "<i class='bx bx-send'></i>" !!}
                                             Update Proposal Status
                                         </button>
                                     </div>

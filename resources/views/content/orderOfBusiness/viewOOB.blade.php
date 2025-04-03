@@ -103,15 +103,16 @@
                                 <i class='bx bx-file'></i>
                                 View Previous Minutes
                             </a>
-                        @endif
 
                         {{-- EDIT FILE --}}
                         @if (in_array(auth()->user()->role, [3, 4, 5]))
                             <button type="button" class="btn btn-sm btn-warning d-flex align-items-center gap-2" id="editMinutesButton" style="display: none;">
-                                <i class='bx bx-edit'></i> Edit File
+                                <i class='bx bx-edit'></i> Edit Previous Minutes File
                             </button>
                         @endif
                     @endif
+                 @endif
+
                 </div>
             </div>
         
