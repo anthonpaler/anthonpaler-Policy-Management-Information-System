@@ -263,15 +263,15 @@ class ProposalController extends Controller
             $request->merge(['proponent_email' => $proponent_email]);
 
             $meetingID = decrypt($meeting_id);
-            $user = auth()->user();
+            $userRole = session('user_role');
 
             // Ensure the user is a secretary (Local = 3, University = 4, Board = 5)
-            if (!in_array($user->role, [3, 4, 5])) {
+            if (!in_array($userRole, [3, 4, 5])) {
                 return response()->json(['type' => 'danger', 'message' => 'You are not authorized to submit a proposal!', 'title' => "Unauthorized"]);
             }
 
             // Determine meeting type
-            $meeting = $this->getMeetingModel($meetingID, $user->role);
+            $meeting = $this->getMeetingModel($meetingID, $userRole);
 
             if (!$meeting) {
                 return response()->json(['type' => 'danger', 'message' => 'Invalid meeting ID.', 'title' => "Error"]);
@@ -309,7 +309,6 @@ class ProposalController extends Controller
             ]);
 
             $oobID = null; // Default to null
-            $userRole = session('user_role');
 
             if ($userRole == 3) { // Local Secretary
                 $oob = LocalOoB::where('local_council_meeting_id', $meetingID)->first();
@@ -325,7 +324,7 @@ class ProposalController extends Controller
 
 
             // Attach proposal to the corresponding meeting agenda
-            $this->attachProposalToAgenda($meetingID, $proposal->id, $user->role, $oobID);
+            $this->attachProposalToAgenda($meetingID, $proposal->id, $userRole, $oobID);
 
             // Handle file uploads
             $fileIds = [];
@@ -460,11 +459,12 @@ class ProposalController extends Controller
             $proponent_email = is_array($request->proponent_email) ? $request->proponent_email[0] : $request->proponent_email;
             $request->merge(['proponent_email' => $proponent_email]);
 
+
             $meetingID = decrypt($meeting_id);
-            $user = auth()->user();
+            $userRole = session('user_role');
 
             // Ensure the user has the correct role (Secretary: Local=3, University=4, Board=5)
-            if (!in_array($user->role, [3, 4, 5])) {
+            if (!in_array($userRole, [3, 4, 5])) {
                 return response()->json([
                     'type' => 'danger',
                     'message' => 'You are not authorized to submit other matters!',
@@ -473,7 +473,7 @@ class ProposalController extends Controller
             }
 
             // Retrieve meeting model based on role
-            $meeting = $this->getMeetingModel($meetingID, $user->role);
+            $meeting = $this->getMeetingModel($meetingID, $userRole);
             if (!$meeting) {
                 return response()->json([
                     'type' => 'danger',
@@ -510,7 +510,6 @@ class ProposalController extends Controller
 
             $oobID = null; // Default to null
 
-            $userRole = session('user_role');
 
             if ($userRole == 3) { // Local Secretary
                 $oob = LocalOoB::where('local_council_meeting_id', $meetingID)->first();
@@ -524,10 +523,10 @@ class ProposalController extends Controller
             }
 
             // Attach the proposal to the appropriate meeting agenda
-        $this->attachProposalToAgenda($meetingID, $proposal->id, $user->role, $oobID);
+        $this->attachProposalToAgenda($meetingID, $proposal->id, $userRole, $oobID);
 
         // Attach the proposal to the Other Matters table
-        $this->attachProposalToOtherMatter($proposal->id, $user->role);
+        $this->attachProposalToOtherMatter($proposal->id, $userRole);
 
             // Handle File Uploads
             $fileIds = [];
