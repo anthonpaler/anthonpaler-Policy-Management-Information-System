@@ -38,8 +38,8 @@
                 <form id="formAuthentication" class="mb-3 mt-4" action="" method="POST">
                     <div class="mb-3">
                         {{-- <button class="btn btn-primary d-grid w-100" type="submit">Sign in</button> --}}
-                        <div id="g_id_onload" 
-                        data-client_id="{{ env('GOOGLE_CLIENT_ID') }}" 
+                        <div id="g_id_onload"
+                        data-client_id="{{ env('GOOGLE_CLIENT_ID') }}"
                         data-callback="onSignIn"></div>
                         <div class="g_id_signin form-control" data-type="standard"></div>
                     </div>
@@ -89,11 +89,21 @@
                     }, 1000);
                 }
             },
-                error: function(xhr, status, error) {
-                console.log(xhr.responseText); // This will provide more detail about the 500 error.
-                toastr.error('Employee Record not found.');
+            error: function(xhr, status, error) {
+                try {
+                    var response = JSON.parse(xhr.responseText);
+                    if (response.message) {
+                        toastr.error(response.message);
+                    } else {
+                        toastr.error('An unknown error occurred.');
+                    }
+                } catch (e) {
+                    console.log(xhr.responseText);
+                    toastr.error('Employee Record not found.');
                 }
-            });
+            }
+
+          });
         } else {
             toastr.error('Google login failed. Please try again.');
         }
