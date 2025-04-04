@@ -44,27 +44,21 @@
                 <h5 class="card-header p-0 ">ORDER OF BUSINESS</h5>
             </div>
         </div>
-        <div class="mb-3">
-            <label class="form-label">1. Preliminaries</label>
-            <div class="input-group input-group-merge">
-            <textarea
-        id="preliminaries"
-        class="form-control"
-        placeholder="Enter preliminaries."
-        aria-label="Enter preliminaries."
-        name="preliminaries"
-        rows="5">
-    1.1. Call to Order
-    1.2. Prayer
-    1.3. Acceptance of the Provisional Agenda
-    1.4. Reading and Ratification of the Previous Minutes
-    1.5. Chairperson’s Time</textarea>
-
-                @error('preliminaries')
-                    <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
-                @enderror
-            </div>
+        <div class="mt-3 mb-3">
+          <label class="form-label">1. Preliminaries</label>
+          <textarea  name="preliminaries" id="preliminaries">
+            <p style="line-height: 1;"> 1.1. Call to Order
+            </p>
+            <p style="line-height: 1;"> 1.2. Prayer
+            </p>
+            <p style="line-height: 1;"> 1.3. Acceptance of the Provisional Agenda
+            </p>
+            <p style="line-height: 1;"> 1.4. Reading and Ratification of the Previous Minutes
+            </p>
+            <p style="line-height: 1;"> 1.5. Chairperson’s Time</p>
+          </textarea>
         </div>
+        
         <!-- Modal -->
         <div class="modal fade" id="proposalFIleModal" tabindex="-1" aria-labelledby="proposalFIleModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -98,8 +92,8 @@
                     <div class="table-responsive text-nowrap mb-4">
                         <table class="table table-bordered">
                             <thead>
-                                <tr style="background-color: var(--bs-primary) !important; border-color: var(--bs-primary)  !important;">
-                                  <th colspan="5" class="p-4 text-white">{{ $title }}</th>
+                                <tr class="" style="background-color: #E5EDFC; !important">
+                                    <th colspan="5" class="p-4 text-primary">{{ $title }}</th>
                                 </tr>
                                 <tr>
                                     <th style="width: 50px;">No.</th>
@@ -116,7 +110,7 @@
                                         <td>2.{{ $counter }}</td>
                                         <td>
                                             <div style="min-width: 300px; max-width: 700px; white-space: wrap; ">
-                                                <a style="color: #697A8D;"  href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->proposal->id)]) }}" >{{ $proposal->proposal->title }}</a>
+                                                <a href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->id)]) }}" >{{ $proposal->proposal->title }}</a>
                                             </div>
                                         </td>
                                         <td>
@@ -141,19 +135,17 @@
 
                                         </td>
                                         <td>
-                                          @if($proposal->proposal->files->count() > 0)
-                                              <button class="btn btn-sm btn-secondary d-flex gap-2 view-files"
-                                                      data-files="{{ json_encode($proposal->proposal->files) }}"
-                                                      data-title="{{ $proposal->proposal->title }}">
-                                                  <i class='bx bx-file'></i> VIEW FILES
-                                              </button>
-                                          @else
-                                              <button class="btn btn-sm btn-danger d-flex gap-2">
-                                                  <i class='bx bx-file'></i> NO FILES
-                                              </button>
-                                          @endif
+                                            @if($proposal->proposal->files->count() > 0)
+                                                <button class="btn btn-sm btn-primary d-flex gap-2 view-files"
+                                                        data-files="{{ json_encode($proposal->proposal->files) }}"
+                                                        data-title="{{ $proposal->proposal->title }}">
+                                                    <i class='bx bx-file'></i> View Files
+                                                </button>
+                                            @else
+                                                <span class="text-muted">No Files</span>
+                                            @endif
                                         </td>
-                                      </tr>
+                                    </tr>
                                     @php $counter++; @endphp
                                     @endforeach
                                 @else
@@ -199,7 +191,15 @@
         </div>
     </div>
 </div>
+{{-- For Jodit Text Editor --}}
+<script
+type="text/javascript"
+src="https://cdn.jsdelivr.net/npm/jodit@latest/es2021/jodit.fat.min.js"
+></script>
 <script>
+    // For Jodit Editor in Pre
+    Jodit.make('#preliminaries');
+
     $(document).on('click', '.view-files', function (e) {
         e.preventDefault();
         var files = $(this).data("files");

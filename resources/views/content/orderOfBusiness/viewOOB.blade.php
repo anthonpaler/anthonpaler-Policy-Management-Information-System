@@ -134,9 +134,15 @@
                     <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
                 @enderror
             </div> --}}
-        <div class="mt-3 mb-3">
-          <textarea  name="preliminaries" id="preliminaries">{{ $orderOfBusiness->preliminaries ?? '' }}</textarea>
-        </div>
+        @if(session('isProponent') ||(session('isSecretary') && session('secretary_level') != $meeting->getMeetingCouncilType()))
+          <div class="mt-1 mb-3 ms-4">
+            {!! $orderOfBusiness->preliminaries !!}
+          </div>
+        @else
+          <div class="mt-3 mb-3">
+            <textarea  name="preliminaries" id="preliminaries">{{ $orderOfBusiness->preliminaries ?? '' }}</textarea>
+          </div>
+        @endif
         <!-- Modal -->
         <div class="modal fade" id="proposalFIleModal" tabindex="-1" aria-labelledby="proposalFIleModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -360,19 +366,27 @@
             <table class="table table-bordered sortable" id="{{ session('isSecretary') && (session('secretary_level') == $meeting->getMeetingCouncilType()) ? 'oobOtherMatterTable' :  ''}}">
               <thead>
                   <tr style="background-color: var(--bs-primary) !important; border-color: var(--bs-primary)  !important;">
-                      <th colspan="5" class="p-4 text-white">{{ $otherMattersTitle }}</th>
+                      <th colspan="6" class="p-4 text-white">{{ $otherMattersTitle }}</th>
                   </tr>
                   <tr>
                       <th style="width: 50px;">No.</th>
                       <th>Title of the Proposal</th>
                       <th style="width: 200px;">Presenter</th>
-                      <th style="width: 150px;">Requested Action</th>
+                      <th style="width: 100px;">Matter</th>
+                      <th style="width: 100px;">Requested Action</th>
                       <th style="width: 100px;">File</th>
                   </tr>
               </thead>
               <tbody>
                   @php $counter = 1; @endphp
                   @foreach ($otherMattersProposals as $otherMatter)
+                      @php
+                         if(in_array($otherMatter->proposal->type,  [1,3,4])){
+                            $matter = config('proposals.matters.' . $otherMatter->proposal->type) ?? 'N/A';
+                          }elseif($otherMatter->proposal->type == 2){
+                            $matter = config('proposals.proposal_subtypes.' . $otherMatter->proposal->sub_type) ?? 'N/A';
+                          }
+                      @endphp
                       <tr class="selectable-row"  data-id="{{ $otherMatter->proposal->id }}">
                           <td>3.<span class="order_no">{{ $counter }}</span></td>
                           <td>
@@ -390,6 +404,7 @@
                                   @endforeach
                               </div>
                           </td>
+                          <td>{{$matter}}</td>
                           <td>
                               <span class="d-flex gap-2 align-items-center">
                                   <i class='bx bx-up-arrow-circle text-{{ $actionColors[$otherMatter->proposal->action] ?? 'primary' }}'></i>
@@ -632,6 +647,65 @@ type="text/javascript"
 src="https://cdn.jsdelivr.net/npm/jodit@latest/es2021/jodit.fat.min.js"
 ></script>
 <script>
+    $('#matter').on('change', function() {
+        var matter = $(this).val();
+        var subType = $('#sub_type');
+        var actionSelect = $('#action');
+
+        actionSelect.empty();
+
+        if (matter == 1) {
+            actionSelect.append(`
+                @if (session('user_role') == 3)
+                    <option value="4">Endorsement for Local ACAD</option>
+                    <option value="1">Endorsement for UACAD</option>
+                @endif
+                @if (session('user_role') == 4)
+                    <option value="6">Approval for UACAD</option>
+                    <option value="3">Endorsement for BOR</option>
+                @endif
+                @if (session('user_role') == 5)
+                    <option value="8">BOR Approval</option>
+                @endif
+            `);
+            subType.prop('disabled', true);
+            $('#subTypeContainer').css('display', 'none');
+        } else if (matter == 2) {
+            subType.prop('disabled', false);
+            $('#subTypeContainer').css('display', 'block');
+
+            actionSelect.append(`
+                @if (session('user_role') == 3)
+                    <option value="5">Endorsement for Local ADCO</option>
+                    <option value="2">Endorsement for UADCO</option>
+                @endif
+                @if (session('user_role') == 4)
+                    <option value="7">Approval for UADCO</option>
+                    <option value="3">Endorsement for BOR</option>
+                @endif
+                @if (session('user_role') == 5)
+                    <option value="8">BOR Approval</option>
+                @endif
+            `);
+        }else if (matter == 3) {
+            subType.prop('disabled', true);
+            $('#subTypeContainer').css('display', 'none');
+
+            actionSelect.append(`
+                <option value="3">Endorsement for BOR</option>
+                <option value="9">BOR Confirmation</option>
+            `);
+        }
+        else if (matter == 4) {
+            subType.prop('disabled', true);
+            $('#subTypeContainer').css('display', 'none');
+
+            actionSelect.append(`
+                <option value="3">Endorsement for BOR</option>
+                <option value="10">BOR Information</option>
+            `);
+        }
+    });
     // For Jodit Editor in Pre
     Jodit.make('#preliminaries');
 
@@ -1239,66 +1313,6 @@ src="https://cdn.jsdelivr.net/npm/jodit@latest/es2021/jodit.fat.min.js"
             });
         });
 
-    });
-
-    $('#matter').on('change', function() {
-        var matter = $(this).val();
-        var subType = $('#sub_type');
-        var actionSelect = $('#action');
-
-        actionSelect.empty();
-
-        if (matter == 1) {
-            actionSelect.append(`
-                @if (session('user_role') == 3)
-                    <option value="4">Endorsement for Local ACAD</option>
-                    <option value="1">Endorsement for UACAD</option>
-                @endif
-                @if (session('user_role') == 4)
-                    <option value="6">Approval for UACAD</option>
-                    <option value="3">Endorsement for BOR</option>
-                @endif
-                @if (session('user_role') == 5)
-                    <option value="8">BOR Approval</option>
-                @endif
-            `);
-            subType.prop('disabled', true);
-            $('#subTypeContainer').css('display', 'none');
-        } else if (matter == 2) {
-            subType.prop('disabled', false);
-            $('#subTypeContainer').css('display', 'block');
-
-            actionSelect.append(`
-                @if (session('user_role') == 3)
-                    <option value="5">Endorsement for Local ADCO</option>
-                    <option value="2">Endorsement for UADCO</option>
-                @endif
-                @if (session('user_role') == 4)
-                    <option value="7">Approval for UADCO</option>
-                    <option value="3">Endorsement for BOR</option>
-                @endif
-                @if (session('user_role') == 5)
-                    <option value="8">BOR Approval</option>
-                @endif
-            `);
-        }else if (matter == 3) {
-            subType.prop('disabled', true);
-            $('#subTypeContainer').css('display', 'none');
-
-            actionSelect.append(`
-                <option value="3">Endorsement for BOR</option>
-                <option value="9">BOR Confirmation</option>
-            `);
-        }
-        else if (matter == 4) {
-            subType.prop('disabled', true);
-            $('#subTypeContainer').css('display', 'none');
-
-            actionSelect.append(`
-                <option value="3">Endorsement for BOR</option>
-                <option value="10">BOR Information</option>
-            `);
-        }
     });
 
     function getImageByFileType(fileType) {

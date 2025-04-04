@@ -162,6 +162,10 @@
       font-size: 11px;
       margin-top: 20px;
     }
+    thead {
+      display: table-header-group;
+      page-break-inside: avoid;
+    }
     th {
       background-color: #078EED;
       color: #FFFFFF;
@@ -204,7 +208,7 @@
     <small>Excellence | Service | Leadership and Good Governance | Innovation | Social Responsibility | Integrity | Professionalism | Spirituality</small>
   </header>
   {{-- END HEADER --}}
-  
+
   {{-- FOOTER --}}
   <footer>
     <small class="time-generated">Generated on: {{ now()->format('F d, Y h:i A') }}</small>
@@ -266,6 +270,7 @@
       $allProposalIds = collect($categorizedProposals)->flatten()->pluck('id');
     @endphp
     @if ($noProposals)
+      <p style="color: red; text-align: center;">No new order of business available at the moment.</p>
     @else
       @foreach ($matters as $type => $title)
         @php
@@ -331,7 +336,7 @@
                   @endphp
                   <tr class="tr-group">
                     <td width="10%">2.{{$counter}}</td>
-                    <td colspan="3" width="90%">{{$counter}}</td>
+                    <td colspan="3" width="90%">{{$groupTitle}}</td>
                   </tr>
                   @foreach ( $proposal['data'] as $groupedProposal )
                     @php
@@ -349,17 +354,65 @@
                       <td>{{$presenters}}</td>
                       <td>{{$requestedAction}}</td>
                     </tr>
+                    @php
+                       $groupCounter++;
+                    @endphp
                   @endforeach
                 @endif
-                @php
-                $counter++;
-                $groupCounter = 1;
-              @endphp
+                @php $counter++;  $groupCounter = 1; @endphp
               @endforeach
             </tbody>
           </table>
         @endif
       @endforeach
+    @endif
+    @if ($otherMattersProposals->isNotEmpty())
+      <h6 class="section-title">3. Other Matters</h6>
+      <table>
+        <thead>
+          <tr>
+              <th colspan="5" class="table-header" style="">{{ $otherMattersTitle }}</th>
+          </tr>
+          <tr>
+            <th width="10%">No.</th>
+            <th width="35%">Title of the Proposal</th>
+            <th width="20%">Presenters</th>
+            <th width="15%">Matter</th>
+            <th width="20%">Requested Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          @php
+            $counter = 1;
+          @endphp
+          @foreach ( $otherMattersProposals as $otherMatter )
+            @php
+             $presenters = isset($otherMatter->proposal->proponents) && $otherMatter->proposal->proponents->isNotEmpty()
+                ? implode(', ', $otherMatter->proposal->proponents->pluck('name')->toArray())
+                : '<span>No presenters</span>';
+
+              if(in_array($otherMatter->proposal->type,  [1,3,4])){
+                $matter = config('proposals.matters.' . $otherMatter->proposal->type) ?? 'N/A';
+              }elseif($otherMatter->proposal->type == 2){
+                $matter = config('proposals.proposal_subtypes.' . $otherMatter->proposal->sub_type) ?? 'N/A';
+              }
+              $requestedAction = config('proposals.requested_action.' . $otherMatter->proposal->action) ?? 'N/A';
+            @endphp
+            <tr>
+              <td>3.{{$counter}}</td>
+              <td>
+                {!! str_replace('₱', "<span style=\"font-family: 'dejavu sans' !important;\">₱</span>", e($otherMatter->proposal->title)) !!}
+              </td>
+              <td>{{$presenters}}</td>
+              <td>{{ $matter}}</td>
+              <td>{{$requestedAction}}</td>
+            </tr>
+            @php
+              $counter++;
+            @endphp
+          @endforeach
+        </tbody>
+      </table>
     @endif
   </div>
   {{-- END NEW BUSINESS --}}

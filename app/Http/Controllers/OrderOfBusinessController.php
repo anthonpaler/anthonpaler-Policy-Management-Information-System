@@ -399,7 +399,6 @@ class OrderOfBusinessController extends Controller
                 }
             }
 
-
             return view('content.orderOfBusiness.viewOOB', compact(
                 'orderOfBusiness',
                 'meeting',
@@ -653,7 +652,7 @@ class OrderOfBusinessController extends Controller
 
             // dd($categorizedProposals);
 
-          $pdf = Pdf::loadView('pdf.export_oob_pdf', compact('orderOfBusiness', 'categorizedProposals', 'meeting', 'matters'))
+          $pdf = Pdf::loadView('pdf.export_oob_pdf', compact('orderOfBusiness', 'categorizedProposals', 'meeting', 'matters', 'otherMattersProposals', 'otherMattersTitle'))
               ->setOption([
                 'fontDir' => public_path('fonts'), // Set fontDir to the directory containing your fonts
                 'fontCache' => public_path('fonts'), // Set fontCache to the same directory or a cache folder
