@@ -35,18 +35,34 @@ $navbarDetached = ($navbarDetached ?? '');
           <i class="bx bx-fullscreen" onclick="toggleFullscreen()" id="fullScreenBtn"></i>
       </div>
 
-      {{-- FOR MULTU ROLE USERS --}}
-      {{-- <div class="btn-group">
+      {{-- FOR MULTI ROLE USERS --}}
+@php
+$activeRoles = session('available_roles') ?? []; // Ensure it's always an array
+ $currentRole = array_search(session('user_role'), [
+        'Local Secretary' => 3,
+        'University Secretary' => 4,
+        'Board Secretary' => 5
+    ]) ?: (count($activeRoles) > 0 ? $activeRoles[0] : '');@endphp
+
+@if(count($activeRoles) > 1)
+    <div class="btn-group">
         <button type="button" class="btn btn-sm btn-primary">VIEW AS</button>
         <button type="button" class="btn btn-sm btn-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
-          <span class="visually-hidden">Toggle Dropdown</span>
+            <span class="visually-hidden">Toggle Dropdown</span>
         </button>
-        <ul class="dropdown-menu" style="position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate3d(0px, 40px, 0px);" data-popper-placement="bottom-start">
-          <li><a class="dropdown-item" href="javascript:void(0);">Local Secretary</a></li>
-          <li><a class="dropdown-item" href="javascript:void(0);">University Secretary</a></li>
-          <li><a class="dropdown-item" href="javascript:void(0);">Board Secretary</a></li>
+        <ul class="dropdown-menu">
+            @foreach($activeRoles as $role)
+                <li>
+                    <a class="dropdown-item switch-role" href="javascript:void(0);" data-role="{{ $role }}">
+                        {{ $role }}
+                    </a>
+                </li>
+            @endforeach
         </ul>
-      </div> --}}
+    </div>
+@endif
+
+
       <!-- User -->
       <li class="nav-item navbar-dropdown dropdown-user dropdown">
         <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
@@ -121,6 +137,27 @@ $navbarDetached = ($navbarDetached ?? '');
 
         setInterval(updateDateTime, 1000);
         updateDateTime();
+
+
+
+    $(document).on('click', '.switch-role', function () {
+        let selectedRole = $(this).data('role');
+
+        $.ajax({
+            url: "{{ route('switch.role') }}", 
+            type: 'POST',
+            data: { role: selectedRole, _token: $('meta[name="csrf-token"]').attr('content') },
+            success: function (response) {
+                if (response.success) {
+                    window.location.href = response.redirect; // 🔥 Refresh with new role
+                }
+            },
+            error: function () {
+                alert('Error switching role. Try again.');
+            }
+        });
+    });
+
     </script>
 </nav>
   <!-- / Navbar -->

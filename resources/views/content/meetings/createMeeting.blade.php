@@ -270,24 +270,20 @@
                             </div>
                         </div>
 
-                        <div class="mb-3 d-none" id="venueField">
-                            <label class="form-label" for="">Venue</label>
+                       <div class="mb-3" id="venueField">
+                            <label class="form-label" for="venue">Venue</label>
                             <div class="input-group input-group-merge">
-                                <span  class="input-group-text">
+                                <span class="input-group-text">
                                     <i class="bx bx-buildings"></i>
                                 </span>
-                                <select
+                                <input
+                                    type="text"
                                     id="venue"
-                                    class="form-select  @error('venue') is-invalid @enderror"
+                                    class="form-control @error('venue') is-invalid @enderror"
                                     name="venue"
-                                >
-                                    <option value="">Select Venue</option>
-                                    @foreach ($venues as $venue)
-                                    <option value="{{ $venue->id }}">
-                                        {{ $venue->name }}
-                                    </option>
-                                    @endforeach
-                                </select>
+                                    placeholder="Enter venue"
+                                    value="{{ old('venue') }}"
+                                />
                                 @error('venue')
                                     <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
                                 @enderror

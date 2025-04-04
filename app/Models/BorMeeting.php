@@ -22,7 +22,7 @@ class BorMeeting extends Model
         'meeting_date_time',
         'quarter',
         'year',
-        'venue_id',
+        'venue',
         'status',
         'council_type',
         'action',

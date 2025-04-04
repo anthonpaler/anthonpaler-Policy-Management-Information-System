@@ -72,11 +72,9 @@ class MeetingController extends Controller
     // VIEW CREATE MEETING PAGE
     public function viewCreateMeeting(Request $request)
     {
-        $campus_id = session('campus_id');
+        
 
-        $venues = Venues::where('campus_id', $campus_id)->get();
-
-        return view ('content.meetings.createMeeting', compact('venues'));
+        return view ('content.meetings.createMeeting');
     }
 
     // CREATE THE MEETING
@@ -97,7 +95,7 @@ class MeetingController extends Controller
                 'quarter' => 'required|integer|unique_meeting_per_quarter:' . $request->input('year'). ',' . $level.','.$campus_id.','.$request->input('council_type'),
                 'year' => 'required|integer',
                 'modality' => 'nullable|integer',
-                'venue' => 'nullable|string',
+                'venue' => 'nullable|string|max:150',
                 'mode_if_online' => 'nullable|string',
                 'link' => 'nullable|url',
                 'council_type' => 'required|integer',
@@ -111,7 +109,7 @@ class MeetingController extends Controller
               'meeting_date_time' => $request->input('meeting_date_time'),
               'quarter' => $request->input('quarter'),
               'year' => $request->input('year'),
-              'venue_id' => $request->input('venue'),
+              'venue' => $request->input('venue'),
               'status' => 0,
               'council_type' => $request->input('council_type'),
               'modality' => $request->input('modality') ?? 0,
@@ -231,7 +229,6 @@ class MeetingController extends Controller
     {
         $campus_id = session('campus_id');
 
-        $venues = Venues::where('campus_id', $campus_id)->get();
 
 
         $meetingID = decrypt($meeting_id);
@@ -246,7 +243,7 @@ class MeetingController extends Controller
         }
 
         // dd($venues);
-        return view ('content.meetings.editMeeting', compact('meeting', 'venues'));
+        return view ('content.meetings.editMeeting', compact('meeting'));
     }
 
     // EDIT MEETING
@@ -258,7 +255,7 @@ class MeetingController extends Controller
             $request->validate([
                 'description' => 'nullable|string',
                 'modality' => 'nullable|integer|min:0|max:2',
-                'venue' => 'nullable|string',
+                'venue' => 'nullable|string|max:150',
                 'link' => 'nullable|url',
                 'status' => 'required|integer',
                 'mode_if_online' => 'nullable|string',
@@ -320,7 +317,7 @@ class MeetingController extends Controller
             $meetingData = [
                 'description' => $request->input('description'),
                 'meeting_date_time' => $request->input('meeting_date_time'),
-                'venue_id' => $request->input('venue'),
+                'venue' => $request->input('venue'),
                 'council_type' => $request->input('council_type'),
                 'modality' => $request->input('modality')?? 0 ,
                 'mode_if_online' => $request->input('mode_if_online'),

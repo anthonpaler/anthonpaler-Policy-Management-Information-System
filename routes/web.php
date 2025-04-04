@@ -239,6 +239,9 @@ Route::post('/update-proposal-group/{level}', [OrderOfBusinessController::class,
 
 Route::get('/get-previous-minutes/{meeting_id}', [OrderOfBusinessController::class, 'getPreviousMinutes'])->name('get.previous.minutes');
 
+Route::post('/switch-role', [Analytics::class, 'switchRole'])->name('switch.role');
+
+
 
 
 

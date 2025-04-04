@@ -28,7 +28,6 @@ class User extends Authenticatable
         'role',
         'password',
         'verified_email',
-        'employee_id',
     ];
 
 
@@ -105,4 +104,27 @@ class User extends Authenticatable
 {
     return $this->hasOneThrough(Campus::class, Employee::class, 'id', 'id', 'employee_id', 'campus');
 }
+
+public function getRoles()
+{
+    $roles = [];
+
+    if ($this->employee_id) {
+        if (\DB::table('local_secretaries')->where('employee_id', $this->employee_id)->exists()) {
+            $roles[] = 'Local Secretary';
+        }
+
+        if (\DB::table('university_secretaries')->where('employee_id', $this->employee_id)->exists()) {
+            $roles[] = 'University Secretary';
+        }
+
+        if (\DB::table('board_secretaries')->where('employee_id', $this->employee_id)->exists()) {
+            $roles[] = 'Board Secretary';
+        }
+    }
+
+    return $roles; // Ensure it always returns an array
+}
+
+
 }

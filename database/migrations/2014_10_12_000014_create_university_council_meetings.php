@@ -22,8 +22,7 @@ return new class extends Migration
             $table->tinyInteger('mode_if_online')->nullable();
             $table->text('link')->nullable();
             $table->text('description')->nullable();
-            $table->unsignedInteger('venue_id')->nullable();
-            $table->foreign('venue_id')->references('id')->on('venues');
+            $table->string('venue')->nullable();
             $table->tinyInteger('status')->default(0);
             $table->foreignId('creator_id')->constrained('employees')->onDelete('cascade');
             $table->timestamps();

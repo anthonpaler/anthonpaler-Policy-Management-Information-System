@@ -316,25 +316,20 @@
                             </div>
                         </div>
 
-                        <div class="mb-3 {{ $meeting->modality == 1 ||   $meeting->modality == 3 ? '': 'd-none'}}" id="venueField">
-                            <label class="form-label" for="basic-icon-default-company">Venue</label>
+                       <div class="mb-3 {{ $meeting->modality == 1 || $meeting->modality == 3 ? '' : 'd-none' }}" id="venueField">
+                            <label class="form-label" for="venue">Venue</label>
                             <div class="input-group input-group-merge">
-                                <span id="basic-icon-default-company2" class="input-group-text">
+                                <span id="venue-icon" class="input-group-text">
                                     <i class="bx bx-buildings"></i>
                                 </span>
-                                <select
+                                <input 
+                                    type="text"
                                     id="venue"
                                     class="form-control basic-icon-default-company @error('venue') is-invalid @enderror"
                                     name="venue"
-                                >
-                                    <option value="">Select Venue</option>
-                                    @foreach ($venues as $venue)
-                                        <option value="{{ $venue->id }}"
-                                            {{ (isset($meeting) && $meeting->venue_id == $venue->id) ? 'selected' : (old('venue') == $venue->id ? 'selected' : "") }}>
-                                            {{ $venue->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                                    value="{{ old('venue', $meeting->venue ?? '') }}"
+                                    placeholder="Enter venue"
+                                />
                                 @error('venue')
                                     <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
                                 @enderror

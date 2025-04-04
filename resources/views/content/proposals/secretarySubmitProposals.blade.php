@@ -33,7 +33,7 @@
                 <span class="text-muted fw-light">{{ \Carbon\Carbon::parse($meeting->meeting_date_time)->format('F d, Y, l, h:i A') }}</span>
 
                 @if ($meeting->modality == 1 || $meeting->modality == 3)
-                <span> | Venue  at  {{$meeting->venue->name}}</span>
+                <span> | Venue  at  {{ $meeting->venue ?? 'Not Set' }}</span>
                 @elseif ($meeting->modality == 2 || $meeting->modality == 3)
                 <span> | Via {{ config('meetings.mode_if_online_types.'.$meeting->mode_if_online) }} - Online</span>
                 @else

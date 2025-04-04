@@ -79,7 +79,7 @@
               <div class="d-flex flex-nowrap gap-3 align-items-center">
                 <i class='bx bx-building-house' ></i>
                 <strong class="text-nowrap">Venue : </strong>
-                <span class="text-nowrap"> {{$meeting->venue->name}} </span>
+               <span class="text-nowrap"> {{ $meeting->venue ?? 'Not Set' }} </span>
               </div>
             @elseif ($meeting->modality == 2 || $meeting->modality == 3)
               <div class="d-flex flex-nowrap gap-3 align-items-center">
