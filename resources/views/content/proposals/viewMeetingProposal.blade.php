@@ -374,14 +374,14 @@
                                                 <input type="checkbox"
                                                 class="form-check-input select-proposal"
                                                 data-id="{{ encrypt($proposal->proposal->id) }}"
-                                                {{ (!in_array($proposal->status , [0, 8])) ? 'disabled' : '' }}>
+                                                {{ (!in_array($proposal->status , [0, 8, 9])) ? 'disabled' : '' }}>
                                             </td>
                                         @elseif($meetingDateTime && $currentDateTime->greaterThan($meetingDateTime))
                                             <td>
                                                 <input type="checkbox"
                                                 class="form-check-input select-proposal"
                                                 data-id="{{ encrypt($proposal->proposal->id) }}"
-                                                {{ (!in_array($proposal->status , [1])) ? 'disabled' : '' }}>
+                                                {{ (!in_array($proposal->status , [1, 9])) ? 'disabled' : '' }}>
                                             </td>
                                         @endif
                                     @endif

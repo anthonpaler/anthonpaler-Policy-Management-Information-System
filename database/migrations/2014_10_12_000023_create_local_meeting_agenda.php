@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('local_meeting_agenda', function (Blueprint $table) {
             $table->unsignedInteger('id')->autoIncrement();
-            $table->unsignedInteger('local_council_meeting_id')->nullable();
-            $table->unsignedInteger('local_proposal_id')->nullable();
+            $table->unsignedInteger('local_council_meeting_id');
+            $table->unsignedInteger('local_proposal_id');
             $table->unsignedInteger('local_oob_id')->nullable();
-            $table->tinyInteger('status')->nullable();
+            $table->tinyInteger('status');
             $table->integer('order_no')->nullable();
             $table->unsignedBigInteger('group_proposal_id')->nullable();
             $table->timestamps();

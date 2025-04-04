@@ -14,9 +14,9 @@
     <i class='bx bx-chevron-right' ></i>
     <a href="#">My Proposals</a>
 </div>
-@php 
-    $actionColors = [ 'secondary', 'primary', 'success', 'warning', 'info', 'danger']; 
-@endphp 
+@php
+    $actionColors = [ 'secondary', 'primary', 'success', 'warning', 'info', 'danger'];
+@endphp
 
 <div class="row">
     <div class="col-xl">
@@ -101,14 +101,14 @@
                             </td>
                             <td>
                                 <div style="min-width: 300px; max-width: 500px; white-space: wrap; ">
-                                    <a href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->proposal->id)]) }}" >{{ $proposal->proposal->title }}</a>
+                                    <a style="color: #697A8D;" href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->proposal->id)]) }}" >{{ $proposal->proposal->title }}</a>
                                 </div>
                             </td>
                             <td>
                                 <!-- <span class="badge bg-label-{{ $actionColors[$proposal->type] ?? 'primary' }}" style="text-transform: none;">
                                     {{ config('proposals.matters.'.$proposal->type) }}
                                 </span> -->
-                                <span class="align-items-center d-flex gap-2"> 
+                                <span class="align-items-center d-flex gap-2">
                                     {!! $proposal->proposal->type == 1 ? "<i class='bx bx-book-content text-primary'></i> " : "<i class='bx bxs-book-content text-danger' ></i>" !!}
 
                                     {{ config('proposals.matters.'.$proposal->proposal->type) }}
@@ -127,7 +127,7 @@
                             <td>
                                 @if($proposal->proposal->files->count() > 0)
                                     <button class="btn btn-sm btn-primary d-flex gap-2 view-files"
-                                            data-files="{{ json_encode($proposal->proposal->files) }}" 
+                                            data-files="{{ json_encode($proposal->proposal->files) }}"
                                             data-title="{{ $proposal->title }}">
                                         <i class='bx bx-file'></i> VIEW FILES
                                     </button>
@@ -170,7 +170,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body" id="modalFiles">
-                   
+
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -206,13 +206,13 @@
     function cantDeleteWarning() {
         showAlert("warning", "Can't Delete!", "You can no longer delete this proposal.");
     }
-   
+
     // DELETE PROPOSAL
     $(".delete-proposal").on('click', function(e){
         e.preventDefault();
         var proposal_id = $(this).data("id");
         var is_delete_disabled = $(this).data("deletable");
-        var button = $(this); 
+        var button = $(this);
 
         console.log(proposal_id);
         if(is_delete_disabled){
@@ -243,11 +243,11 @@
                                 text: "Your file has been deleted.",
                                 icon: "success"
                             });
-                            button.closest("tr").remove(); 
+                            button.closest("tr").remove();
                         }else{
                             showAlert("danger", response.title, response.message);
                         }
-                    },            
+                    },
                     error: function (xhr, status, error) {
                         console.log(xhr.responseText);
                         let response = JSON.parse(xhr.responseText);

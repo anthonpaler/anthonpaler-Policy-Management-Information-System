@@ -619,7 +619,7 @@ class ProposalController extends Controller
                 'proposal_id' => $proposalID,
             ]);
         } elseif ($roleID == 5) {
-            OtherMatter::create([               
+            OtherMatter::create([
                 'proposal_id' => $proposalID,
             ]);
         }
@@ -1195,7 +1195,7 @@ class ProposalController extends Controller
     {
         try {
             $proposals = collect();
-            $matters = config('proposals.matters');
+            $matters = [0 => 'Financial Matters'] + config('proposals.matters');
             $meeting = null;
             $campus_id =  session('campus_id');
 
@@ -1228,30 +1228,8 @@ class ProposalController extends Controller
                     ->orderBy('created_at', 'desc')
                     ->get();
             }
-
-            // // Get meeting type
-            // $councilType = $meeting->council_type ?? null;
-            // $councilTypesConfig = config('proposals.council_types');
-
-            // $categorizedProposals = [];
-            // foreach ($matters as $type => $title) {
-            //     // Ensure every type exists in the categorizedProposals array
-            //     $categorizedProposals[$type] = collect();
-
-            //     if ($meeting->getMeetingCouncilType() == 2 || $meeting->council_type == 1) {
-            //         $categorizedProposals[$type] = $proposals->filter(fn($p) => $p->proposal->type === $type);
-            //     } elseif ($meeting->council_type == 2) {
-            //         $categorizedProposals[1] = $proposals->filter(fn($p) => $p->proposal->type === 1);
-            //     } elseif ($meeting->council_type == 3) {
-            //         $categorizedProposals[2] = $proposals->filter(fn($p) => $p->proposal->type === 2);
-            //     }
-            // }
-
-
-            // if (!isset($categorizedProposals[$type])) {
-            //     $categorizedProposals[$type] = collect();
-            // }
-
+            // dd($proposals);
+        
             // Get meeting type
             $councilType = $meeting->council_type ?? null;
             $councilTypesConfig = config('proposals.council_types');
@@ -1275,6 +1253,8 @@ class ProposalController extends Controller
                 if ($type == 2 && $subType == 0) {
                     $type = 0;
                 }
+
+                $categorizedProposals[$type][] = $proposal;
             }
 
             // dd($categorizedProposals);

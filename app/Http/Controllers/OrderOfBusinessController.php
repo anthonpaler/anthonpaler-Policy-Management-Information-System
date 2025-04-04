@@ -222,111 +222,35 @@ class OrderOfBusinessController extends Controller
 
 
     public function getPreviousMinutes($meetingId)
-{
-    // Map meeting types to their corresponding Oob models
-    $meetingMapping = [
-        'local' => [LocalOob::class, 'local_council_meeting_id'],
-        'university' => [UniversityOob::class, 'university_council_meeting_id'],
-        'board' => [BoardOob::class, 'bor_meeting_id']
-    ];
+    {
+      // Map meeting types to their corresponding Oob models
+      $meetingMapping = [
+          'local' => [LocalOob::class, 'local_council_meeting_id'],
+          'university' => [UniversityOob::class, 'university_council_meeting_id'],
+          'board' => [BoardOob::class, 'bor_meeting_id']
+      ];
 
-    $orderOfBusiness = null;
+      $orderOfBusiness = null;
 
-    foreach ($meetingMapping as [$oobModel, $foreignKey]) {
-        $orderOfBusiness = $oobModel::where($foreignKey, $meetingId)->first();
-        if ($orderOfBusiness) {
-            break;
-        }
+      foreach ($meetingMapping as [$oobModel, $foreignKey]) {
+          $orderOfBusiness = $oobModel::where($foreignKey, $meetingId)->first();
+          if ($orderOfBusiness) {
+              break;
+          }
+      }
+
+      if ($orderOfBusiness && !empty($orderOfBusiness->previous_minutes)) {
+          return response()->json([
+              'success' => true,
+              'previous_minutes' => $orderOfBusiness->previous_minutes
+          ]);
+      }
+
+      return response()->json([
+          'success' => false,
+          'previous_minutes' => null
+      ]);
     }
-
-    if ($orderOfBusiness && !empty($orderOfBusiness->previous_minutes)) {
-        return response()->json([
-            'success' => true,
-            'previous_minutes' => $orderOfBusiness->previous_minutes
-        ]);
-    }
-
-    return response()->json([
-        'success' => false,
-        'previous_minutes' => null
-    ]);
-}
-
-    // GENERATE OOB WITH ORDER NO
-    // public function generateOOB(Request $request, String $level, String $meeting_id)
-    // {
-    //     try {
-    //         $request->validate([
-    //             'preliminaries' => 'required|string',
-    //         ]);
-
-    //         $meetingID = decrypt($meeting_id);
-
-    //         // Determine the correct models dynamically
-    //         $oobModel = match ($level) {
-    //             'Local' => LocalOob::class,
-    //             'University' => UniversityOob::class,
-    //             'BOR' => BoardOob::class,
-    //             default => null
-    //         };
-
-    //         $agendaModel = match ($level) {
-    //             'Local' => LocalMeetingAgenda::class,
-    //             'University' => UniversityMeetingAgenda::class,
-    //             'BOR' => BoardMeetingAgenda::class,
-    //             default => null
-    //         };
-
-    //         if (!$oobModel || !$agendaModel) {
-    //             return response()->json([
-    //                 'type' => 'danger',
-    //                 'message' => 'Invalid meeting level!',
-    //                 'title' => "Error!"
-    //             ]);
-    //         }
-
-    //         // Check if an Order of Business already exists
-    //         if ($oobModel::where($this->getMeetingColumn($level), $meetingID)->exists()) {
-    //             return response()->json([
-    //                 'type' => 'info',
-    //                 'message' => 'This meeting already has an Order of Business!',
-    //                 'title' => "Duplicate Entry"
-    //             ]);
-    //         }
-
-    //         // Create the Order of Business (OOB)
-    //         $oob = $oobModel::create([
-    //             $this->getMeetingColumn($level) => $meetingID,
-    //             'preliminaries' => $request->input('preliminaries'),
-    //             'status' => 0,
-    //         ]);
-
-    //         // Retrieve proposals with status = 1
-    //         $proposals = $agendaModel::where($this->getMeetingColumn($level), $meetingID)
-    //             ->where('status', 1)
-    //             ->get();
-
-    //         // Assign order_no sequentially
-    //         foreach ($proposals as $index => $proposal) {
-    //             $proposal->update([
-    //                 // 'local_oob_id' => $oob->id,
-    //                 'order_no' => $index + 1,
-    //             ]);
-    //         }
-
-    //         return response()->json([
-    //             'type' => 'success',
-    //             'message' => 'Order of Business generated successfully with proposals!',
-    //             'title' => "Success!"
-    //         ]);
-    //     } catch (\Throwable $th) {
-    //         return response()->json([
-    //             'type' => 'danger',
-    //             'message' => $th->getMessage(),
-    //             'title' => "Something went wrong!"
-    //         ]);
-    //     }
-    // }
 
     // View OOB List
     public function viewOOBList(Request $request)
@@ -575,10 +499,10 @@ class OrderOfBusinessController extends Controller
 
             // Email Notification (in Batches)
             $chunks = array_chunk($emails, 50);
-            foreach ($chunks as $batch) {
-                Mail::to($batch)->send(new OOBNotification($orderOfBusiness, $orderOfBusiness->meeting));
-                sleep(2); // Pause to prevent timeout
-            }
+            // foreach ($chunks as $batch) {
+            //     Mail::to($batch)->send(new OOBNotification($orderOfBusiness, $orderOfBusiness->meeting));
+            //     sleep(2); // Pause to prevent timeout
+            // }
 
             //     // SMS/Text Blast Notification
             //     $smsController = new SMSController();
@@ -630,111 +554,132 @@ class OrderOfBusinessController extends Controller
     }
 
 
-    // public function exportOOB_PDF(Request $request, String $level, String $oob_id)
-    // {
-    //     try {
-    //         $oobID = decrypt($oob_id);
-    //         $proposals = collect();
-    //         $matters = [0 => 'Financial Matters'] + config('proposals.matters');
-    //         $orderOfBusiness = null;
-    //         $meeting = null;
+    public function exportOOB_PDF(Request $request, String $level, String $oob_id)
+    {
+        try {
+          $oobID = decrypt($oob_id);
+          $proposals = collect();
+          $otherMattersProposals = collect();
+          $matters = [0 => 'Financial Matters'] + config('proposals.matters');
+          $otherMattersTitle = 'Other Matters';
+          $orderOfBusiness = null;
+          $meeting = null;
 
-    //         if ($level == 'Local') {
-    //             $orderOfBusiness = LocalOob::with('meeting')->findOrFail($oobID);
-    //         } elseif ($level == 'University') {
-    //             $orderOfBusiness = UniversityOob::with('meeting')->findOrFail($oobID);
-    //         } elseif ($level == 'BOR') {
-    //             $orderOfBusiness = BoardOob::with('meeting')->findOrFail($oobID);
-    //         } else {
-    //             throw new \Exception("Invalid council level provided.");
-    //         }
+          if ($level == 'Local') {
+              $orderOfBusiness = LocalOob::with('meeting')->findOrFail($oobID);
+          } elseif ($level == 'University') {
+              $orderOfBusiness = UniversityOob::with('meeting')->findOrFail($oobID);
+          } elseif ($level == 'BOR') {
+              $orderOfBusiness = BoardOob::with('meeting')->findOrFail($oobID);
+          } else {
+              throw new \Exception("Invalid council level provided.");
+          }
 
-    //         $meeting = $orderOfBusiness->meeting;
+          $meeting = $orderOfBusiness->meeting;
 
-    //         if (!$meeting) {
-    //             throw new \Exception("Meeting not found for the given Order of Business.");
-    //         }
+          if (!$meeting) {
+              throw new \Exception("Meeting not found for the given Order of Business.");
+          }
 
-    //         $meetingTypes = [
-    //             'Local' => ['model' => LocalMeetingAgenda::class, 'meeting_key' => 'local_council_meeting_id', 'oob_key' => 'local_oob_id'],
-    //             'University' => ['model' => UniversityMeetingAgenda::class, 'meeting_key' => 'university_meeting_id', 'oob_key' => 'university_oob_id'],
-    //             'BOR' => ['model' => BoardMeetingAgenda::class, 'meeting_key' => 'bor_meeting_id', 'oob_key' => 'board_oob_id'],
-    //         ];
+          $meetingTypes = [
+              'Local' => ['model' => LocalMeetingAgenda::class, 'meeting_key' => 'local_council_meeting_id', 'oob_key' => 'local_oob_id'],
+              'University' => ['model' => UniversityMeetingAgenda::class, 'meeting_key' => 'university_meeting_id', 'oob_key' => 'university_oob_id'],
+              'BOR' => ['model' => BoardMeetingAgenda::class, 'meeting_key' => 'bor_meeting_id', 'oob_key' => 'board_oob_id'],
+          ];
 
-    //         if (isset($meetingTypes[$level])) {
-    //             $model = $meetingTypes[$level]['model'];
-    //             $meetingKey = $meetingTypes[$level]['meeting_key'];
-    //             $oobKey = $meetingTypes[$level]['oob_key'];
+          if (isset($meetingTypes[$level])) {
+            $model = $meetingTypes[$level]['model'];
+            $meetingKey = $meetingTypes[$level]['meeting_key'];
+            $oobKey = $meetingTypes[$level]['oob_key'];
 
-    //             $query = $model::where($meetingKey, $meeting->id)->with('proposal')
-    //             ->where($oobKey, $orderOfBusiness->id)
-    //             ->orderBy('created_at', 'desc');
 
-    //             $proposals = $query->get();
-    //         }
+            $query = $model::where($meetingKey, $meeting->id)
+                ->with('proposal')
+                ->orderBy('order_no', 'asc')
+                ->where(function ($q) use ($oobKey, $orderOfBusiness) {
+                    $q->where($oobKey, $orderOfBusiness->id);
+                });
 
-    //         // Get meeting type
-    //         $councilType = $meeting->council_type ?? null;
-    //         $councilTypesConfig = config('proposals.council_types');
+            // Fetch all proposals
+            $allProposals = $query->get();
 
-    //         // Initialize categorized proposals
-    //         $categorizedProposals = [];
+            // Separate proposals into regular ones and other matters
+            foreach ($allProposals as $proposal) {
+                if ($proposal->proposal->isOtherMatter()) {
+                    $otherMattersProposals->push($proposal); // for other matter proposals
+                } else {
+                    $proposals->push($proposal); // for proposals under new business
+                }
+            }
+          }
 
-    //         // Categorize proposals by type
-    //         foreach ($matters as $type => $title) {
-    //             $categorizedProposals[$type] = collect();
-    //         }
+          // Get meeting type
+          $councilType = $meeting->council_type ?? null;
+          $councilTypesConfig = config('proposals.council_types');
 
-    //         // Group proposals by type and then by group_proposal_id
-    //         foreach ($proposals as $proposal) {
-    //             $type = $proposal->proposal->type;
-    //             $subType = $proposal->proposal->sub_type;
+          // Initialize categorized proposals
+          $categorizedProposals = [];
 
-    //             if (!isset($categorizedProposals[$type])) {
-    //                 $categorizedProposals[$type] = collect();
-    //             }
+          // Categorize proposals by type
+          foreach ($matters as $type => $title) {
+              $categorizedProposals[$type] = collect();
+          }
 
-    //             // Separate Financial Matters from Administrative Matters
-    //             if ($type == 2 && $subType == 0) {
-    //                 $type = 0;
-    //             }
+          // Group proposals by type and then by group_proposal_id
+          foreach ($proposals as $proposal) {
+              $type = $proposal->proposal->type;
+              $subType = $proposal->proposal->sub_type;
 
-    //             $groupId = $proposal->proposal->group_proposal_id ?? null;
+              if (!isset($categorizedProposals[$type])) {
+                  $categorizedProposals[$type] = collect();
+              }
 
-    //             if ($groupId) {
-    //                 if (!isset($categorizedProposals[$type][$groupId])) {
-    //                     $categorizedProposals[$type][$groupId] = collect();
-    //                 }
-    //                 $categorizedProposals[$type][$groupId]->push($proposal);
-    //             } else {
-    //                 $categorizedProposals[$type][] = $proposal;
-    //             }
-    //         }
+              // Separate Financial Matters from Administrative Matters
+              if ($type == 2 && $subType == 0) {
+                  $type = 0;
+              }
 
-    //         // dd($categorizedProposals);
+              $groupId = $proposal->proposal->group_proposal_id ?? null;
 
-    //         $pdf = Pdf::loadView('pdf.export_oob_pdf', compact('orderOfBusiness', 'categorizedProposals', 'meeting', 'matters'))
-    //         ->setPaper('A4', 'portrait');
+              if ($groupId) {
+                  if (!isset($categorizedProposals[$type][$groupId])) {
+                      $categorizedProposals[$type][$groupId] = collect();
+                  }
+                  $categorizedProposals[$type][$groupId]->push($proposal);
+              } else {
+                  $categorizedProposals[$type][] = $proposal;
+              }
+          }
 
-    //         $oob_filename = "";
-    //         if($meeting->getMeetingCouncilType() == 0){
-    //             $oob_filename = config('meetings.quaterly_meetings.'.$meeting->quarter)." ".config('meetings.council_types.local_level.'.$meeting->council_type)." ".$meeting->year.'.pdf';
-    //         } else  if($meeting->getMeetingCouncilType() == 1){
-    //             $oob_filename = config('meetings.quaterly_meetings.'.$meeting->quarter)." ".config('meetings.council_types.university_level.'.$meeting->council_type)." ".$meeting->year.'.pdf';
-    //         }
-    //         else  if($meeting->getMeetingCouncilType() == 2){
-    //             $oob_filename = config('meetings.quaterly_meetings.'.$meeting->quarter)." ".config('meetings.council_types.board_level.'.$meeting->council_type)." ".$meeting->year.'.pdf';
-    //         }
+            // dd($categorizedProposals);
 
-    //         return $pdf->stream($oob_filename);
-    //     } catch (\Throwable $th) {
-    //         return response()->json([
-    //             'type' => 'danger',
-    //             'message' => $th->getMessage(),
-    //             'title' => "Something went wrong!"
-    //         ]);
-    //     }
-    // }
+          $pdf = Pdf::loadView('pdf.export_oob_pdf', compact('orderOfBusiness', 'categorizedProposals', 'meeting', 'matters'))
+              ->setOption([
+                'fontDir' => public_path('fonts'), // Set fontDir to the directory containing your fonts
+                'fontCache' => public_path('fonts'), // Set fontCache to the same directory or a cache folder
+                'defaultFont' => 'Cambria' // Use Cambria as the default font
+            ])
+            ->setPaper('A4', 'portrait');
+
+          $oob_filename = "";
+          if($meeting->getMeetingCouncilType() == 0){
+              $oob_filename = config('meetings.quaterly_meetings.'.$meeting->quarter)." ".config('meetings.council_types.local_level.'.$meeting->council_type)." ".$meeting->year.'.pdf';
+          } else  if($meeting->getMeetingCouncilType() == 1){
+              $oob_filename = config('meetings.quaterly_meetings.'.$meeting->quarter)." ".config('meetings.council_types.university_level.'.$meeting->council_type)." ".$meeting->year.'.pdf';
+          }
+          else  if($meeting->getMeetingCouncilType() == 2){
+              $oob_filename = config('meetings.quaterly_meetings.'.$meeting->quarter)." ".config('meetings.council_types.board_level.'.$meeting->council_type)." ".$meeting->year.'.pdf';
+          }
+
+          return $pdf->stream($oob_filename);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'type' => 'danger',
+                'message' => $th->getMessage(),
+                'title' => "Something went wrong!"
+            ]);
+        }
+    }
 
     // UPDATE PROPOSAL ORDER NUMBER
     public function updateProposalOrder(Request $request, String $level)

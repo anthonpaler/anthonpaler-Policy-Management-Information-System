@@ -21,7 +21,17 @@
         <a href="#">Proposal</a>
     </div>
 </div>
-
+@php
+    // Define proposal status classes dynamically
+    $statusClass = match ($proposal->status) {
+        2, 7 => 'danger',
+        5, 6 => 'warning',
+        1, 8, 9 => 'primary',
+        3, 10 => 'success',
+        4 => 'info',
+        default => 'secondary'
+    };
+@endphp
 <div class="p-0">
     <div class="row">
         <div class="col col-lg-5 mb-4">
@@ -30,7 +40,7 @@
                     <form action="{{ route(getUserRole().'.proposal.edit.save', ['proposal_id' => encrypt($proposal->id)]) }}" method="post" id="editProposalFrm">
                         <div class="d-flex justify-content-between gap-2 mb-3">
                             <h6 class="m-0">PROPOSAL DETAILS </h6>
-                            <span class="badge bg-label-{{ in_array($proposal->status, [2,5,6,7]) ? 'danger' : 'primary'}}">{{ config('proposals.status.'.$proposal->status) }}</span>
+                            <span class="badge bg-label-{{ $statusClass}}">{{ config('proposals.status.'.$proposal->status) }}</span>
                         </div>
                         <div class="mb-3">
                             <label class="form-label" for="title">Proposal Title <span class="ms-1 text-danger">*</span></label>
@@ -478,7 +488,7 @@
                                                     if ($currentDateTime->greaterThan($meetingDateTime)) {
                                                         $isDisabled = in_array($index, [0, 1]); // Enable 0 & 1 if current date is before meeting date
                                                         if($proposal->status == 1){
-                                                            $isDisabled = in_array($index, [0]);
+                                                            $isDisabled = in_array($index, [0, 1]);
                                                         }
                                                     }
                                                     else {

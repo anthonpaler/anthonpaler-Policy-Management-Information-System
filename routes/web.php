@@ -74,7 +74,7 @@ Route::middleware(['auth', 'proponents'])->prefix('proponents')->group(function(
 Route::middleware(['auth', 'local_secretary'])->prefix('local-campus-secretary')->group(function() {
   // DASHBOARD ROUTES
   Route::get('/dashboard', [Analytics::class, 'index'])->name('local_sec.dashboard');
-  
+
   // MEETINGS ROUTES
   Route::get('/meetings', [MeetingController::class, 'viewMeetings'])->name('local_sec.meetings');
   Route::get('/meetings/create-meeting', [MeetingController::class, 'viewCreateMeeting'])->name('local_sec.view_create_meeting');
@@ -143,7 +143,7 @@ Route::middleware(['auth', 'university_secretary'])->prefix('university-secretar
   Route::post('/order-of-business/save/{level}/{oob_id}', [OrderOfBusinessController::class, 'saveOOB'])->name('univ_sec.order_of_business.save');
   Route::post('/order-of-business/disseminate/{level}/{oob_id}', [OrderOfBusinessController::class, 'disseminateOOB'])->name('univ_sec.dissemenate.order_of_business');
 
-  
+
   Route::post('/meetings/filter', [MeetingController::class, 'filterMeetings'])->name(name: 'univ_sec.meetings.filter');
 
   Route::get('/meetings/view-submit-proposal/{level}/{meeting_id}',[ProposalController::class, 'viewSubmitProposalSecretary'])->name('univ_sec.submit.proposal.secretary');
@@ -161,7 +161,7 @@ Route::middleware(['auth', 'university_secretary'])->prefix('university-secretar
   Route::post('/add-other-matters/{meeting_id}', [ProposalController::class, 'addOtherMatters'])->name('univ_sec.addOtherMatters');
 });
 
-// BOARD SECRETARY ROUTES 
+// BOARD SECRETARY ROUTES
 Route::middleware(['auth', 'board_secretary'])->prefix('board-secretary')->group(function() {
   Route::get('/dashboard', [Analytics::class, 'index'])->name('board_sec.dashboard');
   Route::get('/meetings', [MeetingController::class, 'viewMeetings'])->name('board_sec.meetings');
@@ -215,7 +215,10 @@ Route::get('/pdf', [PdfController::class, 'generatePDF']);
 
 Route::post('/proposals/update-proposal-status', [ProposalController::class, 'updateProposalStatus'])->name('proposals.update_proposal_status');
 
-Route::get('/order-of-business/pdf/{level}/{oob_id}', [PdfController::class, 'exportOOB_PDF'])->name('oob.export.pdf');
+Route::get('/order-of-business/pdf/{level}/{oob_id}', [OrderOfBusinessController::class, 'exportOOB_PDF'])->name('oob.export.pdf');
+
+
+// Route::get('/order-of-business/pdf/{level}/{oob_id}', [PdfController::class, 'exportOOB_PDF'])->name('oob.export.pdf');
 
 // Route::get('/order-of-business/pdf/{level}/{oob_id}', [OrderOfBusinessController::class, 'exportOOB_PDF'])->name('oob.export.pdf');
 

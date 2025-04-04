@@ -201,7 +201,7 @@ class PdfController extends Controller
         $pdf->Cell(0, 6, '1. Preliminary', 0, 1, 'L');
         $pdf->SetFont($cambria, '', 8);
         $pdf->SetLeftMargin(35);
-        $htmlPrelim = '<p>' . nl2br(e($orderOfBusiness->preliminaries)) . '</p>';
+        $htmlPrelim = $orderOfBusiness->preliminaries;
         $pdf->writeHTML($htmlPrelim, true, false, true, false, '');
         $pdf->SetLeftMargin(25.4);
         $pdf->Ln(2);
@@ -397,7 +397,7 @@ class PdfController extends Controller
             $html2 .= '</tbody></table>'; // Close the table properly
         } else {
             // Show message if no proposals are available
-            $html2 .= '<p style="color: red; text-align: center;">No other matters available at the moment.</p>';
+            // $html2 .= '<p style="color: red; text-align: center;">No other matters available at the moment.</p>';
         }
         $pdf->writeHTML($html2, true, false, true, false, '');
 

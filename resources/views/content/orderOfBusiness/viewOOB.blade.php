@@ -82,41 +82,41 @@
 
         <!-- Preliminaries Section -->
         <div class="mb-3">
-            <div class="d-flex justify-content-between mb-2 gap-2">
-                <label class="form-label">1. Preliminaries</label>
-                <div class="d-flex align-items-center gap-2">
-                    @if (in_array(auth()->user()->role, [3, 4, 5]))
-                        @if(empty($orderOfBusiness->previous_minutes))
-                            <button class="btn btn-sm btn-primary d-flex align-items-center gap-2"
-                            id="openMinutesModal">
-                                <i class='bx bx-upload'></i>
-                                Upload Previous Minutes
-                            </button>
-                        @endif
+          <div class="d-flex justify-content-between mb-2 gap-2">
+              <label class="form-label">1. Preliminaries</label>
+              <div class="d-flex align-items-center gap-2">
+                  @if (in_array(auth()->user()->role, [3, 4, 5]))
+                      @if(empty($orderOfBusiness->previous_minutes))
+                          <button class="btn btn-sm btn-primary d-flex align-items-center gap-2"
+                          id="openMinutesModal">
+                              <i class='bx bx-upload'></i>
+                              Upload Previous Minutes
+                          </button>
+                      @endif
 
-                        {{-- Show View Button only if there is a file --}}
-                        @if(!empty($orderOfBusiness->previous_minutes))
-                            <a href="{{ asset('storage/previous_minutes/' . $orderOfBusiness->previous_minutes) }}"
-                                target="_blank"
-                                class="btn btn-sm btn-success d-flex align-items-center gap-2"
-                                id="viewButton">
-                                <i class='bx bx-file'></i>
-                                View Previous Minutes
-                            </a>
+                      {{-- Show View Button only if there is a file --}}
+                      @if(!empty($orderOfBusiness->previous_minutes))
+                          <a href="{{ asset('storage/previous_minutes/' . $orderOfBusiness->previous_minutes) }}"
+                              target="_blank"
+                              class="btn btn-sm btn-success d-flex align-items-center gap-2"
+                              id="viewButton">
+                              <i class='bx bx-file'></i>
+                              View Previous Minutes
+                          </a>
 
-                        {{-- EDIT FILE --}}
-                        @if (in_array(auth()->user()->role, [3, 4, 5]))
-                            <button type="button" class="btn btn-sm btn-warning d-flex align-items-center gap-2" id="editMinutesButton" style="display: none;">
-                                <i class='bx bx-edit'></i> Edit Previous Minutes File
-                            </button>
-                        @endif
-                    @endif
-                 @endif
+                      {{-- EDIT FILE --}}
+                      @if (in_array(auth()->user()->role, [3, 4, 5]))
+                          <button type="button" class="btn btn-sm btn-warning d-flex align-items-center gap-2" id="editMinutesButton" style="display: none;">
+                              <i class='bx bx-edit'></i> Edit Previous Minutes File
+                          </button>
+                      @endif
+                  @endif
+                @endif
 
-                </div>
-            </div>
+              </div>
+          </div>
 
-            <div class="input-group input-group-merge">
+            {{-- <div class="input-group input-group-merge">
                 <textarea
                     id="preliminaries"
                     class="form-control"
@@ -133,7 +133,9 @@
                 @error('preliminaries')
                     <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
                 @enderror
-            </div>
+            </div> --}}
+        <div class="mt-3 mb-3">
+          <textarea  name="preliminaries" id="preliminaries">{{ $orderOfBusiness->preliminaries ?? '' }}</textarea>
         </div>
         <!-- Modal -->
         <div class="modal fade" id="proposalFIleModal" tabindex="-1" aria-labelledby="proposalFIleModalLabel" aria-hidden="true">
@@ -183,10 +185,9 @@
                     default => ''
                 };
 
-                $allProposalIds = collect($categorizedProposals)->flatten()->pluck($proposalKey);
                 $otherMattersProposalIds = collect($otherMattersProposals)->pluck($proposalKey);
-
-
+                $allProposalIds = collect($categorizedProposals)->flatten()->pluck($proposalKey);
+                $allProposalIds = $allProposalIds->merge($otherMattersProposalIds);
             @endphp
 
             @foreach ($matters as $type => $title)
@@ -413,13 +414,13 @@
             </table>
         </div>
       @else
-          <p class="text-muted">No other matters recorded.</p>
+          {{-- <p class="text-muted">No other matters recorded.</p> --}}
       @endif
     </div>
 
 
         @if(session('isSecretary') && (session('secretary_level') == $meeting->getMeetingCouncilType()))
-            <div class="d-flex gap-3 align-items-center flex-wrap">
+            <div class="d-flex gap-3 align-items-center flex-wrap mt-4">
                 <button type="submit" class="btn btn-primary d-flex gap-2" id="saveOOBBtn">
                     <i class='bx bx-save' ></i>
                     <span class="text-nowrap">Save Changes</span>
@@ -625,8 +626,15 @@
         </div>
     </div>
 </div>
-
+{{-- For Jodit Text Editor --}}
+<script
+type="text/javascript"
+src="https://cdn.jsdelivr.net/npm/jodit@latest/es2021/jodit.fat.min.js"
+></script>
 <script>
+    // For Jodit Editor in Pre
+    Jodit.make('#preliminaries');
+
     document.addEventListener("DOMContentLoaded", function () {
         let emailInput = document.getElementById("proponent_email_matter");
         let tagify = new Tagify(emailInput, {

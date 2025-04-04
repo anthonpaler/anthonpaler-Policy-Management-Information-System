@@ -19,16 +19,16 @@
     <form action="{{ route(getUserRole().'.order_of_business.generate', ['level' => $meeting->getMeetingLevel(), 'meeting_id' => encrypt($meeting->id)]) }}" method="post" id="oobFrm" meeting-id="{{encrypt($meeting->id)}}">
         <div class="d-flex flex-column justify-content-center align-items-center text-center">
             <h4 class="card-header p-0 mb-2">
-                {{ config('meetings.quaterly_meetings.'.$meeting->quarter) }} 
+                {{ config('meetings.quaterly_meetings.'.$meeting->quarter) }}
                 @if ($meeting->getMeetingCouncilType() == 0)
                     {{ config('meetings.council_types.local_level.'.$meeting->council_type) }}
                 @elseif ($meeting->getMeetingCouncilType() == 1)
                     {{ config('meetings.council_types.university_level.'.$meeting->council_type) }}
                 @elseif ($meeting->getMeetingCouncilType() == 2)
                     {{ config('meetings.council_types.board_level.'.$meeting->council_type) }}
-                @endif 
+                @endif
                 {{ $meeting->year }}
-            </h4> 
+            </h4>
             <div class="d-flex align-items-center gap-2 flex-wrap justify-content-center ">
                 <span class="text-muted fw-light text-center">{{ \Carbon\Carbon::parse($meeting->meeting_date_time)->format('F d, Y, l, h:i A') }}</span>
 
@@ -41,14 +41,14 @@
                 @endif
             </div>
             <div class="d-flex align-items-center gap-2 mt-3 mb-3">
-                <h5 class="card-header p-0 ">ORDER OF BUSINESS</h5> 
+                <h5 class="card-header p-0 ">ORDER OF BUSINESS</h5>
             </div>
         </div>
         <div class="mb-3">
             <label class="form-label">1. Preliminaries</label>
             <div class="input-group input-group-merge">
             <textarea
-        id="preliminaries" 
+        id="preliminaries"
         class="form-control"
         placeholder="Enter preliminaries."
         aria-label="Enter preliminaries."
@@ -74,7 +74,7 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body" id="modalFiles">
-                    
+
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -86,9 +86,9 @@
         <div class="mb-3">
             <label class="form-label">2. New Business</label>
 
-            @php 
-                $counter = 1; 
-                $actionColors = ['secondary', 'success', 'warning', 'danger', 'info']; 
+            @php
+                $counter = 1;
+                $actionColors = ['secondary', 'success', 'warning', 'danger', 'info'];
                 $noProposals = collect($categorizedProposals)->flatten()->isEmpty();
             @endphp
 
@@ -98,8 +98,8 @@
                     <div class="table-responsive text-nowrap mb-4">
                         <table class="table table-bordered">
                             <thead>
-                                <tr class="" style="background-color: #E5EDFC; !important">
-                                    <th colspan="5" class="p-4 text-primary">{{ $title }}</th>
+                                <tr style="background-color: var(--bs-primary) !important; border-color: var(--bs-primary)  !important;">
+                                  <th colspan="5" class="p-4 text-white">{{ $title }}</th>
                                 </tr>
                                 <tr>
                                     <th style="width: 50px;">No.</th>
@@ -116,7 +116,7 @@
                                         <td>2.{{ $counter }}</td>
                                         <td>
                                             <div style="min-width: 300px; max-width: 700px; white-space: wrap; ">
-                                                <a href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->id)]) }}" >{{ $proposal->proposal->title }}</a>
+                                                <a style="color: #697A8D;"  href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->proposal->id)]) }}" >{{ $proposal->proposal->title }}</a>
                                             </div>
                                         </td>
                                         <td>
@@ -133,25 +133,27 @@
                                             </div>
                                         </td>
 
-                                        <td> 
-                                            <span class="align-items-center d-flex gap-2"> 
+                                        <td>
+                                            <span class="align-items-center d-flex gap-2">
                                                 <i class='bx bx-up-arrow-circle text-{{ $actionColors[$proposal->proposal->action] ?? 'primary' }}'></i>
                                                 {{ config('proposals.requested_action.'.$proposal->proposal->action) }}
                                             </span>
-                                    
+
                                         </td>
                                         <td>
-                                            @if($proposal->proposal->files->count() > 0)
-                                                <button class="btn btn-sm btn-primary d-flex gap-2 view-files"
-                                                        data-files="{{ json_encode($proposal->proposal->files) }}" 
-                                                        data-title="{{ $proposal->proposal->title }}">
-                                                    <i class='bx bx-file'></i> View Files
-                                                </button>
-                                            @else
-                                                <span class="text-muted">No Files</span>
-                                            @endif
+                                          @if($proposal->proposal->files->count() > 0)
+                                              <button class="btn btn-sm btn-secondary d-flex gap-2 view-files"
+                                                      data-files="{{ json_encode($proposal->proposal->files) }}"
+                                                      data-title="{{ $proposal->proposal->title }}">
+                                                  <i class='bx bx-file'></i> VIEW FILES
+                                              </button>
+                                          @else
+                                              <button class="btn btn-sm btn-danger d-flex gap-2">
+                                                  <i class='bx bx-file'></i> NO FILES
+                                              </button>
+                                          @endif
                                         </td>
-                                    </tr>
+                                      </tr>
                                     @php $counter++; @endphp
                                     @endforeach
                                 @else
@@ -173,9 +175,9 @@
             <button type="submit" class="btn btn-primary d-flex gap-2" id="generateOOBBtn">
                 <i class='bx bx-send'></i>
                 <span>Generate OOB</span>
-            </button> 
+            </button>
         </div>
-       
+
     </form>
    <!-- Modal Preview File -->
     <div class="modal fade" id="fileModal" tabindex="-1" aria-labelledby="fileModalLabel" aria-hidden="true">
@@ -223,7 +225,7 @@
                 if(fileObj.is_active == true){
                     fileListHtml += `
                     <a href="#" class="form-control d-flex align-items-center gap-2 view-file-preview" style="text-transform: none;"
-                    data-bs-toggle="modal" 
+                    data-bs-toggle="modal"
                     data-bs-target="#fileModal"
                     data-file-url="/storage/proposals/${fileObj.file}" >
                         <span>${fileObj.order_no}. </span><i class='bx bx-file-blank'></i><span>${fileObj.file}</span>
@@ -264,7 +266,7 @@
                 $('body').removeClass('modal-open');
                 $('body').css('padding-right', '');
             }
-        }, 200); 
+        }, 200);
     });
 
     </script>

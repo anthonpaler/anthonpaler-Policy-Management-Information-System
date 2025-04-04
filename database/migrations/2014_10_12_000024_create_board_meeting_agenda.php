@@ -15,7 +15,7 @@ return new class extends Migration
             $table->unsignedInteger('id')->autoIncrement();
             $table->unsignedInteger('board_proposal_id');
             $table->unsignedInteger('bor_meeting_id');
-            $table->unsignedInteger('board_oob_id');
+            $table->unsignedInteger('board_oob_id')->nullable();
             $table->tinyInteger('status');
             $table->integer('order_no')->nullable();
             $table->unsignedBigInteger('group_proposal_id')->nullable();

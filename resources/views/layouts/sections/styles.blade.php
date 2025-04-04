@@ -26,6 +26,8 @@
 <!-- Tagify -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.css">
 
+{{-- Jodit Text Editor CSS --}}
+<link href="https://cdn.jsdelivr.net/npm/jodit@latest/es2021/jodit.fat.min.css" rel="stylesheet" type="text/css"/>
 
 <!-- Vendor Styles -->
 @yield('vendor-style')

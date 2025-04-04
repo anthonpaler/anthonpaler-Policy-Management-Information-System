@@ -19,16 +19,16 @@
     <form action="{{ route(getUserRole().'.proposal.submit', ['level' => $meeting->getMeetingLevel(),'meeting_id' => encrypt($meeting->id)]) }}" method="post" id="submitProposalFrm" meeting-id="{{encrypt($meeting->id)}}">
         <div class="d-flex flex-column justify-content-center align-items-center">
             <h4 class="card-header p-0 mb-2 text-center">
-                {{ config('meetings.quaterly_meetings.'.$meeting->quarter) }} 
+                {{ config('meetings.quaterly_meetings.'.$meeting->quarter) }}
                 @if ($meeting->getMeetingCouncilType() == 0)
                     {{ config('meetings.council_types.local_level.'.$meeting->council_type) }}
                 @elseif ($meeting->getMeetingCouncilType() == 1)
                     {{ config('meetings.council_types.university_level.'.$meeting->council_type) }}
                 @elseif ($meeting->getMeetingCouncilType() == 2)
                     {{ config('meetings.council_types.board_level.'.$meeting->council_type) }}
-                @endif 
+                @endif
                 {{ $meeting->year }}
-            </h4> 
+            </h4>
             <div class="d-flex align-items-center gap-2 justify-content-center flex-wrap">
                 <span class="text-muted fw-light">{{ \Carbon\Carbon::parse($meeting->meeting_date_time)->format('F d, Y, l, h:i A') }}</span>
 
@@ -42,16 +42,16 @@
             </div>
         </div>
 
-        @php 
-            $counter = 1; 
-            $actionColors = ['secondary', 'success', 'warning', 'danger', 'info']; 
+        @php
+            $counter = 1;
+            $actionColors = ['secondary', 'success', 'warning', 'danger', 'info'];
             $noProposals = collect($categorizedProposals)->flatten()->isEmpty();
 
 
             if($meeting->getMeetingCouncilType() == 1){
-                $allProposalIds = collect($categorizedProposals)->flatten()->pluck('local_proposal_id');  // PROPOSAL ID FROM LOCAL MEETING AGENDA TO BE PASSED TO UNIVERSITY     
+                $allProposalIds = collect($categorizedProposals)->flatten()->pluck('local_proposal_id');  // PROPOSAL ID FROM LOCAL MEETING AGENDA TO BE PASSED TO UNIVERSITY
             }elseif($meeting->getMeetingCouncilType() == 2){
-                $allProposalIds = collect($categorizedProposals)->flatten()->pluck('university_proposal_id');   // PROPOSAL ID FROM UNIVERSITY MEETING AGENDA TO BE PASSED TO BOR     
+                $allProposalIds = collect($categorizedProposals)->flatten()->pluck('university_proposal_id');   // PROPOSAL ID FROM UNIVERSITY MEETING AGENDA TO BE PASSED TO BOR
             }
         @endphp
 
@@ -60,9 +60,9 @@
             <button type="submit" class="btn btn-primary d-flex gap-2" id="submitSecBtn" {{$noProposals ? 'disabled' : ''}}>
                 <i class='bx bx-send'></i>
                 <span class="text-nowrap">Submit to {{session('user_role') == 3 ? 'University Council' : 'BOR'}}</span>
-            </button> 
+            </button>
         </div>
-    
+
         <div class="mb-3">
             @if (!count($allProposalIds) > 0)
                 <div class="alert alert-info m-0" role="alert">
@@ -71,7 +71,7 @@
             @else
                 @foreach ($matters as $type => $title)
                     @if (isset($categorizedProposals[$type]) && $categorizedProposals[$type]->count() > 0)
-                        <div class="table-responsive text-nowrap mb-4">
+                        <div class="table-responsive text-nowrap mb-4 mt-4">
 
                             <table class="table table-bordered">
                                 <thead>
@@ -94,7 +94,7 @@
                                                 <td>{{ $counter }}</td>
                                                 <td>
                                                     <div style="min-width: 300px; max-width: 700px; white-space: wrap; ">
-                                                        <a href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->proposal->id)]) }}" >{{ $proposal->proposal->title }}</a>
+                                                        <a style="color: #697A8D;" href="{{ route(getUserRole().'.proposal.details', ['proposal_id' => encrypt($proposal->proposal->id)]) }}" >{{ $proposal->proposal->title }}</a>
                                                     </div>
                                                 </td>
                                                 <td>
@@ -110,12 +110,12 @@
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td> 
-                                                    <span class="align-items-center d-flex gap-2"> 
+                                                <td>
+                                                    <span class="align-items-center d-flex gap-2">
                                                         <i class='bx bx-up-arrow-circle text-{{ $actionColors[$proposal->proposal->action] ?? 'primary' }}'></i>
                                                         {{ config('proposals.requested_action.'.$proposal->proposal->action) }}
                                                     </span>
-                                            
+
                                                 </td>
                                                 <td>
                                                     <div style="width: 150px; white-space: nowrap; ">
@@ -127,8 +127,8 @@
                                                 </td>
                                                 <td>
                                                     @if($proposal->proposal->files->count() > 0)
-                                                        <button class="btn btn-sm btn-success d-flex gap-2 view-files"
-                                                                data-files="{{ json_encode($proposal->proposal->files) }}" 
+                                                        <button class="btn btn-sm btn-secondary d-flex gap-2 view-files"
+                                                                data-files="{{ json_encode($proposal->proposal->files) }}"
                                                                 data-title="{{ $proposal->proposal->title }}">
                                                             <i class='bx bx-file'></i> VIEW FILES
                                                         </button>
@@ -156,7 +156,7 @@
                     @endif
                 @endforeach
             @endif
-           
+
             <script>
                 var endorsedProposalIds = @json($allProposalIds);
                 console.log('Endorsed Proposal'.endorsedProposalIds);
@@ -173,7 +173,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
              <div class="modal-body" id="modalFiles">
-                
+
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
