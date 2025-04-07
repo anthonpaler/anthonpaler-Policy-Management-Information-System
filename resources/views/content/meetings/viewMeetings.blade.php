@@ -166,7 +166,8 @@
                                             </a>
                                         </div>
                                     </td>
-                                    <td>{{ config('meetings.quaterly_meetings.'.$meeting->quarter) }}</td>
+                                    <td>{{ $meeting->getCampusName() }}</td>
+                                    <td>{{ config('meetings.quarterly_meetings.'.$meeting->quarter) }}</td>
                                     <td>{{ $meeting->year }}</td>
                                     <td>
                                         <div style="min-width: 200px">

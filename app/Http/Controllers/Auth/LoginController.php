@@ -43,7 +43,7 @@ class LoginController extends Controller
         session(['profile_photo' => $user->image]);
         session(['employee_id' => $user->employee_id]);
         session(['campus_id' => $employee->campus]);
-
+        
         $isProponent = in_array($user->role, [0,1,2,6]);
         $isSecretary = in_array($user->role, [3,4,5]);
 

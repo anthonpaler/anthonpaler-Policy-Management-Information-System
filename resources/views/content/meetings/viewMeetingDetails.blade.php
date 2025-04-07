@@ -26,7 +26,7 @@
           </div>
           <div class="meeting-head-text">
             <div class="d-flex justify-content-between gap-2">
-              <h4 class="">{{ config('meetings.quaterly_meetings.'.$meeting->quarter) }} {{ config("meetings.council_types." . ['local_level', 'university_level', 'board_level'][$meeting->getMeetingCouncilType()] . ".{$meeting->council_type}") }}
+              <h4 class="">{{ config('meetings.quarterly_meetings.'.$meeting->quarter) }} {{ config("meetings.council_types." . ['local_level', 'university_level', 'board_level'][$meeting->getMeetingCouncilType()] . ".{$meeting->council_type}") }}
               {{$meeting->year}}</h4>
               <div class="">
                   <span class="btn btn-sm btn-{{$meeting->status == 0 ? 'primary' : "danger" }} d-flex gap-1">
@@ -118,7 +118,7 @@
             <div class="d-flex flex-nowrap gap-3 align-items-center">
               <i class='bx bx-calendar-event' ></i>
               <strong class="text-nowrap">Quarter : </strong>
-              <span class="text-nowrap">{{ config('meetings.quaterly_meetings.'.$meeting->quarter) }} </span>
+              <span class="text-nowrap">{{ config('meetings.quarterly_meetings.'.$meeting->quarter) }} </span>
             </div>
             <div class="d-flex flex-nowrap gap-3 align-items-center">
               <i class='bx bx-calendar' ></i>
