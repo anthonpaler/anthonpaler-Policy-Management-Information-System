@@ -40,7 +40,7 @@
                     <form action="{{ route(getUserRole().'.proposal.edit.save', ['proposal_id' => encrypt($proposal->id)]) }}" method="post" id="editProposalFrm">
                         <div class="d-flex justify-content-between gap-2 mb-3">
                             <h6 class="m-0">PROPOSAL DETAILS </h6>
-                            <span class="badge bg-label-{{ $statusClass}}">{{ config('proposals.status.'.$proposal->status) }}</span>
+                            <span class="badge bg-label-{{ $statusClass}}">{{ config('proposals.status.'.$status ) }}</span>
                         </div>
                         <div class="mb-3">
                             <label class="form-label" for="title">Proposal Title <span class="ms-1 text-danger">*</span></label>
@@ -242,10 +242,10 @@
 
                                                     // DYNAMIC FILE ICON
                                                     $fileExtension = pathinfo($file->file, PATHINFO_EXTENSION);
-                                                                $iconPath = asset('assets/img/icons/file-icons/' . ($fileExtension === 'pdf' ? 'pdf.png' :
-                                                                            ($fileExtension === 'xls' ? 'xls.png' :
-                                                                            ($fileExtension === 'xlsx' ? 'xlsx.png' :
-                                                                            ($fileExtension === 'csv' ? 'csv-file.png' : 'file.png')))));
+                                                    $iconPath = asset('assets/img/icons/file-icons/' . ($fileExtension === 'pdf' ? 'pdf.png' :
+                                                                ($fileExtension === 'xls' ? 'xls.png' :
+                                                                ($fileExtension === 'xlsx' ? 'xlsx.png' :
+                                                                ($fileExtension === 'csv' ? 'csv-file.png' : 'file.png')))));
                                                     // FILE STATUS COLOR
                                                     $statusColors = [ 'secondary','warning', 'success', 'danger', 'primary'];
                                                 @endphp
@@ -314,13 +314,6 @@
                             </div>
                             @php
                                 $countOldVersion = 0;
-                                // DYNAMIC FILE ICON
-                                $fileExtension = pathinfo($file->file, PATHINFO_EXTENSION);
-                                $iconPath = asset('assets/img/icons/file-icons/' .
-                                    ($fileExtension === 'pdf' ? 'pdf.png' :
-                                    ($fileExtension === 'xls' ? 'xls.png' :
-                                    ($fileExtension === 'xlsx' ? 'xlsx.png' :
-                                    ($fileExtension === 'csv' ? 'csv-file.png' : 'file.png')))));
                             @endphp
                             <div class="table-responsive text-nowrap old-version-files d-none files-table">
                                 <table id="" class="table table-striped ">

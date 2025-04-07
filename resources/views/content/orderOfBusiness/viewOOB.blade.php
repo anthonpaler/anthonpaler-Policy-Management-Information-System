@@ -640,6 +640,7 @@
             </div>
         </div>
     </div>
+  </div>
 </div>
 {{-- For Jodit Text Editor --}}
 <script

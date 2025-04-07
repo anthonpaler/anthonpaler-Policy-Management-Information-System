@@ -1009,10 +1009,20 @@ class ProposalController extends Controller
             ->orderBy('created_at', 'asc')
             ->get();
 
+        $meetingTypes = [
+          0 => ['model' => LocalMeetingAgenda::class, 'proposal_key' => 'local_proposal_id'],
+          1 => ['model' => UniversityMeetingAgenda::class, 'proposal_key' => 'university_proposal_id'],
+          2 => ['model' => BoardMeetingAgenda::class, 'proposal_key' => 'board_proposal_id'],
+        ];
 
-        // dd($proposal);
+        $model = $meetingTypes[session('secretary_level')]['model'];
+        $proposal_key = $meetingTypes[session('secretary_level')]['proposal_key'];
 
-        return view('content.proposals.viewProposal', compact('proposal', 'proposal_logs', 'meeting'));
+        $status = $model::where($proposal_key, $proposalID)->pluck('status')->first();
+
+        // dd($status);
+
+        return view('content.proposals.viewProposal', compact('proposal', 'proposal_logs', 'meeting', 'status'));
     }
 
 
@@ -1229,7 +1239,7 @@ class ProposalController extends Controller
                     ->get();
             }
             // dd($proposals);
-        
+
             // Get meeting type
             $councilType = $meeting->council_type ?? null;
             $councilTypesConfig = config('proposals.council_types');

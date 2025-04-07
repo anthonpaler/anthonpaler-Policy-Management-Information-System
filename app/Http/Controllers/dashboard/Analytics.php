@@ -16,7 +16,7 @@ class Analytics extends Controller
       $roles = session('available_roles') ?? []; // this is the string array for dropdown
 
       $role = session('user_role'); // this is the numeric active role
-      $level = $role == 3 ? 0 : ($role == 4 ? 1 : ($role == 5 ? 2 : 0)); 
+      $level = $role == 3 ? 0 : ($role == 4 ? 1 : ($role == 5 ? 2 : 0));
 
       // dd($role);
       if(in_array($role, [0,1,2,6])){
@@ -33,7 +33,7 @@ class Analytics extends Controller
   }
 
     public function switchRole(Request $request)
-  {
+    {
       $user = Auth::user();
 
       $selectedRole = $request->input('role');
@@ -65,7 +65,7 @@ class Analytics extends Controller
     };
 
       session()->put('secretary_level', $secretaryLevel);
-      session()->save(); // 
+      session()->save(); //
 
       $user->update(['role' => $newRole]);
 
@@ -79,6 +79,5 @@ class Analytics extends Controller
       };
 
       return response()->json(['success' => true, 'redirect' => $redirectRoute]);
-  }
-
+    }
 }

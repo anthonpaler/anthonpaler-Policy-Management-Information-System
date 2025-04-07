@@ -53,13 +53,9 @@ class LoginController extends Controller
         $secretary_level = $user->role == 3 ? 0 : ($user->role == 4 ? 1 : ($user->role == 5 ? 2 : 0));
 
         session(['secretary_level' => $secretary_level]);
-        
-        
-
-
-
 
         Auth::login($user);
+        session(['available_roles' => $user->getRoles()]);
 
         return response()->json([
             'message' => 'Login successful.',
@@ -135,8 +131,8 @@ class LoginController extends Controller
                 return response()->json(['error' => 'You are not authorize to Log in.'], 403);
             }
 
-            
-           
+
+
 
             // Check if the user already exists in the users table
             $user = User::where('email', $request->email)->first();
