@@ -117,4 +117,13 @@ class UniversityCouncilMeeting extends Model
         return $member->employee; // Return actual employee object
     });
 }
+public function countProposals()
+{
+    return $this->agendas()->whereNotNull('university_proposal_id')->count();
+}
+
+public function agendas()
+{
+    return $this->hasMany(UniversityMeetingAgenda::class, 'university_meeting_id');
+}
 }

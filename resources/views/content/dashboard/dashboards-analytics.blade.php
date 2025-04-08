@@ -93,7 +93,7 @@
           <b class="user-profile-text ml-1 text-dark">
             <div>
               <h6 class="">{{ auth()->user()->name }}</h6>
-              <span>{{ config('usersetting.role.'.auth()->user()->role) }}</span>
+              <span>{{ config('usersetting.role.'.session('user_role')) }}</span>
             </div>
             
             <h5>DASHBOARD</h5>
@@ -130,8 +130,8 @@
     </div> -->
 
     @php
-    $userRole = auth()->user()->role;
-    $meeting = $meetings->first(); // Get the first meeting or set to null
+    $userRole = session('user_role');
+    // $meeting = $meetings->first(); // Get the first meeting or set to null
 @endphp
 
 <div class="row">
@@ -144,84 +144,83 @@
         </h2>
       </div>
       <div class="card-body">
-        @if(!empty($meeting))
-        @if(auth()->user()->role >= 0 && auth()->user()->role <= 3) 
-            @if(
-                auth()->user()->role == 3 ||  
-                auth()->user()->role == 2 ||  
-                (isset($meeting->council_type) && $meeting->council_type == 1 && in_array(auth()->user()->role, [0, 1, 2])) || 
-                (isset($meeting->council_type) && $meeting->council_type == 2 && auth()->user()->role == 0) || 
-                (isset($meeting->council_type) && $meeting->council_type == 3 && auth()->user()->role == 1)
-            )
-                <h5 class="text-uppercase font-weight-bold mt-4">FOR MEETING DETAILS</h5>
-                <div class="table-responsive">
-                    <table class="table">
-                        <tbody>
-                            <tr>
-                                <td class="font-weight-bold text-uppercase text-muted w-25">Quarter</td>
-                                <td>{{ config('meetings.quarterly_meetings.' . ($meeting->quarter ?? 'N/A')) }}</td>
-                            </tr>
-                            <tr>
-                                <td class="font-weight-bold text-uppercase text-muted">Year</td>
-                                <td>{{ $meeting->year ?? 'N/A' }}</td>
-                            </tr>
-                            <tr>
-                                <td class="font-weight-bold text-uppercase text-muted">Meeting Date & Time</td>
-                                <td>{{ isset($meeting->meeting_date_time) ? \Carbon\Carbon::parse($meeting->meeting_date_time)->format('F d, Y - h:i A') : 'N/A' }}</td>
-                            </tr>
-                            <tr>
-                                <td class="font-weight-bold text-uppercase text-muted">Meeting Type</td>
-                                <td>
-                                    <span class="text-primary">
-                                        @if ($meeting->level == 0)
-                                            {{ config('meetings.council_types.local_level.' . ($meeting->council_type ?? 'N/A')) }}
-                                        @elseif ($meeting->level == 1)
-                                            {{ config('meetings.council_types.university_level.' . ($meeting->council_type ?? 'N/A')) }}
-                                        @else
-                                            {{ config('meetings.council_types.board_level.' . ($meeting->council_type ?? 'N/A')) }}
-                                        @endif
-                                    </span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="font-weight-bold text-uppercase text-muted">Status</td>
-                                <td>
-                                    <span class="text-{{ ($meeting->status ?? 0) == 0 ? 'success' : 'warning' }}">
-                                        {{ ($meeting->status ?? 0) == 0 ? 'Active' : 'Closed' }}
-                                    </span>
-                                </td>                    
-                            </tr>
-                            @if(!empty($meeting->link))
-                            <tr>
-                                <td class="font-weight-bold text-uppercase text-muted">Online Meeting Link</td>
-                                <td>
-                                    <a href="{{ $meeting->link }}" target="_blank" rel="noopener noreferrer">
-                                        {{ $meeting->link }}
-                                    </a>
-                                </td>
-                            </tr>
-                            @endif
-                        </tbody>
-                    </table>
-                </div>
-                <div class="d-flex justify-content-end mt-3">
-                    <a href="{{ route(getUserRole().'.meetings.details', ['level' => $meeting->getMeetingLevel(), 'meeting_id'=> encrypt($meeting->id)]) }}" 
-                        class="custom-button">
-                        See Meeting Details
-                     </a>                     
-                                         
-                </div>
-            @else
-                <div class="alert alert-warning mt-3">
-                    <strong>No Latest Meeting Announcements at the Moment.</strong>    
-                </div>
-            @endif
-        @endif
+        @if(isset($upperMeeting)) {{-- Check if $upperMeeting is set --}}
+    @if(
+        session('user_role') == 5 || 
+        session('user_role') == 4 || 
+        session('user_role') == 3 ||  
+        session('user_role') == 2 ||  
+        (isset($upperMeeting->council_type) && $upperMeeting->council_type == 1 && in_array(session('user_role'), [0, 1, 2])) || 
+        (isset($upperMeeting->council_type) && $upperMeeting->council_type == 2 && session('user_role') == 0) || 
+        (isset($upperMeeting->council_type) && $upperMeeting->council_type == 3 && session('user_role') == 1)
+    )
+        <h5 class="text-uppercase font-weight-bold mt-4">FOR MEETING DETAILS</h5>
+        <div class="table-responsive">
+            <table class="table">
+                <tbody>
+                    <tr>
+                        <td class="font-weight-bold text-uppercase text-muted w-25">Quarter</td>
+                        <td>{{ config('meetings.quarterly_meetings.' . ($upperMeeting->quarter ?? 'N/A')) }}</td>
+                    </tr>
+                    <tr>
+                        <td class="font-weight-bold text-uppercase text-muted">Year</td>
+                        <td>{{ $upperMeeting->year ?? 'N/A' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="font-weight-bold text-uppercase text-muted">Meeting Date & Time</td>
+                        <td>{{ isset($upperMeeting->meeting_date_time) ? \Carbon\Carbon::parse($upperMeeting->meeting_date_time)->format('F d, Y - h:i A') : 'N/A' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="font-weight-bold text-uppercase text-muted">Meeting Type</td>
+                        <td>
+                            <span class="text-primary">
+                                @if ($upperMeeting->getMeetingCouncilType() == 0)
+                                    {{ config('meetings.council_types.local_level.' . ($upperMeeting->council_type ?? 'N/A')) }}
+                                @elseif($upperMeeting->getMeetingCouncilType() == 1)
+                                    {{ config('meetings.council_types.university_level.' . ($upperMeeting->council_type ?? 'N/A')) }}
+                                @elseif($upperMeeting->getMeetingCouncilType() == 2)
+                                    {{ config('meetings.council_types.board_level.' . ($upperMeeting->council_type ?? 'N/A')) }}
+                                @endif
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="font-weight-bold text-uppercase text-muted">Status</td>
+                        <td>
+                            <span class="text-{{ ($upperMeeting->status ?? 0) == 0 ? 'success' : 'warning' }}">
+                                {{ ($upperMeeting->status ?? 0) == 0 ? 'Active' : 'Closed' }}
+                            </span>
+                        </td>                    
+                    </tr>
+                    @if(!empty($upperMeeting->link))
+                    <tr>
+                        <td class="font-weight-bold text-uppercase text-muted">Online Meeting Link</td>
+                        <td>
+                            <a href="{{ $upperMeeting->link }}" target="_blank" rel="noopener noreferrer">
+                                {{ $upperMeeting->link }}
+                            </a>
+                        </td>
+                    </tr>
+                    @endif
+                </tbody>
+            </table>
+        </div>
+        <div class="d-flex justify-content-end mt-3">
+            <a href="{{ route(getUserRole().'.meetings.details', ['level' => $upperMeeting->getMeetingLevel(), 'meeting_id'=> encrypt($upperMeeting->id)]) }}" 
+                class="custom-button">
+                See Meeting Details
+            </a>                     
+        </div>
     @else
         <div class="alert alert-warning mt-3">
-            <strong>No meeting has been created yet.</strong>    
+            <strong>No Latest Meeting Announcements at the Moment.</strong>    
         </div>
-    @endif    
+    @endif
+@else
+    <div class="alert alert-warning mt-3">
+        <strong>No meeting has been created yet.</strong>    
+    </div>
+@endif
       </div>
     </div>
   </div>
@@ -235,9 +234,17 @@
           </h2>
         </div>
         <div class="card-body text-center">
-          <span class="badge bg-primary rounded-pill" style="font-size: 2rem; padding: 15px 25px;">
-            {{ $proposalsCount }}
-          </span>
+            @if($meeting && $meeting->countProposals())
+                <span class="badge bg-primary rounded-pill" style="font-size: 2rem; padding: 15px 25px;">
+                    {{ $meeting->countProposals() }}
+                </span>
+            @else
+                <span class="badge bg-primary rounded-pill" style="font-size: 2rem; padding: 15px 25px;">
+                    0
+                </span>
+            @endif
+                {{-- temporary --}}
+        
           <p class="text-muted mt-3" style="font-size: 1.25rem; font-weight: 500;">Total Proposals Submitted</p>
           {{-- <div class="d-flex justify-content-end mt-3">
             <a href="{{ route(getUserRole().'.proposals') }}" class="btn btn-info">

@@ -11,6 +11,9 @@ use App\Models\UniversityCouncilMeeting;
 use App\Models\BorMeeting;
 use App\Models\User;
 use App\Models\Proposal;
+use App\Models\LocalMeetingAgenda;
+use App\Models\UniversityMeetingAgenda;
+use App\Models\BoardMeetingAgenda;
 use Illuminate\Support\Facades\Schema;
 
 class Analytics extends Controller
@@ -21,6 +24,8 @@ class Analytics extends Controller
         $campusId = session('campus_id'); // Ensure this exists before using it
         $meetings = collect(); // Default empty collection
         $users = User::all(); // Get all users
+        $meeting = [];
+        $upperMeeting = [];
 
        // Check if campus_id exists in the Local Council Meetings table
        $hasCampusIdColumn = Schema::hasColumn('local_council_meetings', 'campus_id');
@@ -28,7 +33,6 @@ class Analytics extends Controller
        if ($role == 3) { // Local Secretary
            if ($hasCampusIdColumn) {
                $localMeeting = LocalCouncilMeeting::where('campus_id', $campusId)
-                   ->where('creator_id', auth()->id()) // Ensure it fetches meetings created by the local secretary
                    ->where(function ($query) {
                        $query->whereNotNull('link')
                              ->orWhereNotNull('mode_if_online');
@@ -51,112 +55,108 @@ class Analytics extends Controller
                ->get(); // ✅ Fetch university meetings
        
            // Merge both collections and sort
-           $meetings = $localMeetings->merge($universityMeetings)->sortByDesc('meeting_date_time');
+           $meeting = $localMeetings->first();
+
+           $upperMeeting = $universityMeetings->first();
+        //    dd($meeting, $upperMeeting);
        
        } elseif (session('isProponent')) {
-           if ($hasCampusIdColumn) {
-               $localMeeting = LocalCouncilMeeting::where('campus_id', $campusId)
-                   ->whereIn('creator_id', function ($query) {
-                       $query->select('id')->from('users')->where('role', 3);
-                   })
-                   ->where(function ($query) {
-                       $query->whereNotNull('link')
-                             ->orWhereNotNull('mode_if_online');
-                   })
-                   ->latest('meeting_date_time', 'desc')
-                   ->first(); // Get only one record
-       
-               // Convert single record into a collection
-               $localMeetings = $localMeeting ? collect([$localMeeting]) : collect();
-           } else {
-               $localMeetings = collect();
-           }
-        
-       
-           // Fetch University Meetings
-           $universityMeetings = UniversityCouncilMeeting::where(function ($query) {
-                   $query->whereNotNull('link')
-                         ->orWhereNotNull('mode_if_online');
-               })
-               ->latest('meeting_date_time')
-               ->get(); // Collection
-       
-           // Merge both collections and sort
-           $meetings = $localMeetings->merge($universityMeetings)->sortByDesc('meeting_date_time');
+        $localMeeting = LocalCouncilMeeting::where('campus_id', $campusId)
+            ->where(function ($query) {
+                $query->whereNotNull('link')
+                      ->orWhereNotNull('mode_if_online');
+            })
+            ->latest('meeting_date_time', 'desc')
+            ->first(); // Correct method: first() to get only one record
+    
+        // If you want to assign the result to $upperMeeting
+        $upperMeeting = $localMeeting;
+    
+    
+        //    dd($upperMeeting);
        
        } elseif ($role == 4) {
            // University Secretary - Only their own created meetings
-           $meetings = UniversityCouncilMeeting::where('creator_id', auth()->id())
-               ->where(function ($query) {
+           $meeting = UniversityCouncilMeeting::where(function ($query) {
                    $query->whereNotNull('link')
                          ->orWhereNotNull('mode_if_online');
                })
                ->latest('meeting_date_time')
-               ->get(); // ✅ Keep collection
+               ->first(); // ✅ Keep collection
+
+               $upperMeeting = BorMeeting::where(function ($query) {
+                $query->whereNotNull('link')
+                      ->orWhereNotNull('mode_if_online');
+            })
+            ->latest('meeting_date_time')
+            ->first(); // ✅ Keep collection
        
        } elseif ($role == 5) {
            // BOR Secretary - Only their own created meetings   
-           $meetings = BorMeeting::where('creator_id', auth()->id())
-               ->where(function ($query) {
+           $meeting = BorMeeting::where(function ($query) {
                    $query->whereNotNull('link')
                          ->orWhereNotNull('mode_if_online');
                })
                ->latest('meeting_date_time')
-               ->get(); // ✅ Keep collection
+               ->first(); // ✅ Keep collection
+
+            $upperMeeting = $meeting;
        }       
 
-          // Count total proposals submitted by users within the same campus
-          $proposalsCount = Proposal::whereIn('employee_id', function ($query) use ($campusId) {
-            $query->select('employee_id')
-                ->from('proposals')
-                ->where('campus_id', $campusId); // Filter by campus
-        })
-        ->when(auth()->user()->role_id == 3, function ($query) {
-            // Local Secretary: View only the latest proposal per user
-            $query->latest('created_at');
-        })
-        ->when(auth()->user()->role_id == 4, function ($query) {
-            // University Secretary: View only endorsed proposals
-            $query->where('status', 5);
+      // Get the first meeting from the collection
+    //       // Count total proposals submitted by users within the same campus
+    //       $proposalsCount = Proposal::with('proponents')
+    // ->whereHas('proponents', function ($query) use ($campusId) {
+    //     $query->where('campus_id', $campusId);
+    // })
+    //     ->when(session('user_role') == 3, function ($query) {
+    //         // Local Secretary: View only the latest proposal per user
+    //         $query->latest('created_at');
+    //     })
+    //     ->when(session('user_role') == 4, function ($query) {
+    //         // University Secretary: View only endorsed proposals
+    //         $query->where('status', 5);
+    //     })
+    //     ->count();
+    
+        $returnedProposalCount = Proposal::where('status', 2)
+        ->whereHas('proponents', function ($query) use ($campusId) {
+            $query->where('campus_id', $campusId);
         })
         ->count();
     
-          // Filtered proposal counts per status (only for users within the same campus)
-          $returnedProposalCount = Proposal::where('status', 2)
-          ->whereIn('employee_id', function ($query) use ($campusId) {
-              $query->select('employee_id')
-                  ->from('users') // Correct table reference
-                  ->where('campus_id', $campusId);
-          })
-          ->count();
-      
-      $endorsedProposalCount = Proposal::where('status', 1)
-          ->whereIn('employee_id', function ($query) use ($campusId) {
-              $query->select('employee_id')
-                  ->from('users') // Correct table reference
-                  ->where('campus_id', $campusId);
-          })
-          ->count();
-          $deferredProposalCount = Proposal::where('status', 7)
-          ->whereIn('employee_id', function ($query) use ($campusId) {
-              $query->select('id')
-                  ->from('users')
-                  ->where('campus_id', $campusId);
-          })
-          ->count();
-          
-          $latestProposal = Proposal::where('employee_id', auth()->id())
-          ->latest('created_at')
-          ->first();
+        // dd($meetings);
 
-          $userProposalCount = Proposal::where('employee_id', auth()->id())->count();
+        $endorsedProposalCount = Proposal::where('status', 1)
+        ->whereHas('proponents', function ($query) use ($campusId) {
+            $query->where('campus_id', $campusId);
+        })
+        ->count();    
+        $deferredProposalCount = Proposal::where('status', 7)
+        ->whereHas('proponents', function ($query) use ($campusId) {
+            $query->where('campus_id', $campusId);
+        })
+        ->count();
+    
+          
+        $latestProposal = Proposal::whereHas('proponents', function ($query) {
+            $query->where('users.id', auth()->id());
+        })
+        ->latest('created_at')
+        ->first();       
+
+        $userProposalCount = Proposal::whereHas('proponents', function ($query) {
+            $query->where('users.id', auth()->id());
+        })
+        ->count();
+    
           // Count posted to agenda proposals
         $postedToAgendaCount = Proposal::where('status', 1)->count();
         $coletillaCount = Proposal::where('status', 5)->count();
         $endorseColletillaCount = Proposal::where('status', 6)->count();
           
-        
-        return view('content.dashboard.dashboards-analytics', compact('meetings', 'users', 'proposalsCount', 'returnedProposalCount', 'endorsedProposalCount', 'latestProposal', 'userProposalCount', 'deferredProposalCount', 'postedToAgendaCount', 'coletillaCount', 'endorseColletillaCount')); 	
+       
+        return view('content.dashboard.dashboards-analytics', compact('meeting', 'upperMeeting', 'users', 'returnedProposalCount', 'endorsedProposalCount', 'latestProposal', 'userProposalCount', 'deferredProposalCount', 'postedToAgendaCount', 'coletillaCount', 'endorseColletillaCount')); 	
     }
     public function switchRole(Request $request)
     {
