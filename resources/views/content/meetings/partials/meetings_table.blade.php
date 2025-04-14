@@ -1,6 +1,6 @@
-@php 
-    $actionColors = [ 'secondary', 'primary', 'success', 'warning', 'info', 'danger']; 
-@endphp  
+@php
+    $actionColors = [ 'secondary', 'primary', 'success', 'warning', 'info', 'danger'];
+@endphp
     @if ($meetings->isEmpty())
         <td valign="top" colspan="10" class="dataTables_empty">
             No data available in table
@@ -28,7 +28,7 @@
                         @endif
                         @if(session('isSecretary'))
                             @php
-                                $role = session('user_role');  
+                                $role = session('user_role');
                                 $campus_id = session('campus_id');
 
                                 $level = match ($role) {
@@ -46,20 +46,20 @@
                                     </a>
                                 @else
                                     @if(!$meeting->has_order_of_business)
-                                        @if($meeting->meeting_date_time) 
+                                        @if($meeting->meeting_date_time)
                                             <a class="action-btn warning" href="{{ route(getUserRole().'.order_of_business.view-generate', ['level' => $meeting->getMeetingLevel(), 'meeting_id'=> encrypt($meeting->id)]) }}">
-                                                <i class='bx bx-up-arrow-circle'></i> 
+                                                <i class='bx bx-up-arrow-circle'></i>
                                                 <span class="tooltiptext">Generate OOB</span>
                                             </a>
                                         @else
                                             <a class="action-btn warning" onclick="showCantGenerateOOBWarning()">
-                                                <i class='bx bx-up-arrow-circle'></i> 
+                                                <i class='bx bx-up-arrow-circle'></i>
                                                 <span class="tooltiptext">Generate OOB</span>
                                             </a>
                                         @endif
                                     @else
                                         <a class="action-btn danger" onclick="showhasOOBWarning()">
-                                            <i class='bx bx-up-arrow-circle'></i> 
+                                            <i class='bx bx-up-arrow-circle'></i>
                                             <span class="tooltiptext">Generate OOB</span>
                                         </a>
                                     @endif
@@ -102,7 +102,7 @@
                                     {{ config('meetings.council_types.university_level.'.$meeting->council_type) }}
                                 @elseif ($meeting->getMeetingCouncilType() == 2)
                                     {{ config('meetings.council_types.board_level.'.$meeting->council_type) }}
-                                @endif 
+                                @endif
                         </span>
                     </div>
                 </td>
@@ -114,9 +114,12 @@
                     </div>
                 </td>
                 <td>
-                    <span>
+                    {{-- <span>
                         {{ $meeting->meeting_date_time ? \Carbon\Carbon::parse($meeting->meeting_date_time)->format('F d, Y, h:i A') : 'Not yet set' }}
-                    </span>  
+                    </span>   --}}
+                    <a  style="color: #697A8D;" href="{{ route(getUserRole().'.meetings.details', ['level' => $meeting->getMeetingLevel(), 'meeting_id'=> encrypt($meeting->id)]) }}">
+                      {{ $meeting->meeting_date_time ? \Carbon\Carbon::parse($meeting->meeting_date_time)->format('F d, Y, h:i A') : 'Not yet set' }}
+                    </a>
                 </td>
                 @if(session('isProponent'))
                     <td>
@@ -158,7 +161,7 @@
                                     </a>
                                 @endif
                             @endif
-                            
+
                             <a class="btn btn-sm btn-success d-flex align-items-center gap-1"
                                 data-meetingStatus="{{ $meeting->status }}"
                                 href="{{ route(getUserRole().'.meetings.details', ['level' => $meeting->getMeetingLevel(), 'meeting_id'=> encrypt($meeting->id)]) }}"
@@ -166,10 +169,10 @@
                                 <i class='bx bx-right-top-arrow-circle'></i>VIEW
                             </a>
                         @endif
-                        
+
                         @if(session('isSecretary'))
                             @php
-                                $role = session('user_role');  
+                                $role = session('user_role');
                                 $campus_id = session('campus_id');
 
                                 $level = match ($role) {
@@ -182,7 +185,7 @@
 
                             @if ($level == $meeting->getMeetingCouncilType())
                                 <a class="btn btn-sm btn-primary d-flex align-items-center gap-1"
-                                    href="{{ route(getUserRole().'.meetings.details', ['level' => $meeting->getMeetingLevel(), 'meeting_id'=> encrypt($meeting->id)]) }}" 
+                                    href="{{ route(getUserRole().'.meetings.details', ['level' => $meeting->getMeetingLevel(), 'meeting_id'=> encrypt($meeting->id)]) }}"
                                 >
                                     <i class='bx bx-right-top-arrow-circle'></i>VIEW
                                 </a>
@@ -205,7 +208,7 @@
                                         <div class="dropdown-menu">
 
                                         @if(!$meeting->has_order_of_business)
-                                            @if($meeting->meeting_date_time) 
+                                            @if($meeting->meeting_date_time)
                                                 <a class="dropdown-item" href="{{ route(getUserRole().'.order_of_business.view-generate', ['level' => $meeting->getMeetingLevel(), 'meeting_id'=> encrypt($meeting->id)]) }}">
                                                     <i class='bx bx-up-arrow-circle me-1'></i> Generate OOB
                                                 </a>
@@ -219,7 +222,7 @@
                                 @endif
                             @else
                                 <a class="btn btn-sm btn-primary d-flex align-items-center gap-1"
-                                    href="{{ route(getUserRole().'.meetings.details', ['level' => $meeting->getMeetingLevel(), 'meeting_id'=> encrypt($meeting->id)]) }}" 
+                                    href="{{ route(getUserRole().'.meetings.details', ['level' => $meeting->getMeetingLevel(), 'meeting_id'=> encrypt($meeting->id)]) }}"
                                 >
                                     <i class='bx bx-right-top-arrow-circle'></i>VIEW
                                 </a>

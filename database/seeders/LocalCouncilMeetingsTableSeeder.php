@@ -26,7 +26,6 @@ class LocalCouncilMeetingsTableSeeder extends Seeder
             if ($row['level'] == 0) {
                 // Convert 'NULL' or empty values to actual null
                 $deletedAt = !empty($row['deleted_at']) && strtoupper($row['deleted_at']) !== 'NULL' ? $row['deleted_at'] : null;
-                $venueId = !empty($row['venue']) && strtoupper($row['venue']) !== 'NULL' ? (int) $row['venue'] : null;
                 $modeIfOnline = !empty($row['mode_if_online']) && strtoupper($row['mode_if_online']) !== 'NULL' ? (int) $row['mode_if_online'] : null;
 
                 // Insert only if the meeting ID does not already exist
@@ -44,7 +43,7 @@ class LocalCouncilMeetingsTableSeeder extends Seeder
                         'campus_id' => $row['campus_id'],
                         'link' => $row['link'],
                         'description' => $row['description'],
-                        'venue_id' => $venueId,
+                        'venue' => '',
                         'status' => $row['status'],
                         'creator_id' => $row['creator_id'],
                         'created_at' => $row['created_at'],

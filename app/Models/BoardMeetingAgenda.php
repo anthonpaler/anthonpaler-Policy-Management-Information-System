@@ -40,6 +40,14 @@ class BoardMeetingAgenda extends Model
     {
         return $this->belongsTo(BoardOob::class, 'board_oob_id');
     }
+    public function countProposals()
+    {
+        return $this->agendas()->whereNotNull('board_proposal_id')->count();
+    }
 
+    public function agendas()
+    {
+        return $this->hasMany(BoardMeetingAgenda::class, 'bor_meeting_id');
+    }
     
 }
