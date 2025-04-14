@@ -7,6 +7,7 @@ use App\Http\Controllers\ProposalController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\dashboard\Analytics;
 use App\Http\Controllers\Admin\AdminDashboard;
+use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\PdfController;
 
 use Illuminate\Support\Facades\Session;
@@ -70,6 +71,7 @@ Route::middleware(['auth', 'proponents'])->prefix('proponents')->group(function(
   Route::get('/meetings/view-order-of-business/{level}/{oob_id}', [OrderOfBusinessController::class, 'viewOOB'])->name('proponent.order_of_business.view-oob');
 
   Route::post('/order-of-business/upload-minutes', [OrderOfBusinessController::class, 'uploadPreviousMinutes'])->name('proponent.upload.minutes');
+
 
 
 });

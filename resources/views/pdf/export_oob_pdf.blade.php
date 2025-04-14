@@ -422,6 +422,10 @@
         </tbody>
       </table>
     @endif
+
+      <h6 class="section-title">4. Adjournment</h6>
+
+
   </div>
   {{-- END NEW BUSINESS --}}
 </body>

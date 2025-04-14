@@ -165,18 +165,18 @@ class MeetingController extends Controller
 
 
             // Send meeting notification emails
-            // foreach ($chunks as $batch) {
-            //     Mail::to($batch)->send(new MeetingNotification($meeting));
-            //     sleep(2); // Wait 2 seconds between batches to avoid timeouts
-            // }
-            // foreach ($emails as $email) {
-            //     Mail::to($email)->send(new MeetingNotification($meeting));
-            // }
+            foreach ($chunks as $batch) {
+                Mail::to($batch)->send(new MeetingNotification($meeting));
+                sleep(2); // Wait 2 seconds between batches to avoid timeouts
+            }
+            foreach ($emails as $email) {
+                Mail::to($email)->send(new MeetingNotification($meeting));
+            }
 
 
-            // 🔹 Send SMS Notifications
+            // // 🔹 Send SMS Notifications
             //   $smsController = new SMSController();
-            //   $quarter = config('meetings.quarterly_meetings')[$request->input('quarter')] ?? '';
+            //   $quarter = config('meetings.quaterly_meetings')[$request->input('quarter')] ?? '';
             //   $level = config('meetings.level')[$level] ?? '';
             //   $councilType = config('meetings.council_types')[strtolower($level) . '_level'][$request->input('council_type')] ?? '';
             //   $meetingDateTime = date('M j, Y g:i A', strtotime($request->input('meeting_date_time')));
@@ -187,13 +187,13 @@ class MeetingController extends Controller
             //   foreach ($emails as $index => $email) {
             //     $phone = $cellNumbers[$index] ?? null;
 
-            //     // If no cellphone in `employees` table, check `hrmis.employee` table
+            // //     // If no cellphone in `employees` table, check `hrmis.employee` table
             //     if (empty($phone)) {
             //         $hrmisEmployee = HrmisEmployee::where('EmailAddress', $email)->first();
             //         $phone = $hrmisEmployee?->Cellphone;
             //     }
 
-            //     // Send SMS if phone number is found
+            // //     // Send SMS if phone number is found
             //     if (!empty($phone)) {
             //         $smsResponse = $smsController->send($phone, $message);
             //         if ($smsResponse['Error'] == 1) {
