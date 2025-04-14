@@ -34,7 +34,8 @@
       "url": "/proponents/order-of-business",
       "name": "Order of Business",
       "icon": "menu-icon tf-icons bx bx-objects-horizontal-left",
-      "slug": ["proponent.order-of-business"]
+      "slug": ["proponent.order-of-business",
+        "proponent.order_of_business.view-oob"]
     },
     {
       "menuHeader": "OTHERS"

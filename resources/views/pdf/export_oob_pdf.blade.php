@@ -21,6 +21,7 @@
     }
 
 
+
     header{
       position: fixed;
       top: -30px;
@@ -228,7 +229,7 @@
   {{-- HEADING SECTION --}}
   <div class="heading">
     <h4 class="heading-3" style="text-transform: uppercase;">
-        {{ config('meetings.quaterly_meetings.'.$meeting->quarter) }}
+        {{ config('meetings.quarterly_meetings.'.$meeting->quarter) }}
         {{ $meeting->year }}
     </h4>
     <h4 class="heading-2">
@@ -288,7 +289,7 @@
 
             // Add grouped proposals to collection
             foreach ($categorizedProposals[$type]->whereNotNull('group_proposal_id')->groupBy('group_proposal_id') as $groupID => $proposals) {
-                $groupOrderNo = $proposals->first()->proposal_group->order_no ?? 9999;
+                $groupOrderNo = $proposals->first()->proposal_group->order_no ?? 0;
                 $allProposals->push([
                     'type' => 'group',
                     'order_no' => $groupOrderNo,
@@ -325,7 +326,7 @@
                   <tr>
                     <td>2.{{$counter}}</td>
                     <td>
-                      {!! str_replace('₱', "<span style=\"font-family: 'dejavu sans' !important;\">₱</span>", e($proposal['data']->proposal->title)) !!}
+                      {!! str_replace('₱', "<span style=\"font-family: 'dejavu sans' !important;\">₱</span>", htmlspecialchars($proposal['data']->proposal->title, ENT_NOQUOTES, 'UTF-8')) !!}
                     </td>
                     <td>{{$presenters}}</td>
                     <td>{{$requestedAction}}</td>
@@ -338,6 +339,13 @@
                     <td width="10%">2.{{$counter}}</td>
                     <td colspan="3" width="90%">{{$groupTitle}}</td>
                   </tr>
+                  @foreach ($proposal['data']->first()->proposal_group->files as $groupedAttachment)
+                    <tr>
+                      <td width="10%" class="group-item">2.{{ $counter }}.{{ $groupCounter }}</td>
+                      <td colspan="3" width="90%">{{ $groupedAttachment->file_name }}</td>
+                    </tr>
+                    @php $groupCounter++; @endphp
+                  @endforeach
                   @foreach ( $proposal['data'] as $groupedProposal )
                     @php
                        $presenters = $groupedProposal->proposal->proponents->isNotEmpty()

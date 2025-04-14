@@ -9,6 +9,8 @@ return [
         5 => 'board_sec',
         6 => 'proponent',
         7 => 'super_admin',
+        8 => 'board_regents',
+
 
     ],
 ];

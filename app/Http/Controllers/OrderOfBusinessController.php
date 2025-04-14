@@ -16,6 +16,7 @@ use App\Models\LocalOob;
 use App\Models\UniversityOob;
 use App\Models\BoardOob;
 use App\Models\GroupProposal;
+use App\Models\GroupProposalFiles;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Venues;
 use Illuminate\Support\Facades\DB;
@@ -507,7 +508,7 @@ class OrderOfBusinessController extends Controller
             //     // SMS/Text Blast Notification
             //     $smsController = new SMSController();
             //     $meeting = $orderOfBusiness->meeting;
-            //     $quarter = config('meetings.quaterly_meetings')[$meeting->quarter] ?? '';
+            //     $quarter = config('meetings.quarterly_meetings')[$meeting->quarter] ?? '';
             //    // Correcting the level mapping
             //         $levelMapping = [
             //             'Local' => 'local_level',
@@ -654,23 +655,27 @@ class OrderOfBusinessController extends Controller
             // dd($categorizedProposals);
 
           $pdf = Pdf::loadView('pdf.export_oob_pdf', compact('orderOfBusiness', 'categorizedProposals', 'meeting', 'matters', 'otherMattersProposals', 'otherMattersTitle'))
-              ->setOption([
-                'fontDir' => public_path('fonts'), // Set fontDir to the directory containing your fonts
-                'fontCache' => public_path('fonts'), // Set fontCache to the same directory or a cache folder
-                'defaultFont' => 'Cambria' // Use Cambria as the default font
-            ])
-            ->setPaper('A4', 'portrait');
+            ->setOption([
+              'fontDir' => public_path('fonts'), // Set fontDir to the directory containing your fonts
+              'fontCache' => public_path('fonts'), // Set fontCache to the same directory or a cache folder
+              'defaultFont' => 'Cambria', // Use Cambria as the default font
+              "isHtml5ParserEnabled", true,
+              "isPhpEnabled", true
+          ])
+          ->setPaper('A4', 'portrait');
+
 
           $oob_filename = "";
           if($meeting->getMeetingCouncilType() == 0){
-              $oob_filename = config('meetings.quaterly_meetings.'.$meeting->quarter)." ".config('meetings.council_types.local_level.'.$meeting->council_type)." ".$meeting->year.'.pdf';
+              $oob_filename = config('meetings.quarterly_meetings.'.$meeting->quarter)." ".config('meetings.council_types.local_level.'.$meeting->council_type)." ".$meeting->year.'.pdf';
           } else  if($meeting->getMeetingCouncilType() == 1){
-              $oob_filename = config('meetings.quaterly_meetings.'.$meeting->quarter)." ".config('meetings.council_types.university_level.'.$meeting->council_type)." ".$meeting->year.'.pdf';
+              $oob_filename = config('meetings.quarterly_meetings.'.$meeting->quarter)." ".config('meetings.council_types.university_level.'.$meeting->council_type)." ".$meeting->year.'.pdf';
           }
           else  if($meeting->getMeetingCouncilType() == 2){
-              $oob_filename = config('meetings.quaterly_meetings.'.$meeting->quarter)." ".config('meetings.council_types.board_level.'.$meeting->council_type)." ".$meeting->year.'.pdf';
+              $oob_filename = config('meetings.quarterly_meetings.'.$meeting->quarter)." ".config('meetings.council_types.board_level.'.$meeting->council_type)." ".$meeting->year.'.pdf';
           }
 
+          // dd($orderOfBusiness, $categorizedProposals, $meeting, $matters, $otherMattersProposals, $otherMattersTitle);
           return $pdf->stream($oob_filename);
         } catch (\Throwable $th) {
             return response()->json([
@@ -684,173 +689,45 @@ class OrderOfBusinessController extends Controller
     // UPDATE PROPOSAL ORDER NUMBER
     public function updateProposalOrder(Request $request, String $level)
     {
-        DB::beginTransaction();
-        try {
-            $orderData = $request->input('orderData');
+      DB::beginTransaction();
+      try {
+        $orderData = $request->input('orderData');  
+        // Determine the correct Model class based on the level
+        $agendaModel = match ($level) {
+            'Local' => LocalMeetingAgenda::class,
+            'University' => UniversityMeetingAgenda::class,
+            'BOR' => BoardMeetingAgenda::class,
+            default => null
+        };
 
-            // Determine the correct Model class based on the level
-            $agendaModel = match ($level) {
-                'Local' => LocalMeetingAgenda::class,
-                'University' => UniversityMeetingAgenda::class,
-                'BOR' => BoardMeetingAgenda::class,
-                default => null
-            };
-
-            // Ensure the model is valid
-            if (!$agendaModel) {
-                return response()->json(['error' => 'Invalid level provided.'], 400);
-            }
-
-            foreach ($orderData as $item) {
-                // Convert 'isGroup' to a boolean
-                $isGroup = filter_var($item['isGroup'], FILTER_VALIDATE_BOOLEAN);
-
-                if( $item['isGroup'] == 'false'){
-                    $agendaModel::where($this->getProposalAgendaColumn($level), $item['id'])
-                    ->update(['order_no' => $item['order']]);
-                }else{
-                    $group = GroupProposal::where('id',$item['id'])
-                    ->update([
-                        'order_no' => $item['order'],
-                    ]);
-                }
-            }
-
-            DB::commit();
-            return response()->json(['message' => 'Order updated successfully!'], 200);
-        } catch (\Throwable $th) {
-            DB::rollBack();
-
-            return response()->json(['error' => $th->getMessage()], 500);
+        if (!$agendaModel) {
+            return response()->json(['error' => 'Invalid level provided.'], 400);
         }
-    }
+        foreach ($orderData as $item) {
+          $isGroup = $item['isGroup'] === 'true';
+          $isGroupAttachment = $item['isGroupAttachment'] === 'true';
 
-    // SAVE PROPOSAL GROUP
-    public function saveProposalGroup(Request $request, String $level)
-    {
-        DB::beginTransaction();
-
-        try {
-            // Validate the request
-            $data = $request->validate([
-                'group_title' => 'required|string',
-                'proposals' => 'required|array',
-                'proposals.*' => 'integer|exists:proposals,id',
-            ]);
-
-            // Determine the correct agenda model
-            $agendaModel = match ($level) {
-                'Local' => LocalMeetingAgenda::class,
-                'University' => UniversityMeetingAgenda::class,
-                'BOR' => BoardMeetingAgenda::class,
-                default => null
-            };
-
-            if (!$agendaModel) {
-                return response()->json(['error' => 'Invalid meeting level'], 400);
+          if (!$isGroup) {
+            if ($isGroupAttachment) {
+              GroupProposalFiles::where('id', decrypt($item['id']))
+                ->update(['order_no' => $item['order']]);
+            } else {
+              $agendaModel::where($this->getProposalAgendaColumn($level), decrypt($item['id']))
+                ->update(['order_no' => $item['order']]);
             }
-
-            // Check if any proposal is already part of a group
-            $existingGroupProposal = $agendaModel::whereIn($this->getProposalAgendaColumn($level), $data['proposals'])
-                ->whereNotNull('group_proposal_id')
-                ->first();
-
-            if ($existingGroupProposal) {
-                return response()->json([
-                    'type' => 'danger',
-                    'message' => 'One or more proposals are already assigned to a group.',
-                    'title' => 'Group Creation Failed'
-                ]);
-            }
-
-            // Create new group
-            $group = GroupProposal::create([
-                'group_title' => $data['group_title'],
-            ]);
-
-            // Assign group and update order
-            foreach ($data['proposals'] as $index => $proposalId) {
-                $agendaModel::where($this->getProposalAgendaColumn($level), $proposalId)
-                    ->update([
-                        'group_proposal_id' => $group->id,
-                        'order_no' => $index + 1
-                    ]);
-            }
-
-            DB::commit();
-
-            return response()->json([
-                'type' => 'success',
-                'message' => 'Group created and order updated successfully!',
-                'title' => 'Success'
-            ]);
-        } catch (\Throwable $th) {
-            DB::rollBack();
-
-            return response()->json(['error' => $th->getMessage()], 500);
+          } else {
+            GroupProposal::where('id', decrypt($item['id']))
+              ->update(['order_no' => $item['order']]);
+          }
         }
+
+        DB::commit();
+        return response()->json(['message' => 'Order updated successfully!'], 200);
+      } catch (\Throwable $th) {
+        DB::rollBack();
+        return response()->json(['error' => $th->getMessage()], 500);
+      }
     }
-
-
-    // UNGROUP PROPOSAL
-    public function ungroupProposal(Request $request, String $level)
-    {
-        DB::beginTransaction();
-        try {
-            $groupId = $request->input('group_id');
-
-            // Determine the correct agenda model
-            $agendaModel = match ($level) {
-                'Local' => LocalMeetingAgenda::class,
-                'University' => UniversityMeetingAgenda::class,
-                'BOR' => BoardMeetingAgenda::class,
-                default => null
-            };
-
-            if (!$agendaModel) {
-                return response()->json(['error' => 'Invalid meeting level'], 400);
-            }
-
-            // Remove group_proposal_id from proposals in the agenda
-            $agendaModel::where('group_proposal_id', $groupId)
-                ->update(['group_proposal_id' => null]);
-
-            // Soft delete the group proposal
-            GroupProposal::where('id', $groupId)->delete();
-
-            DB::commit();
-            return response()->json(['type' => 'success', 'message' => 'Proposals ungrouped successfully!', 'title' => 'Success']);
-        } catch (\Throwable $th) {
-            DB::rollBack();
-
-            return response()->json(['error' => $th->getMessage()], 500);
-        }
-    }
-
-
-    public function updateProposalGroup(Request $request, String $level)
-    {
-        try {
-            // Validate the request
-            $data = $request->validate([
-                'group_id' => 'required|integer|exists:group_proposals,id',
-                'group_title' => 'required|string',
-                // 'order_no' => 'required',
-            ]);
-
-            // Update the group
-            $group = GroupProposal::findOrFail($data['group_id']);
-            $group->update([
-                'group_title' => $data['group_title'],
-                // 'order_no' => $data['order_no']
-            ]);
-
-            return response()->json(['type' => 'success', 'message' => 'Group updated successfully!', 'title' => 'Success']);
-        } catch (\Throwable $th) {
-            return response()->json(['error' => $th->getMessage()], 500);
-        }
-    }
-
 
     // FILTER MEETINGS
     public function filterOOB(Request $request) {

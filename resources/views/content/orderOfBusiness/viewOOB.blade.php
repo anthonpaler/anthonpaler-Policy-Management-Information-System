@@ -41,7 +41,7 @@
             </div>
         </div>
 
-        
+
 <div class="card p-4">
     <div class="mt-3 mb-3">
         <button type="button" id="exportOOB" class="btn btn-secondary d-flex gap-2 {{$orderOfBusiness->status == 0 ? 'd-none' : ''}}">
@@ -87,7 +87,7 @@
             <div class="d-flex justify-content-between mb-2 gap-2">
               <label class="form-label">1. Preliminaries</label>
               <div class="d-flex align-items-center gap-2">
-                @if (session('isSecretary') && (session('secretary_level') == $meeting->getMeetingCouncilType()))
+                  @if (in_array(auth()->user()->role, [3, 4, 5]))
                       @if(empty($orderOfBusiness->previous_minutes))
                           <button class="btn btn-sm btn-primary d-flex align-items-center gap-2"
                           id="openMinutesModal">
@@ -97,15 +97,7 @@
                       @endif
 
                       {{-- Show View Button only if there is a file --}}
-                      {{-- EDIT FILE --}}
-                    @if(empty($orderOfBusiness->previous_minutes))
-                        <button type="button" class="btn btn-sm btn-warning d-flex align-items-center gap-2" id="editMinutesButton" style="display: none;">
-                            <i class='bx bx-edit'></i> Edit Previous Minutes File
-                        </button>
-                    @endif
-                 @endif
-
-                  @if(!empty($orderOfBusiness->previous_minutes))
+                      @if(!empty($orderOfBusiness->previous_minutes))
                           <a href="{{ asset('storage/previous_minutes/' . $orderOfBusiness->previous_minutes) }}"
                               target="_blank"
                               class="btn btn-sm btn-success d-flex align-items-center gap-2"
@@ -113,10 +105,18 @@
                               <i class='bx bx-file'></i>
                               View Previous Minutes
                           </a>
-                     @endif
+
+                      {{-- EDIT FILE --}}
+                      @if (in_array(auth()->user()->role, [3, 4, 5]))
+                          <button type="button" class="btn btn-sm btn-warning d-flex align-items-center gap-2" id="editMinutesButton" style="display: none;">
+                              <i class='bx bx-edit'></i> Edit Previous Minutes File
+                          </button>
+                      @endif
+                  @endif
+                @endif
 
               </div>
-            </div>
+          </div>
 
             @if(session('isProponent') ||(session('isSecretary') && session('secretary_level') != $meeting->getMeetingCouncilType()))
             <div class="mt-1 mb-3 ms-4">
@@ -202,7 +202,7 @@
 
                     // Add grouped proposals to collection
                     foreach ($categorizedProposals[$type]->whereNotNull('group_proposal_id')->groupBy('group_proposal_id') as $groupID => $proposals) {
-                        $groupOrderNo = $proposals->first()->proposal_group->order_no ?? 9999;
+                        $groupOrderNo = $proposals->first()->proposal_group->order_no;
                         $allProposals->push([
                             'type' => 'group',
                             'order_no' => $groupOrderNo,
@@ -233,7 +233,7 @@
                             <tbody>
                                 @foreach ($allProposals as $proposal)
                                     @if ($proposal['type'] === 'individual')
-                                        <tr class="selectable-row" data-group="false" data-id="{{ $proposal['data']->proposal->id }}">
+                                        <tr class="selectable-row" data-group="false" data-id="{{ encrypt($proposal['data']->proposal->id) }}">
                                             <td>2.<span class="order_no">{{ $counter }}</span></td>
                                             <td>
                                                 <div style="white-space: wrap;">
@@ -270,28 +270,61 @@
                                         </tr>
                                         @php $counter++; @endphp
                                     @else
-                                        <tr class="tr-group selectable-row group position-relative" data-group="true" data-id="{{ $proposal['data']->first()->proposal_group->id }}">
-                                            <td>2.<span class="order_no">{{ $counter }}</span></td>
-                                            <td colspan="4">
-                                                <strong>{{ $proposal['data']->first()->proposal_group->group_title ?? 'Group Proposal' }}</strong>
-
-                                                <!-- Dropdown inside the row (hidden by default) -->
-                                                        <!-- New Business Section -->
-                                                @if (session('isSecretary') && (session('secretary_level') == $meeting->getMeetingCouncilType()))
-                                                    <div class="dropdown position-absolute" style="right: 10px; top: 50%; transform: translateY(-50%);">
-                                                        <button class="btn btn-sm btn-warning dropdown-toggle d-none group-menu-btn" type="button" data-bs-toggle="dropdown">
-                                                            Actions
-                                                        </button>
-                                                        <ul class="dropdown-menu">
-                                                            <li><button class="dropdown-item ungroup-btn">Ungroup</button></li>
-                                                            <li><button class="dropdown-item edit-group-btn">Edit</button></li>
-                                                        </ul>
-                                                    </div>
-                                                @endif
-                                            </td>
+                                        <tr class="tr-group selectable-row group position-relative" data-group="true" data-id="{{encrypt($proposal['data']->first()->proposal_group->id )}}">
+                                          <td>2.<span class="order_no">{{ $counter }}</span></td>
+                                          <td colspan="4">
+                                            <strong>{{ $proposal['data']->first()->proposal_group->group_title ?? 'Group Proposal' }}</strong>
+                                            @if (session('isSecretary') && (session('secretary_level') == $meeting->getMeetingCouncilType()))
+                                                <div class="dropdown position-absolute" style="right: 10px; top: 50%; transform: translateY(-50%); z-index: 1000;">
+                                                    <button class="btn btn-sm btn-warning dropdown-toggle d-none group-menu-btn" type="button" data-bs-toggle="dropdown">
+                                                        Actions
+                                                    </button>
+                                                    <ul class="dropdown-menu">
+                                                        <li><button class="dropdown-item ungroup-btn">Ungroup</button></li>
+                                                        <li><button class="dropdown-item edit-group-btn">Edit Group</button></li>
+                                                        <li><button class="dropdown-item add-group-files-btn">Add Attachments</button></li>
+                                                    </ul>
+                                                </div>
+                                            @endif
+                                          </td>
                                         </tr>
+                                        @foreach ($proposal['data']->first()->proposal_group->files as $groupedAttachment)
+                                          <tr class="group-items selectable-row tr-group position-relative"  data-file-name="{{ $groupedAttachment->file_name }}" data-file="{{ $groupedAttachment->file }}" data-id="{{ encrypt($groupedAttachment->id) }}"  data-group-attachment="true">
+                                            <td class="ps-5 pe-1">
+                                              <span class="g_order_no">2.{{ $counter }}.{{ $groupCounter }}</span>
+                                            </td>
+                                            <td colspan="3">
+                                              <div style="white-space: wrap;">
+                                                  <span style="color: #697A8D;">{{ $groupedAttachment->file_name }}</span>
+                                              </div>
+                                            </td>
+                                            <td>
+                                              @if ($groupedAttachment->file)
+                                                  <button class="btn btn-sm btn-secondary view-single-file-preview d-flex gap-2" data-file-url="/storage/proposals/{{$groupedAttachment->file}}">
+                                                      <i class='bx bx-file'></i> VIEW FILES
+                                                  </button>
+                                              @else
+                                                  <button class="btn btn-sm btn-danger d-flex gap-2" disabled>
+                                                      <i class='bx bx-file'></i> NO FILES
+                                                  </button>
+                                              @endif
+                                              @if (session('isSecretary') && (session('secretary_level') == $meeting->getMeetingCouncilType()))
+                                                <div class="dropdown position-absolute" style="left: 5px; top: 50%; transform: translateY(-50%); z-index: 1000;">
+                                                    <button class="btn btn-sm btn-warning dropdown-toggle d-none group-menu-btn" type="button" data-bs-toggle="dropdown">
+                                                        Actions
+                                                    </button>
+                                                    <ul class="dropdown-menu">
+                                                        <li><button class="dropdown-item edit-group-file-btn">Edit Attachment</button></li>
+                                                        <li><button class="dropdown-item delete-group-file-btn">Delete Attachment</button></li>
+                                                    </ul>
+                                                </div>
+                                              @endif
+                                            </td>
+                                          </tr>
+                                          @php $groupCounter++; @endphp
+                                        @endforeach
                                         @foreach ($proposal['data'] as $groupedProposal)
-                                            <tr class="selectable-row group-items" data-group="false" data-id="{{ $groupedProposal->proposal->id }}">
+                                            <tr class="selectable-row group-items" data-group="false" data-id="{{ encrypt($groupedProposal->proposal->id) }}">
                                                 <td class="ps-5 pe-1">
                                                     <span class="g_order_no">2.{{ $counter }}.{{ $groupCounter }}</span>
                                                 </td>
@@ -345,14 +378,12 @@
             </script>
     </div>
     <div class="mb-3">
-    
+
       <div class="d-flex align-items-center gap-2 mb-2">
           <label class="form-label m-0">3. Other Matters</label>
-        @if (session('isSecretary') && (session('secretary_level') == $meeting->getMeetingCouncilType()))
           <button id="addOtherMatterBtn" class="btn btn-primary btn-xs m-0" data-bs-toggle="tooltip" data-bs-placement="top" title="Add Other Matter">
               <i class='bx bx-plus'></i>
           </button>
-           @endif
       </div>
       @if ($otherMattersProposals->isNotEmpty())
         <div class="table-responsive text-nowrap mb-4">
@@ -380,7 +411,7 @@
                             $matter = config('proposals.proposal_subtypes.' . $otherMatter->proposal->sub_type) ?? 'N/A';
                           }
                       @endphp
-                      <tr class="selectable-row"  data-id="{{ $otherMatter->proposal->id }}">
+                      <tr class="" data-id="{{ encrypt($otherMatter->proposal->id) }}">
                           <td>3.<span class="order_no">{{ $counter }}</span></td>
                           <td>
                               <div style="white-space: wrap;">
@@ -443,8 +474,6 @@
     </form>
     @endif
 
-@if(session('isProponent') ||(session('isSecretary') && session('secretary_level') != $meeting->getMeetingCouncilType()))
-    @else
     <!-- ADD OTHER MATTERS MODAL -->
     <div class="modal fade" id="otherMattersModal" tabindex="-1" aria-labelledby="otherMattersModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -551,32 +580,30 @@
                             <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
                         @enderror
                     </div>
-
-                        <!-- Proposal Files -->
-                        <div class="">
-                            <h6 class="text-primary">PROPOSAL FILES</h6>
-                            <div class="upload-container mb-3">
-                                <label class="form-label" for="fileUpload">Proposal File/s <span class="ms-1 text-danger">*</span></label>
-                                <div id="dropArea" class="drop-area">
-                                    <span class="upload-text">Drag & Drop files here, or <strong class="text-primary">click to upload</strong></span>
-                                    <small class="text-muted">Accepted formats: .pdf, .xls, .xlsx, and .csv only</small>
-                                    <input type="file" id="fileUpload" name="proposal_files[]" accept=".pdf,.xls,.xlsx,.csv" multiple hidden>
-                                </div>
-                                <h5 id="uploadedFilesLabel" class="file-header mt-3"><i class='bx bx-file'></i> Uploaded Files</h5>
-                                <ul id="fileList" class="file-list mt-3">
-                                </ul>
+                    <!-- Proposal Files -->
+                    <div class="">
+                        <h6 class="text-primary">PROPOSAL FILES</h6>
+                        <div class="upload-container mb-3">
+                            <label class="form-label" for="fileUpload">Proposal File/s <span class="ms-1 text-danger">*</span></label>
+                            <div id="dropArea" class="drop-area">
+                                <span class="upload-text">Drag & Drop files here, or <strong class="text-primary">click to upload</strong></span>
+                                <small class="text-muted">Accepted formats: .pdf, .xls, .xlsx, and .csv only</small>
+                                <input type="file" id="fileUpload" name="proposal_files[]" accept=".pdf,.xls,.xlsx,.csv" multiple hidden>
                             </div>
+                            <h5 id="uploadedFilesLabel" class="file-header mt-3"><i class='bx bx-file'></i> Uploaded Files</h5>
+                            <ul id="fileList" class="file-list mt-3">
+                            </ul>
                         </div>
+                    </div>
 
-                        <div class="text-end">
-                            <button type="submit" id="addMatter" class="btn btn-primary">Add Other Matters</button>
-                        </div>
-                    </form>
+                    <div class="text-end">
+                        <button type="submit" id="addMatter" class="btn btn-primary">Add Other Matters</button>
+                    </div>
+                  </form>
                 </div>
             </div>
         </div>
     </div>
-    @endif
 
 
     <!-- Modal Preview File -->
@@ -599,42 +626,114 @@
         </div>
     </div>
 
-   <!-- CREATE GROUP MODAL -->
+    <!-- CREATE/EDIT GROUP MODAL -->
     <div class="modal fade" id="groupModal" tabindex="-1" aria-labelledby="groupModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <form method="POST" action="{{ route('save_proposal_group', ['level' => $orderOfBusiness->meeting->getMeetingLevel()]) }}" id="groupFrm">
-                    @csrf
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="groupModalLabel">Group Selected Proposals</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <!-- <div class="mb-3">
-                            <label class="form-label" for="orderNo">Order No:<span class="ms-1 text-danger">*</span></label>
-                            <div class="input-group input-group-merge">
-                                <span id="" class="input-group-text">
-                                    <i class='bx bx-objects-horizontal-left'></i>
-                                </span>
-                                <input type="number" id="orderNo" name="order_no" class="form-control" placeholder="Order number (ex: 2.1)" required />
-                            </div>
-                        </div> -->
-                        <div class="">
-                            <label class="form-label" for="orderNo">Enter Group Proposal Title<span class="ms-1 text-danger">*</span></label>
-                            <div class="input-group input-group-merge">
-                                <textarea name="group_title" id="group_title" rows="4" placeholder="Enter group proposal title" class="form-control"></textarea>
-                            </div>
-                        </div>
-                        <input type="hidden" id="group_id" name="group_id" />
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" id="saveGroup" class="btn btn-primary">Save Group</button>
-                        <button type="button" id="updateGroup" class="btn btn-primary" style="display: none;">Save Changes</button>
-                    </div>
-                </form>
+      <div class="modal-dialog modal-md">
+          <div class="modal-content">
+              <form method="POST" action="{{ route('save_proposal_group', ['level' => $orderOfBusiness->meeting->getMeetingLevel()]) }}" id="groupFrm">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title" id="groupModalLabel">Group Selected Proposals</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <div class="">
+                      <label class="form-label" for="">Enter Group Proposal Title<span class="ms-1 text-danger">*</span></label>
+                      <div class="input-group input-group-merge">
+                          <textarea name="group_title" id="group_title" rows="4" placeholder="Enter group proposal title" class="form-control"></textarea>
+                      </div>
+                  </div>
+                  <input type="hidden" id="group_id" name="group_id" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" id="saveGroup" class="btn btn-primary">Save Group</button>
+                    <button type="button" id="updateGroup" class="btn btn-primary" style="display: none;">Save Changes</button>
+                </div>
+              </form>
+          </div>
+      </div>
+    </div>
+
+    <!-- Modal Add Group Attachment-->
+    <div class="modal fade" id="groupAttachmentModal" tabindex="-1" aria-labelledby="groupAttachmentModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-md">
+        <div class="modal-content">
+          <div class="modal-header">
+              <div class="d-flex align-items-center gap-3">
+                  <h5 class="modal-title" id="groupAttachmentModalLabel">Proposal Group Attachment</h5>
+              </div>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <form method="post" enctype="multipart/form-data" action="{{route('proposal.group-proposal.add-attachment')}}" id="groupAttachmentFrm" data-id="">
+            @csrf
+            <div class="modal-body">
+              <div class="mb-2 d-flex gap-2 flex-wrap">
+                <label class="form-label" for="">Group Title: </label>
+                <h6 class="m-0 group_title"></h6>
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="">File Name<span class="ms-1 text-danger">*</span></label>
+                <div class="input-group input-group-merge">
+                  <span  class="input-group-text">
+                    <i class='bx bx-file' ></i>
+                  </span>
+                  <input type="text" class="form-control" placeholder="Enter file name" name="file_name">
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="">Attach File<span class="ms-1 text-danger">*</span></label>
+                <input type="file" class="form-control" name="file">
+              </div>
             </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" id="addGroupAttachBtn">Add Attachment</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+          </form>
         </div>
+      </div>
+    </div>
+    {{-- Modal Edit Group Proposal --}}
+    <div class="modal fade" id="groupEditAttachmentModal" tabindex="-1" aria-labelledby="groupEditAttachmentModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-md">
+        <div class="modal-content">
+          <div class="modal-header">
+              <div class="d-flex align-items-center gap-3">
+                  <h5 class="modal-title" id="groupEditAttachmentModalLabel">Proposal Group Attachment</h5>
+              </div>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <form method="post" enctype="multipart/form-data" action="{{route('proposal.group-proposal.edit-attachment')}}" id="groupEditAttachmentFrm" data-id="">
+            @csrf
+            <div class="modal-body">
+              <div class="mb-3">
+                <label class="form-label" for="">File Name<span class="ms-1 text-danger">*</span></label>
+                <div class="input-group input-group-merge">
+                  <span  class="input-group-text">
+                    <i class='bx bx-file' ></i>
+                  </span>
+                  <input type="text" class="form-control file_name" placeholder="Enter file name" name="file_name" value="">
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="">Attached File</label>
+                <a class="form-control d-flex align-items-center gap-2" style="text-transform: none;" >
+                  <i class='bx bx-file-blank'></i><span class="file"></span>
+                </a>
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="">Attach New File<span class="ms-1 text-muted">(Optional)</span></label>
+                <input type="file" class="form-control" name="file">
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" id="editGroupProposalBtn">Save Changes</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -733,8 +832,8 @@ src="https://cdn.jsdelivr.net/npm/jodit@latest/es2021/jodit.fat.min.js"
         emailInput.value = emailValue;
     });
 
-    // Fetch proponent emails dynamically
-    function fetchProponents(query) {
+        // Fetch proponent emails dynamically
+        function fetchProponents(query) {
             $.ajax({
                 url: "{{route('fetchProponents')}}",
                 type: "GET",
@@ -809,7 +908,7 @@ src="https://cdn.jsdelivr.net/npm/jodit@latest/es2021/jodit.fat.min.js"
 
 
 
-      
+
 
         // Check if previous minutes exist and update buttons accordingly
         function checkPreviousMinutes() {
@@ -893,17 +992,23 @@ src="https://cdn.jsdelivr.net/npm/jodit@latest/es2021/jodit.fat.min.js"
         // Initialize Check on Page Load
         checkPreviousMinutes();
 
-        // Right-click event for group rows
         $(document).on("contextmenu", ".tr-group", function (event) {
-            event.preventDefault(); // Prevent default menu
+          event.preventDefault();
 
-            // Hide all other dropdowns
-            $(".group-menu-btn").addClass("d-none");
+          // Hide all other dropdowns and buttons
+          $(".group-menu-btn").addClass("d-none");
+          $(".dropdown-menu").addClass("d-none");
 
-            // Show the dropdown menu inside the clicked row
-            let dropdown = $(this).find(".group-menu-btn");
-            dropdown.removeClass("d-none").dropdown("toggle");
-        });
+          // Get the button and dropdown for the clicked row
+          let $dropdownBtn = $(this).find(".group-menu-btn");
+          let $dropdownMenu = $(this).find(".dropdown-menu");
+
+           $dropdownBtn.removeClass("d-none");
+          $dropdownMenu.removeClass("d-none");
+
+          $dropdownBtn.removeClass("d-none").dropdown("toggle");
+      });
+
 
         // Hide menu when clicking elsewhere
         $(document).on("click", function () {
@@ -940,7 +1045,7 @@ src="https://cdn.jsdelivr.net/npm/jodit@latest/es2021/jodit.fat.min.js"
             e.preventDefault();
             let groupId = $(this).closest(".tr-group").data("id");
             let groupTitle = $(this).closest(".tr-group").find("strong").text();
-            let orderNo = $(this).closest(".tr-group").find(".order_no").text();
+            // let orderNo = $(this).closest(".tr-group").find(".order_no").text();
 
             // Set the values in the modal
             $("#groupModal #group_title").val(groupTitle);
@@ -954,6 +1059,147 @@ src="https://cdn.jsdelivr.net/npm/jodit@latest/es2021/jodit.fat.min.js"
             modal.show();
         });
 
+        $(".add-group-files-btn").on('click', function(event){
+          event.preventDefault();
+          let groupId = $(this).closest(".tr-group").data("id");
+          let groupTitle = $(this).closest(".tr-group").find("strong").text();
+
+          $("#groupAttachmentModal .group_title").text(groupTitle);
+          $("#groupAttachmentFrm").attr("data-id", groupId);
+
+          let modal = new bootstrap.Modal($("#groupAttachmentModal")[0])
+          modal.show();
+        });
+
+        $(".edit-group-file-btn").on('click', function(event){
+          event.preventDefault();
+          let groupAttachmentID = $(this).closest(".tr-group").data("id");
+          let fileName = $(this).closest(".tr-group").data("file-name");
+          let file = $(this).closest(".tr-group").data("file");
+
+          $("#groupEditAttachmentModal .file_name").val(fileName);
+          $("#groupEditAttachmentModal .file").text(file);
+          $("#groupEditAttachmentFrm").attr("data-id", groupAttachmentID);
+
+          let modal = new bootstrap.Modal($("#groupEditAttachmentModal")[0])
+          modal.show();
+        });
+        $(".delete-group-file-btn").on("click", function (e) {
+          e.preventDefault();
+          let groupAttachmentID = $(this).closest(".tr-group").data("id");
+          var button = $(this);
+          // alert(groupAttachmentID);
+          Swal.fire({
+              title: "Are you sure?",
+              text: "You won't be able to revert this!",
+              icon: "warning",
+              showCancelButton: true,
+              confirmButtonColor: "#3085d6",
+              cancelButtonColor: "#d33",
+              confirmButtonText: "Yes, delete it!",
+          }).then((result) => {
+            if (result.isConfirmed) {
+              $.ajax({
+                method: "POST",
+                url: "{{route('proposal.group-proposal.delete-attachment')}}",
+                data: {groupAttachmentID: groupAttachmentID},
+                headers: {
+                  'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function (response) {
+                  if(response.type == "success"){
+                    showAlert(response.type, response.title, response.message);
+                    button.closest("tr").remove();
+                  }
+                },
+                error: function (xhr, status, error) {
+                  console.log(xhr.responseText);
+                  let response = JSON.parse(xhr.responseText);
+                  showAlert("warning", response.title, response.message);
+                }
+              });
+            }
+          });
+        });
+        // ADD GROUP PROPOSAL ATTACHMENT
+        $("#addGroupAttachBtn").on('click', function(event) {
+          event.preventDefault();
+
+          var groupAttachmentFrm = $("#groupAttachmentFrm");
+          let groupId = groupAttachmentFrm.data('id');
+          var actionUrl = groupAttachmentFrm.attr('action');
+
+          let formData = new FormData(groupAttachmentFrm[0]);
+          formData.append('group_proposal_id', groupId);
+
+          $.ajax({
+              method: "POST",
+              url: actionUrl,
+              data: formData,
+              headers: {
+                  'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+              },
+              processData: false,
+              contentType: false,
+              beforeSend: function () {
+                  $("#addGroupAttachBtn").text("Adding Attachment...").prop('disabled', true);
+              },
+              success: function (response) {
+                  $("#addGroupAttachBtn").text("Add Attachment").prop('disabled', false);
+                  if (response.type === 'success') {
+                      groupAttachmentFrm[0].reset();
+                      location.reload();
+                  }
+                  showAlert(response.type, response.title, response.message);
+              },
+              error: function (xhr, status, error) {
+                  $("#addGroupProposalBtn").text("Add Attachment").prop('disabled', false);
+                  console.log(xhr.responseText);
+                  let response = JSON.parse(xhr.responseText);
+                  showAlert("danger", response.title, response.message);
+              }
+          });
+        });
+
+        // EDIT GROUP PROPOSAL ATTACHMENT
+        $("#editGroupProposalBtn").on('click', function(event) {
+          event.preventDefault();
+
+          var groupAttachmentFrm = $("#groupEditAttachmentFrm");
+          let groupAttachmenID = groupAttachmentFrm.data('id');
+          var actionUrl = groupAttachmentFrm.attr('action');
+
+          let formData = new FormData(groupAttachmentFrm[0]);
+          formData.append('group_attachment_id', groupAttachmenID);
+
+          $.ajax({
+              method: "POST",
+              url: actionUrl,
+              data: formData,
+              headers: {
+                  'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+              },
+              processData: false,
+              contentType: false,
+              beforeSend: function () {
+                  $("#editGroupProposalBtn").text("Saving Changes...").prop('disabled', true);
+              },
+              success: function (response) {
+                  $("#editGroupProposalBtn").text("Save Changes").prop('disabled', false);
+                  if (response.type === 'success') {
+                      groupAttachmentFrm[0].reset();
+                      location.reload();
+                  }
+                  showAlert(response.type, response.title, response.message);
+              },
+              error: function (xhr, status, error) {
+                  $("#editGroupProposalBtn").text("Save Changes").prop('disabled', false);
+                  console.log(xhr.responseText);
+                  let response = JSON.parse(xhr.responseText);
+                  showAlert("danger", response.title, response.message);
+              }
+          });
+        });
         // Initialize Sortable.js
         $("#oobTable tbody").each(function () {
           $tableTr =  "#oobTable tbody tr";
@@ -986,16 +1232,13 @@ src="https://cdn.jsdelivr.net/npm/jodit@latest/es2021/jodit.fat.min.js"
           $($tableTr).each(function (index) {
               let proposalId = $(this).data("id");
               let isGroup = $(this).data("group") === true;
+              let isGroupAttachment = $(this).data("group-attachment") === true;
+
+              order.push({ id: proposalId, isGroup: isGroup, order: index + 1, position: position, isGroupAttachment : isGroupAttachment });
+              $(this).find("td:first .order_no").text(position);
 
               if ($(this).find(".order_no").length) {
-                  order.push({ id: proposalId, isGroup: isGroup, order: index + 1,position: position });
-
-                  $(this).find("td:first .order_no").text(position);
-                  position++;
-              }else{
-                  order.push({ id: proposalId, isGroup: isGroup, order: index + 1, position: position });
-
-                  $(this).find("td:first .order_no").text(position);
+                position++;
               }
           });
 

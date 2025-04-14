@@ -39,8 +39,8 @@ class BorMeeting extends Model
     public function getIsSubmissionClosedAttribute()
     {
         $currentDate = Carbon::now();
-        return $currentDate->greaterThan($this->submission_end) || 
-               $currentDate->lessThan($this->submission_start) ||  
+        return $currentDate->greaterThan($this->submission_end) ||
+               $currentDate->lessThan($this->submission_start) ||
                $currentDate->greaterThan($this->meeting_date_time);
     }
 
@@ -55,13 +55,23 @@ class BorMeeting extends Model
         return $this->orderOfBusiness()->exists();
     }
 
-    // GET MEETING LEVEL 
+    // GET PROPOSAL COUNT
+    public function getProposalCount()
+    {
+        return $this->agendas()->count();
+    }
+    public function agendas()
+    {
+        return $this->hasMany(BoardMeetingAgenda::class, 'local_council_meeting_id');
+    }
+
+    // GET MEETING LEVEL
     public function getMeetingLevel()
     {
         return 'BOR';
     }
 
-    // GET MEETING COUNCILTYPE 
+    // GET MEETING COUNCILTYPE
     public function getMeetingCouncilType()
     {
         return 2;
@@ -77,11 +87,11 @@ class BorMeeting extends Model
     public function proposals()
     {
         return $this->hasManyThrough(
-            Proposal::class, 
-            BoardMeetingAgenda::class, 
-            'bor_meeting_id', 
-            'id', 
-            'id', 
+            Proposal::class,
+            BoardMeetingAgenda::class,
+            'bor_meeting_id',
+            'id',
+            'id',
             'board_proposal_id'
         )->with('proponents');
     }

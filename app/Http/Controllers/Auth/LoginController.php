@@ -46,7 +46,9 @@ class LoginController extends Controller
         
         $isProponent = in_array($user->role, [0,1,2,6]);
         $isSecretary = in_array($user->role, [3,4,5]);
+        $isBoardRegent = $user->role == 8;
 
+        session(['isBoardRegent' => $isBoardRegent]);
         session(['isProponent' => $isProponent]);
         session(['isSecretary' => $isSecretary]);
 
@@ -99,6 +101,10 @@ class LoginController extends Controller
             ->where('employee_id', $employee->id)
             ->exists();
 
+            $isBoardOfRegents = DB::table('bor_member')
+            ->where('employee_id', $employee->id)
+            ->exists();
+
 
             // Determine the role based on the conditions
               if ($isLocalSecretary) {
@@ -120,9 +126,13 @@ class LoginController extends Controller
                 } elseif ($isAcademicCouncil) {
                     $role = 0; // Academic Council
 
-                }elseif ($request->email == "kortomandac@gmail.com") {
+                }elseif ($request->email == "lycabalogo@gmail.com") {
                     $role = 7; // Super Admin
 
+                }
+                elseif ($isBoardOfRegents) {
+                    $role = 8; // Board of Regents
+                
                 }else{
                 $role = null;
             }

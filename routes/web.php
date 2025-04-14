@@ -43,7 +43,7 @@ Route::middleware(['auth', 'super_admin'])->prefix('super-admin')->group(functio
 // PROPONENT
 Route::middleware(['auth', 'proponents'])->prefix('proponents')->group(function() {
   // DASHBOARD ROUTES
-  Route::get('/dashboard', [Analytics::class, 'index'])->name('proponent.dashboard');
+  Route::get('/dashboard', [Analytics::class, 'proponentDashboard'])->name('proponent.dashboard');
 
   // MEETINGS ROUTES
   Route::get('/meetings', [MeetingController::class, 'viewMeetings'])->name('proponent.meetings');
@@ -72,14 +72,14 @@ Route::middleware(['auth', 'proponents'])->prefix('proponents')->group(function(
 
   Route::post('/order-of-business/upload-minutes', [OrderOfBusinessController::class, 'uploadPreviousMinutes'])->name('proponent.upload.minutes');
 
-  
+
 
 });
 
 // LOCAL SECRETARY
 Route::middleware(['auth', 'local_secretary'])->prefix('local-campus-secretary')->group(function() {
   // DASHBOARD ROUTES
-  Route::get('/dashboard', [Analytics::class, 'index'])->name('local_sec.dashboard');
+  Route::get('/dashboard', [Analytics::class, 'secretaryDashboard'])->name('local_sec.dashboard');
 
   // MEETINGS ROUTES
   Route::get('/meetings', [MeetingController::class, 'viewMeetings'])->name('local_sec.meetings');
@@ -123,7 +123,7 @@ Route::middleware(['auth', 'local_secretary'])->prefix('local-campus-secretary')
 
 // UNIVERSITY SECRETARY
 Route::middleware(['auth', 'university_secretary'])->prefix('university-secretary')->group(function() {
-  Route::get('/dashboard', [Analytics::class, 'index'])->name('univ_sec.dashboard');
+  Route::get('/dashboard', [Analytics::class, 'secretaryDashboard'])->name('univ_sec.dashboard');
   Route::get('/meetings', [MeetingController::class, 'viewMeetings'])->name('univ_sec.meetings');
   Route::get('/meetings/create-meeting', [MeetingController::class, 'viewCreateMeeting'])->name('univ_sec.view_create_meeting');
   Route::post('/meetings/create', [MeetingController::class, 'createMeeting'])->name('univ_sec.meetings.create');
@@ -169,7 +169,7 @@ Route::middleware(['auth', 'university_secretary'])->prefix('university-secretar
 
 // BOARD SECRETARY ROUTES
 Route::middleware(['auth', 'board_secretary'])->prefix('board-secretary')->group(function() {
-  Route::get('/dashboard', [Analytics::class, 'index'])->name('board_sec.dashboard');
+  Route::get('/dashboard', [Analytics::class, 'secretaryDashboard'])->name('board_sec.dashboard');
   Route::get('/meetings', [MeetingController::class, 'viewMeetings'])->name('board_sec.meetings');
   Route::get('/meetings/create-meeting', [MeetingController::class, 'viewCreateMeeting'])->name('board_sec.view_create_meeting');
   Route::post('/meetings/create', [MeetingController::class, 'createMeeting'])->name('board_sec.meetings.create');
@@ -208,6 +208,46 @@ Route::middleware(['auth', 'board_secretary'])->prefix('board-secretary')->group
 });
 
 
+Route::middleware(['auth', 'board_of_regents'])->prefix('board-of-regents')->group(function() {
+  Route::get('/dashboard', [Analytics::class, 'index'])->name('board_regents.dashboard');
+  Route::get('/meetings', [MeetingController::class, 'viewMeetings'])->name('board_regents.meetings');
+  Route::get('/meetings/create-meeting', [MeetingController::class, 'viewCreateMeeting'])->name('board_regents.view_create_meeting');
+  Route::post('/meetings/create', [MeetingController::class, 'createMeeting'])->name('board_regents.meetings.create');
+  Route::get('/meetings/meeting-details/{level}/{meeting_id}', [MeetingController::class, 'viewMeetingDetails']
+  )->name('board_regents.meetings.details');
+
+  Route::get('/meetings/edit/{level}/{meeting_id}', [MeetingController::class, 'viewEditMeeting'])->name('board_regents.meeting.edit_meeting');
+
+  Route::post('/meetings/save-edit/{level}/{meeting_id}', [MeetingController::class, 'EditMeeting'])->name('board_regents.meetings.save-edit');
+  Route::get('/proposals', [ProposalController::class, 'viewMeetingsWithProposalCount'])->name('board_regents.proposals');
+
+  Route::get('/meetings/view-generate-oob/{level}/{meeting_id}', [OrderOfBusinessController::class, 'viewGenerateOOB'])->name('board_regents.order_of_business.view-generate');
+  Route::post('/meetings/generate-oob/{level}/{meeting_id}', [OrderOfBusinessController::class, 'generateOOB'])->name('board_regents.order_of_business.generate');
+
+  Route::get('/meetings/proposals/{level}/{meeting_id}', [ProposalController::class, 'viewMeetingProposals'])->name('board_regents.proposals.meetingProposals');
+  Route::get('/proposals/details/{proposal_id}', [ProposalController::class, 'viewProposalDetails_Secretary'])->name('board_regents.proposal.details');
+  Route::post('/proposal/edit/{proposal_id}', [ProposalController::class, 'editProposalSecretary'])->name('board_regents.proposal.edit');
+
+  Route::get('/order-of-business', [OrderOfBusinessController::class, 'viewOOBList' ])->name('board_regents.order-of-business');
+  Route::post('/oob/filter', [OrderOfBusinessController::class, 'filterOOB'])->name(name: 'board_regents.oob.filter');
+  Route::get('/meetings/view-order-of-business/{level}/{oob_id}', [OrderOfBusinessController::class, 'viewOOB'])->name('board_regents.order_of_business.view-oob');
+
+  Route::post('/order-of-business/save/{level}/{oob_id}', [OrderOfBusinessController::class, 'saveOOB'])->name('board_regents.order_of_business.save');
+  Route::post('/order-of-business/disseminate/{level}/{oob_id}', [OrderOfBusinessController::class, 'disseminateOOB'])->name('board_regents.dissemenate.order_of_business');
+
+  Route::post('/meetings/filter', [MeetingController::class, 'filterMeetings'])->name(name: 'board_regents.meetings.filter');
+
+  Route::post('/proposals/edit/{proposal_id}', [ProposalController::class, 'editProposal'])->name('board_regents.proposal.edit.save');  // FINAL EDIT PROPOSAL
+
+
+  Route::post('/proposals/store/{meeting_id}', [ProposalController::class, 'addProposal'])->name('board_regents.addProposal');
+
+  Route::post('/order-of-business/upload-minutes', [OrderOfBusinessController::class, 'uploadPreviousMinutes'])->name('board_regents.upload.minutes');
+
+  Route::post('/add-other-matters/{meeting_id}', [ProposalController::class, 'addOtherMatters'])->name('board_regents.addOtherMatters');
+});
+
+
 Route::middleware(['auth'])->group(function () {
   Route::get('/fetch-proponents', [ProposalController::class, 'fetchProponents'])->name('fetchProponents');
   Route::get('/search-users', [ProposalController::class, 'searchUsers'])->name('proponent.search-users');
@@ -221,16 +261,14 @@ Route::middleware(['auth'])->group(function () {
   Route::post('/rename-proposal-file', [ProposalController::class, 'renameFile'])->name('rename.proposal.file');
   Route::post('/update-proposal-file-order', [ProposalController::class, 'updateOrder']);
   Route::post('/update-proposal-order/{level}', [OrderOfBusinessController::class, 'updateProposalOrder'])->name('update_proposal_order');
-  Route::post('/save-proposal-group/{level}', [OrderOfBusinessController::class, 'saveProposalGroup'])->name('save_proposal_group');
-  Route::post('/ungroup-proposal/{level}', [OrderOfBusinessController::class, 'ungroupProposal'])->name('ungroup_proposal');
-  Route::post('/update-proposal-group/{level}', [OrderOfBusinessController::class, 'updateProposalGroup'])->name('update_proposal_group');
+  Route::post('/save-proposal-group/{level}', [ProposalController::class, 'saveProposalGroup'])->name('save_proposal_group');
+  Route::post('/ungroup-proposal/{level}', [ProposalController::class, 'ungroupProposal'])->name('ungroup_proposal');
+  Route::post('/update-proposal-group/{level}', [ProposalController::class, 'updateProposalGroup'])->name('update_proposal_group');
   Route::get('/get-previous-minutes/{meeting_id}', [OrderOfBusinessController::class, 'getPreviousMinutes'])->name('get.previous.minutes');
   Route::post('/switch-role', [Analytics::class, 'switchRole'])->name('switch.role');
-
-  Route::post('/add-academic-member', [AdminController::class, 'storeAcademicMember'])->name('add.academic.member');
-Route::get('/search-hrmis-email', [AdminController::class, 'searchHrmisEmail'])->name('search.hrmis.email');
-
-
+  Route::post('add-group-proposal-attachment', [ProposalController::class, 'addGroupProposalAttachment'])->name('proposal.group-proposal.add-attachment');
+  Route::post('edit-group-proposal-attachment', [ProposalController::class, 'editGroupProposalAttachment'])->name('proposal.group-proposal.edit-attachment');
+  Route::post('delete-group-proposal-attachment', [ProposalController::class, 'deleteGroupProposalAttachment'])->name('proposal.group-proposal.delete-attachment');
 });
 
 

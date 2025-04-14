@@ -19,7 +19,7 @@
     <form action="{{ route(getUserRole().'.order_of_business.generate', ['level' => $meeting->getMeetingLevel(), 'meeting_id' => encrypt($meeting->id)]) }}" method="post" id="oobFrm" meeting-id="{{encrypt($meeting->id)}}">
         <div class="d-flex flex-column justify-content-center align-items-center text-center">
             <h4 class="card-header p-0 mb-2">
-                {{ config('meetings.quaterly_meetings.'.$meeting->quarter) }}
+                {{ config('meetings.quarterly_meetings.'.$meeting->quarter) }}
                 @if ($meeting->getMeetingCouncilType() == 0)
                     {{ config('meetings.council_types.local_level.'.$meeting->council_type) }}
                 @elseif ($meeting->getMeetingCouncilType() == 1)
@@ -58,7 +58,7 @@
             <p style="line-height: 1;"> 1.5. Chairperson’s Time</p>
           </textarea>
         </div>
-        
+
         <!-- Modal -->
         <div class="modal fade" id="proposalFIleModal" tabindex="-1" aria-labelledby="proposalFIleModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-lg">

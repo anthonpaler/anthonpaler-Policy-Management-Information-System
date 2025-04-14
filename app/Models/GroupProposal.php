@@ -7,13 +7,19 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class GroupProposal extends Model
 {
-    use HasFactory;
+  use HasFactory;
 
-    use SoftDeletes;
-    protected $table = 'group_proposals';
+  use SoftDeletes;
+  protected $table = 'group_proposals';
 
-    protected $fillable = [
-        'group_title',
-        'order_no',
-    ];
+  protected $fillable = [
+    'group_title',
+    'order_no',
+  ];
+
+  // GET GROUP PROPOSAL FILES
+  public function files()
+  {
+    return $this->hasMany(GroupProposalFiles::class, 'group_proposal_id')->orderBy('order_no');
+  }
 }

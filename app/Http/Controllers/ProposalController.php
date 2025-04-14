@@ -19,6 +19,8 @@ use App\Models\LocalOob;
 use App\Models\UniversityOob;
 use App\Models\BoardOob;
 use App\Models\User;
+use App\Models\GroupProposal;
+use App\Models\GroupProposalFiles;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use App\Mail\ProposalSubmissionNotification;
@@ -979,17 +981,17 @@ class ProposalController extends Controller
         if ($level == 'Local') {
             $meeting = LocalCouncilMeeting::find($meetingID);
             $proposals = LocalMeetingAgenda::where("local_council_meeting_id", $meetingID)
-                ->orderBy('created_at', 'desc')
+                ->orderBy('order_no', 'asc')
                 ->get();
         } elseif ($level == 'University') {
             $meeting = UniversityCouncilMeeting::find($meetingID);
             $proposals = UniversityMeetingAgenda::where("university_meeting_id", $meetingID)
-                ->orderBy('created_at', 'desc')
+                  ->orderBy('order_no', 'asc')
                 ->get();
         } elseif ($level == 'BOR') {
             $meeting = BorMeeting::find($meetingID);
             $proposals = BoardMeetingAgenda::where("bor_meeting_id", $meetingID)
-                ->orderBy('created_at', 'desc')
+                  ->orderBy('order_no', 'asc')
                 ->get();
         }
 
@@ -1370,6 +1372,254 @@ class ProposalController extends Controller
             DB::rollBack();
             return response()->json(['type' => 'danger', 'message' => $th->getMessage(), 'title'=> "Something went wrong!"]);
         }
+    }
+
+    // UNGROUP PROPOSAL
+    public function ungroupProposal(Request $request, String $level)
+    {
+      DB::beginTransaction();
+      try {
+          $groupId = decrypt($request->input('group_id'));
+
+          // Determine the correct agenda model
+          $agendaModel = match ($level) {
+              'Local' => LocalMeetingAgenda::class,
+              'University' => UniversityMeetingAgenda::class,
+              'BOR' => BoardMeetingAgenda::class,
+              default => null
+          };
+
+          if (!$agendaModel) {
+              return response()->json(['error' => 'Invalid meeting level'], 400);
+          }
+
+          // Remove group_proposal_id from proposals in the agenda
+          $agendaModel::where('group_proposal_id', $groupId)
+              ->update(['group_proposal_id' => null]);
+
+          // Soft delete the group proposal
+          GroupProposal::where('id', $groupId)->delete();
+
+          DB::commit();
+          return response()->json(['type' => 'success', 'message' => 'Proposals ungrouped successfully!', 'title' => 'Success']);
+      } catch (\Throwable $th) {
+          DB::rollBack();
+
+          return response()->json(['error' => $th->getMessage()], 500);
+      }
+    }
+
+    // UNGROUP PROPOSAL GROUP
+    public function updateProposalGroup(Request $request, String $level)
+    {
+      try {
+          // Validate the request
+          $data = $request->validate([
+              'group_id' => 'required',
+              'group_title' => 'required|string',
+              // 'order_no' => 'required',
+          ]);
+
+          $groupID = decrypt($data['group_id']);
+          // Update the group
+          $group = GroupProposal::findOrFail($groupID);
+          $group->update([
+              'group_title' => $data['group_title'],
+              // 'order_no' => $data['order_no']
+          ]);
+
+          return response()->json(['type' => 'success', 'message' => 'Group updated successfully!', 'title' => 'Success']);
+      } catch (\Throwable $th) {
+          return response()->json(['error' => $th->getMessage()], 500);
+      }
+    }
+
+    // SAVE PROPOSAL GROUP
+    public function saveProposalGroup(Request $request, String $level)
+    {
+        DB::beginTransaction();
+
+        try {
+            // Validate the request
+            $data = $request->validate([
+                'group_title' => 'required|string',
+                'proposals' => 'required|array',
+                'proposals.*' => 'integer|exists:proposals,id',
+            ]);
+
+            // Determine the correct agenda model
+            $agendaModel = match ($level) {
+                'Local' => LocalMeetingAgenda::class,
+                'University' => UniversityMeetingAgenda::class,
+                'BOR' => BoardMeetingAgenda::class,
+                default => null
+            };
+
+            if (!$agendaModel) {
+                return response()->json(['error' => 'Invalid meeting level'], 400);
+            }
+
+            // Check if any proposal is already part of a group
+            $existingGroupProposal = $agendaModel::whereIn($this->getProposalAgendaColumn($level), $data['proposals'])
+                ->whereNotNull('group_proposal_id')
+                ->first();
+
+            if ($existingGroupProposal) {
+                return response()->json([
+                    'type' => 'danger',
+                    'message' => 'One or more proposals are already assigned to a group.',
+                    'title' => 'Group Creation Failed'
+                ]);
+            }
+
+            // Create new group
+            $group = GroupProposal::create([
+                'group_title' => $data['group_title'],
+            ]);
+
+            // Assign group and update order
+            foreach ($data['proposals'] as $index => $proposalId) {
+                $agendaModel::where($this->getProposalAgendaColumn($level), $proposalId)
+                    ->update([
+                        'group_proposal_id' => $group->id,
+                        'order_no' => $index + 1
+                    ]);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'type' => 'success',
+                'message' => 'Group created and order updated successfully!',
+                'title' => 'Success'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            return response()->json(['error' => $th->getMessage()], 500);
+        }
+    }
+
+
+    // ADD GROUP PROPOSAL ATTACHMENT
+    public function addGroupProposalAttachment(Request $request){
+      DB::beginTransaction();
+      try{
+        $request->validate([
+          'file_name' => 'required|string',
+          'file' => 'required|file|mimes:pdf,xls,xlsx,csv|max:100000',
+          'group_proposal_id'=> 'required',
+        ]);
+
+        $group_proposal_id = decrypt($request->input('group_proposal_id'));
+
+        if ($request->hasFile('file')) {
+          $file = $request->file('file');
+          $originalNameWithExt = $file->getClientOriginalName();
+          $extension = $file->getClientOriginalExtension();
+
+          preg_match('/^(.*?)(\(\d+\))?(\.\w+)?$/', $originalNameWithExt, $matches);
+          $baseName = trim($matches[1]);
+          $filename = "{$baseName}.{$extension}";
+
+          $i = 1;
+          while (Storage::disk('public')->exists("proposals/{$filename}")) {
+              $filename = "{$baseName} ({$i}).{$extension}";
+              $i++;
+          }
+
+          $filePath = $file->storeAs('proposals', $filename, 'public');
+        }
+        $orderNo = 1;
+        $orderNo = GroupProposalFiles::where('group_proposal_id', $group_proposal_id)
+        ->max('order_no') + 1;
+
+        $groupProposalAttachment = GroupProposalFiles::create([
+          'group_proposal_id' => $group_proposal_id,
+          'file_name' => $request->input('file_name'),
+          'file' => $filename,
+          'order_no' => $orderNo,
+      ]);
+        DB::commit();
+        return response()->json([
+          'type' => 'success',
+          'message' => 'Attachment Added successfully!',
+          'title'=> "Success!",
+        ]);
+      } catch (\Throwable $th) {
+        DB::rollBack();
+        return response()->json(['type' => 'danger', 'message' => $th->getMessage(), 'title'=> "Something went wrong!"]);
+      }
+    }
+
+    // EDIT GROUP PROPOSAL ATTACHMENT
+    public function editGroupProposalAttachment(Request $request){
+      DB::beginTransaction();
+      try{
+        $request->validate([
+          'file_name' => 'required|string',
+          'file' => 'file|mimes:pdf,xls,xlsx,csv|max:100000',
+          'group_attachment_id'=> 'required',
+        ]);
+        $groupAttachmentID = decrypt($request->input("group_attachment_id"));
+
+        if ($request->hasFile('file')) {
+          $file = $request->file('file');
+          $originalNameWithExt = $file->getClientOriginalName();
+          $extension = $file->getClientOriginalExtension();
+
+          preg_match('/^(.*?)(\(\d+\))?(\.\w+)?$/', $originalNameWithExt, $matches);
+          $baseName = trim($matches[1]);
+          $filename = "{$baseName}.{$extension}";
+
+          $i = 1;
+          while (Storage::disk('public')->exists("proposals/{$filename}")) {
+              $filename = "{$baseName} ({$i}).{$extension}";
+              $i++;
+          }
+
+          $filePath = $file->storeAs('proposals', $filename, 'public');
+        }
+        $groupProposalAttachment = GroupProposalFiles::where('id', $groupAttachmentID);
+        if ($request->hasFile('file')) {
+          $groupProposalAttachment->update([
+            'file_name' => $request->input('file_name'),
+            'file' => $filename,
+          ]);
+        } else {
+          $groupProposalAttachment->update([
+            'file_name' => $request->input('file_name'),
+          ]);
+        }
+
+        DB::commit();
+        return response()->json([
+          'type' => 'success',
+          'message' => 'Attachment Updated successfully!',
+          'title'=> "Success!",
+        ]);
+      } catch (\Throwable $th) {
+        DB::rollBack();
+        return response()->json(['type' => 'danger', 'message' => $th->getMessage(), 'title'=> "Something went wrong!"]);
+      }
+    }
+
+    // DELETE GROUP PROPOSAL ATTACHMENT
+    public function deleteGroupProposalAttachment(Request $request)
+    {
+      DB::beginTransaction();
+      try {
+        $validate = $request->validate([
+          "groupAttachmentID"=> "required",
+        ]);
+        $groupAttachmentID = decrypt($request->input("groupAttachmentID"));
+        $groupProposalAttachment = GroupProposalFiles::find($groupAttachmentID )->delete();
+        DB::commit();
+        return response()->json(["type" => "success", "message" => "Deleted Successfully!", "title" => "Success"]);
+      } catch (\Throwable $th) {
+        DB::rollBack();
+        return response()->json(['type' => 'danger', 'message' => $th->getMessage(), 'title'=> "Something went wrong!"]);
+      }
     }
 
     /**

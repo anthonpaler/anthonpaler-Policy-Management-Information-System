@@ -14,10 +14,10 @@ $(document).ready(function() {
             $(".old-version-files").removeClass("d-none");
         }
     });
-    
+
     let selectedProponents = window.selectedProponents || [];
     let proponentInput = $("#proponents");
-    
+
     // Automatically add the primary proponent (logged-in user)
     let primaryProponent = {
         id: $("#primaryProponent").data("id"),
@@ -35,10 +35,10 @@ $(document).ready(function() {
     }
 
     console.log(selectedProponents);
-    
+
     let proponentIds = selectedProponents.map(selectedProponents => selectedProponents.id);
     proponentInput.val(proponentIds.join(','));
-    
+
     $("#addProponent").on("keyup", function () {
         let query = $(this).val();
         if (query.length > 1) {
@@ -49,7 +49,7 @@ $(document).ready(function() {
                 success: function (data) {
                     let searchResults = $(".search-drop-card ul");
                     searchResults.empty();
-                    
+
                     if (data.length > 0) {
                         data.forEach(user => {
                             if (!selectedProponents.some(u => u.id === user.employee_id)) {
@@ -76,7 +76,7 @@ $(document).ready(function() {
                     } else {
                         searchResults.append("<li>No users found</li>");
                     }
-    
+
                     $(".search-drop-card").show();
                 },
                 error: function(xhr, status, error) {
@@ -89,17 +89,17 @@ $(document).ready(function() {
             $(".search-drop-card").hide();
         }
     });
-    
+
     // Handle user selection
     $(document).on("click", ".select-user", function () {
         let userId = $(this).closest("li").data("id");
         let userName = $(this).closest("li").data("name");
         let userImage = $(this).closest("li").data("image");
         let userEmail = $(this).closest("li").data("email");
-    
+
         if (!selectedProponents.some(u => u.id === userId)) {
             selectedProponents.push({ id: userId, name: userName, email: userEmail, image: userImage });
-    
+
             $("#proponentListCon").append(`
             <li data-id="${userId}">
                      <div class="d-flex justify-content-between align-items-center ms-2 me-2 flex-wrap gap-2">
@@ -123,21 +123,21 @@ $(document).ready(function() {
                 </li>
             `);
         }
-    
-        $("#addProponent").val(""); 
+
+        $("#addProponent").val("");
         $(".search-drop-card").hide();
         console.log(selectedProponents);
         proponentIds = selectedProponents.map(selectedProponents => selectedProponents.id);
         proponentInput.val(proponentIds.join(','));
     });
-    
+
     // Remove selected user
     $(document).on("click", ".remove", function () {
         let userId = $(this).data("id");
         selectedProponents = selectedProponents.filter(user => user.id !== userId);
-    
+
         $(`#proponentListCon li[data-id="${userId}"]`).remove();
-    
+
         if (selectedProponents.length === 0) {
             $("#proponentListCon").empty();
         }
@@ -145,7 +145,7 @@ $(document).ready(function() {
         proponentIds = selectedProponents.map(selectedProponents => selectedProponents.id);
         proponentInput.val(proponentIds.join(','));
     });
-    
+
     // Hide dropdown when clicking outside
     $(document).on("click", function (e) {
         if (!$(e.target).closest(".c-field-p").length) {
@@ -159,12 +159,12 @@ $(document).ready(function() {
     // RESUMIT BUTTON TRIGGER
     $(".resubmit-proposal").on('click', function (e) {
         e.preventDefault();
-        
+
         var file_id = $(this).data('id');
         $("#file-upload").data("id", file_id).click(); // Store file ID and trigger file input
         $(this).closest(".file-status").html("Revised");
     });
-    
+
     // CUSTOM FILE UPLOAD FOR RESUBMITINNG PROPOSAL FILE
     $("#file-upload").on("change", function (e) {
         var file = e.target.files[0]; // Get selected file
@@ -194,13 +194,13 @@ $(document).ready(function() {
             proposalRow.find(".text-wrap").text(file.name);
         }
     });
-    
+
 
     // TEMPORARILY DELETE PROPOSAL FILE
     $(".delete-proposal-file").on("click", function (e) {
         e.preventDefault();
         var file_id = $(this).data("id");
-        var button = $(this); 
+        var button = $(this);
 
         Swal.fire({
             title: "Are you sure?",
@@ -244,7 +244,7 @@ $(document).ready(function() {
             formData.append(`reuploaded_files[${file_id}]`, file);
             console.log("Reuploaded File ID: " + file_id);
             console.log("Reuploaded File: " + file);
-            
+
         });
 
         console.log('Form Data:', formData);
@@ -254,8 +254,8 @@ $(document).ready(function() {
             method: "POST",
             url: actionUrl,
             data: formData,
-            processData: false,  
-            contentType: false,  
+            processData: false,
+            contentType: false,
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
@@ -326,12 +326,12 @@ $(document).ready(function() {
                     // Reset uploadedProposalFiles
                     uploadedProposalFiles = [];
                     fileList.innerHTML = ""; // Clear file list
-    
+
                     // Reset selected proponents, keeping only the primary proponent
                     selectedProponents = [primaryProponent];
                     let proponentIds = selectedProponents.map(proponent => proponent.id);
                     proponentInput.val(proponentIds.join(','));
-    
+
                     // Remove additional proponents from UI
                     $("#proponentListCon").html(`
                         <li data-id="${primaryProponent.id}">
@@ -362,9 +362,9 @@ $(document).ready(function() {
             error: function (xhr, status, error) {
                 submitProposalBtn.html(`<i class='bx bx-send'></i>
                     <span>Submit Proposal</span>`).prop('disabled', false);
-                
+
                 console.log(xhr.responseText); // Log the raw response
-                
+
                 try {
                     let response = JSON.parse(xhr.responseText);
                     showAlert("warning", response.title, response.message);
@@ -372,7 +372,7 @@ $(document).ready(function() {
                     showAlert("danger", "Error", "An unexpected error occurred. Please try again.");
                 }
             }
-            
+
         });
     });
 
@@ -419,16 +419,16 @@ $(document).ready(function() {
     $(document).on('click', '.view-file-preview', function (e) {
         e.preventDefault();
         const fileUrl = $(this).data('file-url');
-        const fileExtension = fileUrl.split('.').pop().toLowerCase(); 
+        const fileExtension = fileUrl.split('.').pop().toLowerCase();
 
         if (fileExtension !== 'pdf') {
             window.open(fileUrl, '_blank'); // Open Excel, CSV, etc., in a new tab
-            $('#fileModal').modal('hide'); 
+            $('#fileModal').modal('hide');
             return;
         }
-    
+
         if (/Mobi|Android/i.test(navigator.userAgent)) { // Open file in new tab if mobile device
-            window.open(fileUrl, '_blank'); 
+            window.open(fileUrl, '_blank');
             $('#fileModal').modal('hide');
         } else {
             $('#fileIframe').attr('src', fileUrl);
@@ -440,34 +440,32 @@ $(document).ready(function() {
     $(document).on('click', '.view-single-file-preview', function (e) {
         e.preventDefault();
         const fileUrl = $(this).data('file-url');
-        const fileExtension = fileUrl.split('.').pop().toLowerCase(); 
-    
+        const fileExtension = fileUrl.split('.').pop().toLowerCase();
+
         // If the file is not a PDF, always open it in a new tab
         if (fileExtension !== 'pdf') {
             window.open(fileUrl, '_blank'); // Open Excel, CSV, etc., in a new tab
-            $('#fileModal').modal('hide'); 
+            $('#fileModal').modal('hide');
             return;
         }
-    
+
         if (/Mobi|Android/i.test(navigator.userAgent)) { // Open file in new tab if mobile device
-            window.open(fileUrl, '_blank'); 
+            window.open(fileUrl, '_blank');
             $('#fileModal').modal('hide');
         } else {
             $('#fileIframe').attr('src', fileUrl);
             $('#fileModal').modal('show');
         }
     });
-    
-    
 
-    $('#fileModal').on('show.bs.modal', function () {
-        $('#proposalFIleModal').addClass('d-block');
-    });
+    // $('#fileModal').on('show.bs.modal', function () {
+    //     $('#proposalFIleModal').addClass('d-block');
+    // });
 
-    $('#fileModal').on('hidden.bs.modal', function () {
-        $('#proposalFIleModal').removeClass('d-block');
-        $('#proposalFIleModal').modal('show');
-    });
+    // $('#fileModal').on('hidden.bs.modal', function () {
+    //     $('#proposalFIleModal').removeClass('d-block');
+    //     $('#proposalFIleModal').modal('show');
+    // });
 
     $('#proposalFIleModal').on('hidden.bs.modal', function () {
         setTimeout(function() {
@@ -476,11 +474,11 @@ $(document).ready(function() {
                 $('body').removeClass('modal-open');
                 $('body').css('padding-right', '');
             }
-        }, 200); 
+        }, 200);
     });
 
 
-    
+
     // SELECT MULTIPLE PROPOSALS IN SECRETARY VIEW MEETING PROPOSAL
     let selectedProposals = new Set();
 
@@ -491,14 +489,14 @@ $(document).ready(function() {
         } else {
             selectedProposals.delete(proposalId);
         }
-        console.log("Updated selected proposals:", Array.from(selectedProposals)); 
+        console.log("Updated selected proposals:", Array.from(selectedProposals));
     });
 
     // console.log(proposalStatus);
     // UPDATE SELECTED PROPOSAL STATUS USING PROPOSAL ACTION
     $('#updateMultiProposalBtn').on('click', function() {
         var proposalStatusInput = $("#proposalStatusInput");
-        var action = proposalStatusInput.data('id'); 
+        var action = proposalStatusInput.data('id');
         var status_label = proposalStatus[action+1];
         console.log(action)
 
@@ -517,8 +515,8 @@ $(document).ready(function() {
             type: "POST",
             data: {
                 _token: $('meta[name="csrf-token"]').attr('content'),
-                proposals: [...selectedProposals], 
-                action: action, 
+                proposals: [...selectedProposals],
+                action: action,
             },
             beforeSend: function() {
                 $('#updateMultiProposalBtn').html(`<i class='bx bx-loader-alt bx-spin bx-rotate-90' ></i> Updating Proposal Status...`).prop('disabled', true);
@@ -527,36 +525,36 @@ $(document).ready(function() {
                 console.log("Success Response:", response);
 
                 $('#updateMultiProposalBtn').html(`<i class='bx bx-send'></i> Update Proposal Status`).prop('disabled', false);
-            
+
                 if (response.type === 'success') {
                     selectedProposals.forEach(id => {
                         let row = $(`input[data-id="${id}"]`).closest('tr');
-                        
+
                         row.find('td.status-cell span')
                         .html(`<i class='bx bx-radio-circle-marked'></i>${status_label}`)
                         .removeClass()
                         .addClass('mb-0 align-items-center d-flex w-px-100 gap-1');
-                        
+
                         // Disable checkbox
                         row.find('input.select-proposal').prop('disabled', true).prop('checked', false);
                     });
-            
+
                     // Clear selection
                     selectedProposals.clear();
                     $('.select-proposal').prop('checked', false);
-            
+
                     showAlert(response.type, response.title, response.message);
                 }else{
                     showAlert(response.type, response.title, response.message);
                 }
-            },                
+            },
             error: function(xhr, status, error) {
                 console.error({
                     status: status,
                     error: error,
                     responseText: xhr.responseText
                 });
-                
+
                 $('#updateMultiProposalBtn').html(`<i class='bx bx-send'></i> Update Proposal Status`).prop('disabled', false);
 
                 showAlert('danger', 'Error!', 'Something Went Wrong!');
@@ -567,14 +565,14 @@ $(document).ready(function() {
     // ASSIGN PROPOSAL ACTION VALUE TO INPUT
     $(".proposal-action").on('click', function(e) {
         e.preventDefault();
-        
+
         var action_id = $(this).data('id');
         var action_label = $(this).data('label');
-    
+
         var proposalStatusInput = $("#proposalStatusInput");
-    
+
         proposalStatusInput.text(action_label);
-        proposalStatusInput.data('id', action_id); 
+        proposalStatusInput.data('id', action_id);
         // alert(action_id + ' ' + action_label);
         console.log(proposalStatusInput.data('id'));
 
@@ -592,20 +590,20 @@ $(document).ready(function() {
 
     $('.select-proposal-file').on('change', function() {
         let proposalFileId = $(this).data('id');
-        
+
         if ($(this).is(':checked')) {
             selectedProposalFiles.add(proposalFileId);
         } else {
             selectedProposalFiles.delete(proposalFileId);
         }
-    
+
         console.log("Updated selected proposal files: ", Array.from(selectedProposalFiles));
     });
 
     // UPDATE SPECIFIC PROPOSAL - SECRETARY POV
     $("#updateProposalStatus").on('click', function(){
         var proposalStatusInput = $("#proposalStatusInput");
-        var action = proposalStatusInput.data('id'); 
+        var action = proposalStatusInput.data('id');
         var status_label = proposalStatus[action+1];
         var proposal_id = $("#updateProposalStatus").data('id');
         var comment = $('#comment').val();
@@ -653,8 +651,8 @@ $(document).ready(function() {
                 console.log("Success Response:", response);
                 $("#updateProposalStatus").html(`<i class='bx bx-send'></i> Update Proposal Status`).prop('disabled', false);
                 showAlert(response.type, response.title, response.message);
-                location.reload(); 
-            },                
+                location.reload();
+            },
             error: function(xhr, status, error) {
                 console.error({
                     status: status,
@@ -674,7 +672,7 @@ $(document).ready(function() {
         // alert("Clicked");
         var proposalFrm = $("#editProposalFrm");
         var actionUrl = proposalFrm.attr('action');
-    
+
         $.ajax({
             method: "POST",
             url: actionUrl,
@@ -691,7 +689,7 @@ $(document).ready(function() {
                     <span>Save Changes</span> `).prop('disabled', false);
                 $(".select-proposal-file").removeClass('d-block').addClass('d-none');
                 showAlert(response.type, response.title, response.message);
-            },            
+            },
             error: function (xhr, status, error) {
                 $("#updateProposalSec").html(`<i class='bx bx-save'></i>
                     <span>Save Changes</span> `).prop('disabled', false);
@@ -709,31 +707,31 @@ $(document).ready(function() {
         let fileId = $(this).data("id");
         $("#renameFileModal").attr("data-file-id", fileId);
         let currentFileName = $(this).data("filename");
-    
+
         $("#renameFileModal").data("file-id", fileId);
         $("#currentFileName").val(currentFileName);
     });
-    
+
     $("#renameFileBtn").on("click", function (e) {
         e.preventDefault();
-        
+
         let fileId = $("#renameFileModal").data("file-id");
         let newFileName = $("#newFileName").val().trim();
-    
+
         if (newFileName === "") {
             alert("Please enter a new file name.");
             return;
         }
-    
+
         $.ajax({
             url: "/rename-proposal-file",
             type: "POST",
             data: {
                 _token: $('meta[name="csrf-token"]').attr('content'),
-                file_id: fileId,         
-                new_file_name: newFileName 
+                file_id: fileId,
+                new_file_name: newFileName
             },
-            beforeSend:function(){                
+            beforeSend:function(){
                 $("#renameFileBtn").text("Renaming...").prop('disabled', true);
             },
             success: function (response) {
@@ -747,15 +745,15 @@ $(document).ready(function() {
             },
             error: function (xhr) {
                 console.error(xhr.responseText);
-                let response = JSON.parse(xhr.responseText); 
+                let response = JSON.parse(xhr.responseText);
                 showAlert('danger', 'Error!', response.message);
                 $("#renameFileBtn").text("Rename").prop('disabled', false);
-                
+
             }
         });
-    });        
+    });
 
-    // SUBMIT PROPOSAL SECRETARY 
+    // SUBMIT PROPOSAL SECRETARY
     var endorsedProposals = endorsedProposalIds;
     console.log("Endorsed Proposals: "+ endorsedProposals);
 
@@ -764,7 +762,7 @@ $(document).ready(function() {
         // alert('Cliked');
         var secProposalFrm = $("#submitProposalFrm");
         var actionUrl = secProposalFrm.attr('action');
-        if (endorsedProposals) { 
+        if (endorsedProposals) {
             $.ajax({
                 url: actionUrl,
                 type: "POST",
@@ -777,17 +775,17 @@ $(document).ready(function() {
                 },
                 success: function(response) {
                     console.log("Response:", response);
-                
+
                     if (response.type === 'success') {
                         $('#submitSecBtn').prop('disabled', true);
                         showAlert(response.type, response.title, response.message);
-                        
+
                         window.location.href= response.redirect;
                     }else{
                         showAlert(response.type, response.title, response.message);
-                        location.reload(); 
+                        location.reload();
                     }
-                },                
+                },
                 error: function(xhr, status, error) {
                     console.error({
                         status: status,
@@ -796,14 +794,14 @@ $(document).ready(function() {
                     });
 
                     $('#submitSecBtn').html(`<i class='bx bx-send'></i> Submit to Universiry`).prop('disabled', false);
-                    
+
                     showAlert('danger', 'Error!', 'Somthing went wrong');
                 }
             });
         }else{
             showAlert('danger', 'Error!', 'No Proposals');
         }
-    }); 
+    });
 })
 document.addEventListener("DOMContentLoaded", function () {
 
@@ -824,7 +822,7 @@ document.addEventListener("DOMContentLoaded", function () {
         document.querySelectorAll("#proposalFilesTable tbody tr").forEach((row, index) => {
             let fileId = row.querySelector(".select-proposal-file").dataset.id;
             let orderNoElement = row.querySelector(".file_order_no");
-        
+
             orderNoElement.textContent = index + 1;
             updatedFiles.push({
                 id: fileId,

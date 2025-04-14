@@ -28,7 +28,7 @@ class MeetingController extends Controller
         $role = session('user_role');
         $employeeId = session('employee_id');
         $campus_id = session('campus_id');
-        $level = $role == 3 ? 0 : ($role == 4 ? 1 : ($role == 5 ? 2 : 0));
+        $level = $role == 3 ? 0 : ($role == 4 ? 1 : ($role == 5 ? 2 : ($role == 8 ? 2 : 0)));
 
         if (session('isProponent')) {
             $allowedCouncilTypes = [1];
@@ -65,6 +65,10 @@ class MeetingController extends Controller
             $meetings = BorMeeting::orderBy('created_at', 'desc')->get();
         }
 
+        if($role == 8 && $level == 2){
+            $meetings = BorMeeting::orderBy('created_at', 'desc')->get();
+        }
+
 
         return view('content.meetings.viewMeetings', compact('meetings', 'level'));
     }
@@ -72,8 +76,6 @@ class MeetingController extends Controller
     // VIEW CREATE MEETING PAGE
     public function viewCreateMeeting(Request $request)
     {
-        
-
         return view ('content.meetings.createMeeting');
     }
 
@@ -176,33 +178,33 @@ class MeetingController extends Controller
             }
 
 
-            // 🔹 Send SMS Notifications
-              $smsController = new SMSController();
-              $quarter = config('meetings.quaterly_meetings')[$request->input('quarter')] ?? '';
-              $level = config('meetings.level')[$level] ?? '';
-              $councilType = config('meetings.council_types')[strtolower($level) . '_level'][$request->input('council_type')] ?? '';
-              $meetingDateTime = date('M j, Y g:i A', strtotime($request->input('meeting_date_time')));
+            // // 🔹 Send SMS Notifications
+            //   $smsController = new SMSController();
+            //   $quarter = config('meetings.quaterly_meetings')[$request->input('quarter')] ?? '';
+            //   $level = config('meetings.level')[$level] ?? '';
+            //   $councilType = config('meetings.council_types')[strtolower($level) . '_level'][$request->input('council_type')] ?? '';
+            //   $meetingDateTime = date('M j, Y g:i A', strtotime($request->input('meeting_date_time')));
 
 
-              $message = "ADVISORY!\nThe $quarter – $councilType\nwill be on $meetingDateTime.\nfor more details please visit https://policy.southernleytestateu.edu.ph";
+            //   $message = "ADVISORY!\nThe $quarter – $councilType\nwill be on $meetingDateTime.\nfor more details please visit https://policy.southernleytestateu.edu.ph";
 
-              foreach ($emails as $index => $email) {
-                $phone = $cellNumbers[$index] ?? null;
+            //   foreach ($emails as $index => $email) {
+            //     $phone = $cellNumbers[$index] ?? null;
 
-            //     // If no cellphone in `employees` table, check `hrmis.employee` table
-                if (empty($phone)) {
-                    $hrmisEmployee = HrmisEmployee::where('EmailAddress', $email)->first();
-                    $phone = $hrmisEmployee?->Cellphone;
-                }
+            // //     // If no cellphone in `employees` table, check `hrmis.employee` table
+            //     if (empty($phone)) {
+            //         $hrmisEmployee = HrmisEmployee::where('EmailAddress', $email)->first();
+            //         $phone = $hrmisEmployee?->Cellphone;
+            //     }
 
-            //     // Send SMS if phone number is found
-                if (!empty($phone)) {
-                    $smsResponse = $smsController->send($phone, $message);
-                    if ($smsResponse['Error'] == 1) {
-                        \Log::error("SMS Failed to $phone: " . $smsResponse['Message']);
-                    }
-                }
-            }
+            // //     // Send SMS if phone number is found
+            //     if (!empty($phone)) {
+            //         $smsResponse = $smsController->send($phone, $message);
+            //         if ($smsResponse['Error'] == 1) {
+            //             \Log::error("SMS Failed to $phone: " . $smsResponse['Message']);
+            //         }
+            //     }
+            // }
 
 
             DB::commit();
@@ -369,7 +371,7 @@ class MeetingController extends Controller
 
             // // 🔹 Send SMS Notifications
             // $smsController = new SMSController();
-            // $quarter = config('meetings.quaterly_meetings')[$meeting->quarter] ?? 'N/A';
+            // $quarter = config('meetings.quarterly_meetings')[$meeting->quarter] ?? 'N/A';
             // $councilType = config('meetings.council_types')[strtolower($level) . '_level'][$request->input('council_type')] ?? '';
 
             // $message = "ADVISORY!\nThere are some changes on $quarter $councilType meeting,please visit https://policy.southernleytestateu.edu.ph";

@@ -37,7 +37,10 @@ class MenuServiceProvider extends ServiceProvider
         $verticalMenuJson = file_get_contents(base_path('resources/menu/non_council.json'));
       }else if($role == 7){
         $verticalMenuJson = file_get_contents(base_path('resources/menu/super_admin.json'));
+      }else if($role == 8){
+        $verticalMenuJson = file_get_contents(base_path('resources/menu/board_of_regents.json'));
       }
+      
       
       $verticalMenuData = json_decode($verticalMenuJson);
 

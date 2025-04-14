@@ -1,0 +1,53 @@
+{
+  
+    "menu": [
+          {
+              "menuHeader": "MENUS"
+          },
+          {
+              "url": "/board-of-regents/dashboard",
+              "name": "Dashboards",
+              "icon": "menu-icon tf-icons bx bx-home-circle",
+            "slug": ["board_regents.dashboard"]
+          },
+          {
+              "url": "/board-of-regents/meetings",
+              "name": "Meetings",
+              "icon": "menu-icon tf-icons bx bx-box",
+              "slug": [
+                    "board_regents.meetings",
+                    "board_regents.view_create_meeting",
+                    "board_regents.meetings.details",
+                    "board_regents.meeting.edit_meeting",
+                    "board_regents.order_of_business.view-generate"
+                ]
+          },
+          {
+              "url": "/board-of-regents/proposals",
+              "name": "Proposals",
+              "icon": "menu-icon tf-icons bx bx-file",
+              "slug": [
+                "board_regents.proposals",
+                "board_regents.proposal.details"
+              ]
+          },
+          {
+              "url": "/board-of-regents/order-of-business",
+              "name": "Order of Business",
+              "icon": "menu-icon tf-icons bx bx-objects-horizontal-left",
+              "slug": [
+                "board_regents.order-of-business",
+                "board_regents.order_of_business.view-oob"
+              ]
+          },
+          {
+              "menuHeader": "OTHERS"
+          },
+          {
+              "url": "/logout",
+              "name": "Log out",
+              "icon": "menu-icon tf-icons bx bx-power-off",
+              "slug": "Log out"
+          }
+      ]
+}

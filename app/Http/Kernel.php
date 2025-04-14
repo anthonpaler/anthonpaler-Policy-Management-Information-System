@@ -67,6 +67,7 @@ class Kernel extends HttpKernel
     'local_secretary' => \App\Http\Middleware\LocalSecretary::class,
     'university_secretary' => \App\Http\Middleware\UniversitySecretary::class,
     'board_secretary' => \App\Http\Middleware\BoardSecretary::class,
+    'board_of_regents' => \App\Http\Middleware\BoardOfRegents::class,
     'proponents' => \App\Http\Middleware\Proponents::class,
     'super_admin' => \App\Http\Middleware\SuperAdmin::class,
   ];

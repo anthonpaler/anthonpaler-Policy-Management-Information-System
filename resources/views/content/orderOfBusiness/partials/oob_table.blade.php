@@ -2,11 +2,11 @@
     <tr>
         <td>{{ $index + 1 }}</td>
         <td>{{ $oob->meeting->getCampusName() }}</td>
-        <td>{{ config('meetings.quaterly_meetings.'.$oob->meeting->quarter) ?? 'N/A' }}</td>
+        <td>{{ config('meetings.quarterly_meetings.'.$oob->meeting->quarter) ?? 'N/A' }}</td>
         <td>{{ $oob->meeting->year }}</td>
         <td>
-            {{ config('meetings.quaterly_meetings.'.$oob->meeting->quarter) }} 
-                
+            {{ config('meetings.quarterly_meetings.'.$oob->meeting->quarter) }}
+
                 @if ($oob->meeting->getMeetingCouncilType() === 0)
                     {{ config("meetings.council_types.local_level.{$oob->meeting->council_type}") }}
                 @endif
@@ -20,7 +20,7 @@
         <td>
             <span>
                 {{ $oob->meeting->meeting_date_time ? \Carbon\Carbon::parse($oob->meeting->meeting_date_time)->format('F d, Y, h:i A') : 'Not yet set' }}
-            </span>  
+            </span>
         </td>
         <td>
             <div class="d-flex align-items-center gap-2 text-{{$oob->status == 0 ? 'warning' : 'primary'}}">
@@ -28,7 +28,7 @@
             </div>
         </td>
         <td>
-            <a href="{{ route(getUserRole().'.order_of_business.view-oob', ['level' => $oob->meeting->getMeetingLevel(), 'oob_id'=> encrypt( $oob->id)]) }}" 
+            <a href="{{ route(getUserRole().'.order_of_business.view-oob', ['level' => $oob->meeting->getMeetingLevel(), 'oob_id'=> encrypt( $oob->id)]) }}"
             class="btn btn-sm btn-primary d-flex gap-2" style="max-width: 100px;">
                 <i class="fa-regular fa-eye"></i> VIEW OOB
             </a>
