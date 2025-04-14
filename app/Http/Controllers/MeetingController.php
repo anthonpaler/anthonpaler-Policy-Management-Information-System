@@ -72,8 +72,6 @@ class MeetingController extends Controller
     // VIEW CREATE MEETING PAGE
     public function viewCreateMeeting(Request $request)
     {
-        
-
         return view ('content.meetings.createMeeting');
     }
 
@@ -178,7 +176,7 @@ class MeetingController extends Controller
 
             // 🔹 Send SMS Notifications
             //   $smsController = new SMSController();
-            //   $quarter = config('meetings.quaterly_meetings')[$request->input('quarter')] ?? '';
+            //   $quarter = config('meetings.quarterly_meetings')[$request->input('quarter')] ?? '';
             //   $level = config('meetings.level')[$level] ?? '';
             //   $councilType = config('meetings.council_types')[strtolower($level) . '_level'][$request->input('council_type')] ?? '';
             //   $meetingDateTime = date('M j, Y g:i A', strtotime($request->input('meeting_date_time')));
@@ -369,7 +367,7 @@ class MeetingController extends Controller
 
             // // 🔹 Send SMS Notifications
             // $smsController = new SMSController();
-            // $quarter = config('meetings.quaterly_meetings')[$meeting->quarter] ?? 'N/A';
+            // $quarter = config('meetings.quarterly_meetings')[$meeting->quarter] ?? 'N/A';
             // $councilType = config('meetings.council_types')[strtolower($level) . '_level'][$request->input('council_type')] ?? '';
 
             // $message = "ADVISORY!\nThere are some changes on $quarter $councilType meeting,please visit https://policy.southernleytestateu.edu.ph";

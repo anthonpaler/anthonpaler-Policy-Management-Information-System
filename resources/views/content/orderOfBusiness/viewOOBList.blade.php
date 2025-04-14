@@ -46,7 +46,7 @@
                 <h5 class="mb-0">Order of Business Overview</h5>
                 <small class="text-muted">List of meetings in the Order of Business.</small>
             </div>
-            
+
             <div class="d-flex align-items-center gap-3 flex-wrap">
                 <div class="flex-grow-1">
                     <div class="input-group input-group-merge">
@@ -91,25 +91,24 @@
                         <tr>
                             <td>{{ $index + 1 }}</td>
                             <td>{{ $oob->meeting->getCampusName() }}</td>
-                            <td>{{ config('meetings.quaterly_meetings.'.$oob->meeting->quarter) ?? 'N/A' }}</td>
+                            <td>{{ config('meetings.quarterly_meetings.'.$oob->meeting->quarter) ?? 'N/A' }}</td>
                             <td>{{ $oob->meeting->year }}</td>
                             <td>
-                                {{ config('meetings.quaterly_meetings.'.$oob->meeting->quarter) }} 
-                                    
-                                    @if ($oob->meeting->getMeetingCouncilType() === 0)
-                                        {{ config("meetings.council_types.local_level.{$oob->meeting->council_type}") }}
-                                    @endif
-                                    @if ($oob->meeting->getMeetingCouncilType() === 1)
-                                        {{ config("meetings.council_types.university_level.{$oob->meeting->council_type}") }}
-                                    @endif
-                                    @if ($oob->meeting->getMeetingCouncilType() === 2)
-                                        {{ config("meetings.council_types.board_level.{$oob->meeting->council_type}") }}
-                                    @endif
+                                {{ config('meetings.quarterly_meetings.'.$oob->meeting->quarter) }}
+                                @if ($oob->meeting->getMeetingCouncilType() === 0)
+                                    {{ config("meetings.council_types.local_level.{$oob->meeting->council_type}") }}
+                                @endif
+                                @if ($oob->meeting->getMeetingCouncilType() === 1)
+                                    {{ config("meetings.council_types.university_level.{$oob->meeting->council_type}") }}
+                                @endif
+                                @if ($oob->meeting->getMeetingCouncilType() === 2)
+                                    {{ config("meetings.council_types.board_level.{$oob->meeting->council_type}") }}
+                                @endif
                             </td>
                             <td>
                                 <span>
                                     {{ $oob->meeting->meeting_date_time ? \Carbon\Carbon::parse($oob->meeting->meeting_date_time)->format('F d, Y, h:i A') : 'Not yet set' }}
-                                </span>  
+                                </span>
                             </td>
                             <td>
                                 <div class="d-flex align-items-center gap-2 text-{{$oob->status == 0 ? 'warning' : 'primary'}}">
@@ -117,7 +116,7 @@
                                 </div>
                             </td>
                             <td>
-                                <a href="{{ route(getUserRole().'.order_of_business.view-oob', ['level' => $oob->meeting->getMeetingLevel(), 'oob_id'=> encrypt( $oob->id)]) }}" 
+                                <a href="{{ route(getUserRole().'.order_of_business.view-oob', ['level' => $oob->meeting->getMeetingLevel(), 'oob_id'=> encrypt( $oob->id)]) }}"
                                 class="btn btn-sm btn-primary d-flex gap-2" style="max-width: 100px;">
                                     <i class="fa-regular fa-eye"></i> VIEW OOB
                                 </a>

@@ -165,7 +165,7 @@
                 <div class="d-flex justify-content-between w-100 gap-3 flex-wrap align-items-center">
                     <div class="">
                         <h5 class="m-0">
-                            {{ config('meetings.quaterly_meetings.'.$meeting->quarter) }} @if ($meeting->getMeetingCouncilType() == 0)
+                            {{ config('meetings.quarterly_meetings.'.$meeting->quarter) }} @if ($meeting->getMeetingCouncilType() == 0)
                                 {{ config('meetings.council_types.local_level.'.$meeting->council_type) }}
                             @elseif ($meeting->getMeetingCouncilType() == 1)
                                 {{ config('meetings.council_types.university_level.'.$meeting->council_type) }}
@@ -748,7 +748,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // Fetch proponent emails dynamically
             function fetchProponents(query) {
                 $.ajax({
-                    url: "{{route(getUserRole().'.fetchProponents')}}",
+                    url: "{{route('fetchProponents')}}",
                     type: "GET",
                     data: { search: query },
                     success: function (response) {

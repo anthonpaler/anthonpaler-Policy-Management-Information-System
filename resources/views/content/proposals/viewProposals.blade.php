@@ -13,9 +13,9 @@
     <a href="#">Meeting's Proposal</a>
 </div>
 <div class="card">
-@php 
-    $actionColors = [ 'secondary', 'primary', 'success', 'warning', 'info', 'danger']; 
-@endphp 
+@php
+    $actionColors = [ 'secondary', 'primary', 'success', 'warning', 'info', 'danger'];
+@endphp
     <div class="card-body">
         <div class="d-flex justify-content-between flex-wrap">
             <div class="mb-2">
@@ -85,7 +85,7 @@
                                             </a>
                                         </div>
                                     </td>
-                                    <td>{{ config('meetings.quaterly_meetings.'.$meeting->quarter) }}</td>
+                                    <td>{{ config('meetings.quarterly_meetings.'.$meeting->quarter) }}</td>
                                     <td>{{ $meeting->year }}</td>
                                     <td>
                                         <div style="min-width: 200px">
@@ -97,7 +97,7 @@
                                                         {{ config('meetings.council_types.university_level.'.$meeting->council_type) }}
                                                     @elseif ($meeting->getMeetingCouncilType() == 2)
                                                         {{ config('meetings.council_types.board_level.'.$meeting->council_type) }}
-                                                    @endif 
+                                                    @endif
                                             </span>
                                         </div>
                                     </td>
@@ -111,7 +111,7 @@
                                     <td>
                                         <span>
                                             {{ $meeting->meeting_date_time ? \Carbon\Carbon::parse($meeting->meeting_date_time)->format('F d, Y, h:i A') : 'Not yet set' }}
-                                        </span>  
+                                        </span>
                                     </td>
                                     @if(session('isProponent'))
                                         <td>

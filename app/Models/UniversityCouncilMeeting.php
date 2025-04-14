@@ -39,8 +39,8 @@ class UniversityCouncilMeeting extends Model
     public function getIsSubmissionClosedAttribute()
     {
         $currentDate = Carbon::now();
-        return $currentDate->greaterThan($this->submission_end) || 
-               $currentDate->lessThan($this->submission_start) ||  
+        return $currentDate->greaterThan($this->submission_end) ||
+               $currentDate->lessThan($this->submission_start) ||
                $currentDate->greaterThan($this->meeting_date_time);
     }
 
@@ -55,12 +55,22 @@ class UniversityCouncilMeeting extends Model
         return $this->orderOfBusiness()->exists();
     }
 
-    // GET MEETING LEVEL 
+    // GET PROPOSAL COUNT
+    public function getProposalCount()
+    {
+        return $this->agendas()->count();
+    }
+    public function agendas()
+    {
+        return $this->hasMany(UniversityMeetingAgenda::class, 'local_council_meeting_id');
+    }
+
+    // GET MEETING LEVEL
     public function getMeetingLevel()
     {
         return 'University';
     }
-    // GET MEETING COUNCILTYPE 
+    // GET MEETING COUNCILTYPE
     public function getMeetingCouncilType()
     {
         return 1;
@@ -76,15 +86,15 @@ class UniversityCouncilMeeting extends Model
     public function proposals()
     {
         return $this->hasManyThrough(
-            Proposal::class, 
-            UniversityMeetingAgenda::class, 
-            'university_meeting_id', 
-            'id', 
-            'id', 
+            Proposal::class,
+            UniversityMeetingAgenda::class,
+            'university_meeting_id',
+            'id',
+            'id',
             'university_proposal_id'
         )->with('proponents');;
     }
-    
+
     // Function to get the campus name
     public function getCampusName()
     {

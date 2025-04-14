@@ -35,30 +35,30 @@
                                 </span>
                                 <select class="form-control @error('type') is-invalid @enderror" name="council_type" required>
                                     <option value="">Select Meeting Type</option>
-                                    @if (auth()->user()->role == 3)
-                                            @foreach (config('meetings.council_types.local_level') as $index => $item)
-                                            <option value="{{ $index }}"
-                                            {{ (isset($meeting) && (int) $meeting->council_type === (int) $index) ? 'selected' : '' }}>
-                                            {{ $item }}
+                                    @if (session('user_role') == 3)
+                                        @foreach (config('meetings.council_types.local_level') as $index => $item)
+                                        <option value="{{ $index }}"
+                                        {{ (isset($meeting) && (int) $meeting->council_type === (int) $index) ? 'selected' : '' }}>
+                                        {{ $item }}
+                                    </option>
+                                        @endforeach
+                                    @endif
+                                    @if (session('user_role') == 4)
+                                        @foreach (config('meetings.council_types.university_level') as $index => $item)
+                                        <option value="{{ $index }}"
+                                        {{ (isset($meeting) && (int) $meeting->council_type === (int) $index) ? 'selected' : '' }}>
+                                        {{ $item }}
+                                    </option>
+                                        @endforeach
+                                    @endif
+                                    @if (session('user_role') == 5)
+                                        @foreach (config('meetings.council_types.board_level') as $index => $item)
+                                        <option value="{{ $index }}"
+                                        {{ (isset($meeting) && (int) $meeting->council_type === (int) $index) ? 'selected' : '' }}>
+                                        {{ $item }}
                                         </option>
-                                            @endforeach
-                                        @endif
-                                        @if (auth()->user()->role == 4)
-                                            @foreach (config('meetings.council_types.university_level') as $index => $item)
-                                            <option value="{{ $index }}"
-                                            {{ (isset($meeting) && (int) $meeting->council_type === (int) $index) ? 'selected' : '' }}>
-                                            {{ $item }}
-                                        </option>
-                                            @endforeach
-                                        @endif
-                                        @if (auth()->user()->role == 5)
-                                            @foreach (config('meetings.council_types.board_level') as $index => $item)
-                                            <option value="{{ $index }}"
-                                            {{ (isset($meeting) && (int) $meeting->council_type === (int) $index) ? 'selected' : '' }}>
-                                            {{ $item }}
-                                            </option>
-                                            @endforeach
-                                        @endif
+                                        @endforeach
+                                    @endif
                                 </select>
                                 @error('type')
                                     <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
@@ -88,7 +88,7 @@
                             </div>
                         </div>
                     </div>
-                
+
                     <div class="mb-3">
                         <label class="form-label" for="basic-icon-default-message">Description & Other Reminders (Optional)</label>
                         <div class="input-group input-group-merge">
@@ -111,7 +111,7 @@
                     </div>
                 </div>
             </div>
-        </div>  
+        </div>
         <div class="col mb-4">
             <div class="card" style="height: 100%;">
                 <div class="card-body">
@@ -242,8 +242,8 @@
                             </div>
                             <div class="col">
                                 @php
-                                    $minMeetingDate = isset($meeting) && $meeting->submission_end 
-                                        ? (new DateTime($meeting->submission_end, new DateTimeZone('Asia/Manila')))->modify('+1 day')->format('Y-m-d\TH:i') 
+                                    $minMeetingDate = isset($meeting) && $meeting->submission_end
+                                        ? (new DateTime($meeting->submission_end, new DateTimeZone('Asia/Manila')))->modify('+1 day')->format('Y-m-d\TH:i')
                                         : date('Y-m-d\TH:i');
                                 @endphp
 
@@ -322,7 +322,7 @@
                                 <span id="venue-icon" class="input-group-text">
                                     <i class="bx bx-buildings"></i>
                                 </span>
-                                <input 
+                                <input
                                     type="text"
                                     id="venue"
                                     class="form-control basic-icon-default-company @error('venue') is-invalid @enderror"
@@ -347,4 +347,4 @@
 </form>
 <script src="{{asset('assets/js/meetings.js')}}"></script>
 
-@endsection 
+@endsection

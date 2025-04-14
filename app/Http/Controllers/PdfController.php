@@ -114,12 +114,12 @@ class PdfController extends Controller
 
             $oob_filename = "";
             if($meeting->getMeetingCouncilType() == 0){
-                $oob_filename = config('meetings.quaterly_meetings.'.$meeting->quarter)." ".config('meetings.council_types.local_level.'.$meeting->council_type)." ".$meeting->year.'.pdf';
+                $oob_filename = config('meetings.quarterly_meetings.'.$meeting->quarter)." ".config('meetings.council_types.local_level.'.$meeting->council_type)." ".$meeting->year.'.pdf';
             } else  if($meeting->getMeetingCouncilType() == 1){
-                $oob_filename = config('meetings.quaterly_meetings.'.$meeting->quarter)." ".config('meetings.council_types.university_level.'.$meeting->council_type)." ".$meeting->year.'.pdf';
+                $oob_filename = config('meetings.quarterly_meetings.'.$meeting->quarter)." ".config('meetings.council_types.university_level.'.$meeting->council_type)." ".$meeting->year.'.pdf';
             }
             else  if($meeting->getMeetingCouncilType() == 2){
-                $oob_filename = config('meetings.quaterly_meetings.'.$meeting->quarter)." ".config('meetings.council_types.board_level.'.$meeting->council_type)." ".$meeting->year.'.pdf';
+                $oob_filename = config('meetings.quarterly_meetings.'.$meeting->quarter)." ".config('meetings.council_types.board_level.'.$meeting->council_type)." ".$meeting->year.'.pdf';
             }
 
             $this->oob_layout_PDF( $categorizedProposals, $oob_filename, $meeting, $matters, $orderOfBusiness,  $otherMattersProposals, $otherMattersTitle);
@@ -162,7 +162,7 @@ class PdfController extends Controller
         $pdf->SetTextColor(0, 0, 0);
 
         // **Header Section**
-        $pdf->Cell(0, 5,   mb_strtoupper(config('meetings.quaterly_meetings.'.$meeting->quarter) . ' '. $meeting->year, 'UTF-8'), 0, 1, 'C');
+        $pdf->Cell(0, 5,   mb_strtoupper(config('meetings.quarterly_meetings.'.$meeting->quarter) . ' '. $meeting->year, 'UTF-8'), 0, 1, 'C');
         $pdf->SetFont($cambriaBold, 'B', 10);
 
         $title = "";

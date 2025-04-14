@@ -33,17 +33,17 @@
                         </span>
                         <select class="form-select @error('type') is-invalid @enderror" name="council_type" required>
                                 <option value="">Select Meeting Type</option>
-                                @if (auth()->user()->role == 3)
+                                @if (session('user_role') == 3)
                                     @foreach (config('meetings.council_types.local_level') as $index => $item)
                                         <option value="{{ $index }}" {{ old('type') == $index ? 'selected' : '' }}>{{ $item }}</option>
                                     @endforeach
                                 @endif
-                                @if (auth()->user()->role == 4)
+                                @if (session('user_role') == 4)
                                     @foreach (config('meetings.council_types.university_level') as $index => $item)
                                         <option value="{{ $index }}" {{ old('type') == $index ? 'selected' : '' }}>{{ $item }}</option>
                                     @endforeach
                                 @endif
-                                @if (auth()->user()->role == 5)
+                                @if (session('user_role') == 5)
                                     @foreach (config('meetings.council_types.board_level') as $index => $item)
                                         <option value="{{ $index }}" {{ old('type') == $index ? 'selected' : '' }}>{{ $item }}</option>
                                     @endforeach
@@ -76,7 +76,7 @@
                     </div>
                 </div>
             </div>
-        </div>  
+        </div>
         <div class="col mb-4">
             <div class="card" style="height: 100%;">
                 <div class="card-body">
@@ -236,7 +236,7 @@
                                         </span>
                                         <select
                                             id="mode_if_online"
-                                            class="form-select   @error('venue') is-invalid @enderror"
+                                            class="form-select  "
                                             name="mode_if_online"
 
                                         >
@@ -261,7 +261,7 @@
                                         </span>
                                         <input
                                             id="mode_if_online"
-                                            class="form-control  @error('venue') is-invalid @enderror"
+                                            class="form-control "
                                             name="link"
                                             placeholder="Enter link"
                                         >
@@ -279,7 +279,7 @@
                                 <input
                                     type="text"
                                     id="venue"
-                                    class="form-control @error('venue') is-invalid @enderror"
+                                    class="form-control"
                                     name="venue"
                                     placeholder="Enter venue"
                                     value="{{ old('venue') }}"
@@ -301,4 +301,4 @@
 </form>
 <script src="{{asset('assets/js/meetings.js')}}"></script>
 
-@endsection 
+@endsection
