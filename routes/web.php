@@ -209,7 +209,7 @@ Route::middleware(['auth', 'board_secretary'])->prefix('board-secretary')->group
 
 
 Route::middleware(['auth', 'board_of_regents'])->prefix('board-of-regents')->group(function() {
-  Route::get('/dashboard', [Analytics::class, 'index'])->name('board_regents.dashboard');
+  Route::get('/dashboard', [Analytics::class, 'secretaryDashboard'])->name('board_regents.dashboard');
   Route::get('/meetings', [MeetingController::class, 'viewMeetings'])->name('board_regents.meetings');
   Route::get('/meetings/create-meeting', [MeetingController::class, 'viewCreateMeeting'])->name('board_regents.view_create_meeting');
   Route::post('/meetings/create', [MeetingController::class, 'createMeeting'])->name('board_regents.meetings.create');

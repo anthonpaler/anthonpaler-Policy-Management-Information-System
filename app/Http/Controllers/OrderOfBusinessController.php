@@ -292,7 +292,12 @@ class OrderOfBusinessController extends Controller
                 })
                 ->orderBy('created_at', 'desc')
                 ->get();
-            }else{
+            }elseif(session('user_role') == 8){
+                $orderOfBusiness = BoardOob::with('meeting' )
+                ->orderBy('created_at', 'desc')
+                ->get();
+            }
+            else{
                 $orderOfBusiness = $oobModel::with('meeting' )
                 ->orderBy('created_at', 'desc')
                 ->get();

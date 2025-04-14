@@ -15,6 +15,16 @@
 <div class="card mb-3">
     <div class="d-flex justify-content-between align-items-center custom_tab_wrapper">
         <div class="">
+                 @if(session('isBoardRegent'))
+            <ul class="custom_tab_list" id="filterRow" data-action="{{ route(getUserRole().'.oob.filter') }}">
+                <li class="custom_tab_item oob-tab {{ session('isBoardRegent') ? 'active' : '' }}" data-level="2">
+                        <div class="">
+                            <i class='bx bxs-book-reader'></i>
+                            <span>Board OOB</span>
+                        </div>
+            </li>
+        </ul>
+        @else
             <ul class="custom_tab_list" id="filterRow" data-action="{{ route(getUserRole().'.oob.filter') }}">
                 <li class="custom_tab_item oob-tab {{ session('isProponent') || session('secretary_level') == 0 ? 'active' : '' }}" data-level="0">
                     <div class="">
@@ -35,6 +45,7 @@
                     </div>
                 </li>
             </ul>
+        @endif
         </div>
     </div>
 </div>

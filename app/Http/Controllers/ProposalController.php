@@ -947,7 +947,7 @@ class ProposalController extends Controller
         $role = session('user_role');
         $employeeId = session('employee_id');
         $campus_id = session('campus_id');
-        $level = $role == 3 ? 0 : ($role == 4 ? 1 : ($role == 5 ? 2 : 0));
+        $level = $role == 3 ? 0 : ($role == 4 ? 1 : ($role == 5 ? 2 : ($role == 8 ? 2 : 0)));
 
         if($role == 3 && $level == 0){
             $meetings = LocalCouncilMeeting::where('campus_id', $campus_id)
@@ -963,6 +963,12 @@ class ProposalController extends Controller
         }
 
         if($role == 5 && $level == 2){
+            $meetings = BorMeeting::withCount('proposals')
+            ->orderBy('created_at', 'desc')
+            ->get();
+        }
+
+        if($role == 8 && $level == 2){
             $meetings = BorMeeting::withCount('proposals')
             ->orderBy('created_at', 'desc')
             ->get();

@@ -20,7 +20,7 @@
         <div class="">
             @if(session('isBoardRegent'))
         <ul class="custom_tab_list" id="filterRow" data-action="{{ route(getUserRole().'.meetings.filter') }}">
-            <li class="custom_tab_item meeting-tab active" data-level="2">
+            <li class="custom_tab_item meeting-tab {{ session('isBoardRegent') ? 'active' : '' }}" data-level="2">
                 <div class="">
                     <i class='bx bxs-book-reader'></i>
                     <span>Board Meetings</span>
@@ -149,6 +149,7 @@
                                                 @else
                                                     @if(!$meeting->has_order_of_business)
                                                         @if($meeting->meeting_date_time)
+                                                            @if (!session('isBoardRegent'))
                                                             <a class="action-btn warning" href="{{ route(getUserRole().'.order_of_business.view-generate', ['level' => $meeting->getMeetingLevel(), 'meeting_id'=> encrypt($meeting->id)]) }}">
                                                                 <i class='bx bx-up-arrow-circle'></i>
                                                                 <span class="tooltiptext">Generate OOB</span>
@@ -158,6 +159,7 @@
                                                                 <i class='bx bx-up-arrow-circle'></i>
                                                                 <span class="tooltiptext">Generate OOB</span>
                                                             </a>
+                                                            @endif
                                                         @endif
                                                     @else
                                                         <a class="action-btn danger" onclick="showhasOOBWarning()">
@@ -166,10 +168,12 @@
                                                         </a>
                                                     @endif
                                                 @endif
+                                                 @if (!session('isBoardRegent'))
                                                 <a class="action-btn success"   href="{{ route(getUserRole().'.meeting.edit_meeting', ['level' => $meeting->getMeetingLevel(), 'meeting_id' => Crypt::encrypt($meeting->id)])}}">
                                                     <i class='bx bx-edit'></i>
                                                     <span class="tooltiptext">Edit</span>
                                                 </a>
+                                                @endif
                                             @endif
                                             <a class="action-btn primary"  href="{{ route(getUserRole().'.meetings.details', ['level' => $meeting->getMeetingLevel(), 'meeting_id'=> encrypt($meeting->id)]) }}">
                                                 <i class="fa-regular fa-eye" style="font-size: .9em;"></i>

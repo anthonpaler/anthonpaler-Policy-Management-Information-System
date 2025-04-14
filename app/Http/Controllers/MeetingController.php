@@ -68,7 +68,7 @@ class MeetingController extends Controller
         if($role == 8 && $level == 2){
             $meetings = BorMeeting::orderBy('created_at', 'desc')->get();
         }
-
+        
 
         return view('content.meetings.viewMeetings', compact('meetings', 'level'));
     }
@@ -141,7 +141,12 @@ class MeetingController extends Controller
                 $employeeQuery->whereIn('id', function($query) {
                     $query->select('employee_id')->from('academic_council_membership');
                 });
-            } elseif ($request->input('council_type') == 3) { // Administrative Council
+            }elseif($level == 2){
+                $employeeQuery->whereIn('id', function ($query) {
+                    $query->select('employee_id')->from('bor_member'); // use your actual BOR membership table name
+                });
+
+            }elseif ($request->input('council_type') == 3) { // Administrative Council
                 $employeeQuery->whereIn('id', function($query) {
                     $query->select('employee_id')->from('administrative_council_membership');
                 });
@@ -173,9 +178,9 @@ class MeetingController extends Controller
                 Mail::to($batch)->send(new MeetingNotification($meeting));
                 sleep(2); // Wait 2 seconds between batches to avoid timeouts
             }
-            foreach ($emails as $email) {
-                Mail::to($email)->send(new MeetingNotification($meeting));
-            }
+            // foreach ($emails as $email) {
+            //     Mail::to($email)->send(new MeetingNotification($meeting));
+            // }
 
 
             // // 🔹 Send SMS Notifications

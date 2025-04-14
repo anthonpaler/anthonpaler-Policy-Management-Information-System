@@ -46,13 +46,16 @@ class Analytics extends Controller
         $meetings =$meetingModel[$level]::where('year', $latest_year)->where('quarter', $latest_quarter)->get();
       }
 
-      // FOR UPPER LEVEL MEETINGS
-      $latestUpperMeetingRecord = $meetingModel[$level+1]::orderByDesc('created_at')->first();
+      if(in_array($level , [0,1])){
+        // FOR UPPER LEVEL MEETINGS
+        $latestUpperMeetingRecord = $meetingModel[$level+1]::orderByDesc('created_at')->first();
 
-      $latest_upper_quarter = $latestUpperMeetingRecord->quarter ?? null;
-      $latest_upper_year = $latestUpperMeetingRecord->year ?? null;
+        $latest_upper_quarter = $latestUpperMeetingRecord->quarter ?? null;
+        $latest_upper_year = $latestUpperMeetingRecord->year ?? null;
 
-      $upperMeetings =$meetingModel[$level+1]::where('year', $latest_upper_year)->where('quarter', $latest_upper_quarter)->get();
+        $upperMeetings =$meetingModel[$level+1]::where('year', $latest_upper_year)->where('quarter', $latest_upper_quarter)->get();
+      }
+
 
       // dd($meetings, $upperMeetings);
       return view('content.dashboard.secretary.dashboard', compact('meetings', 'upperMeetings'));
