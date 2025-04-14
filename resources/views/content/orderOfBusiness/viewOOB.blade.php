@@ -15,31 +15,33 @@
     <a href="#" >Order of Business Information</a>
 </div>
 
-<!-- Modal Upload Previous Minutes -->
-<div class="modal fade" id="previousMinModal" tabindex="-1" aria-labelledby="previousMinModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h1 class="modal-title fs-5" id="exampleModalLabel">UPLOAD PREVIOUS MINUTES</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body" id="">
-                <form id="uploadMinutesForm" enctype="multipart/form-data">
-                    @csrf
-                    <label for="previous_minutes" class="form-label">Previous Minute File</label>
-                    <input type="file" name="previous_minutes" id="previous_minutes" class="form-control" required>
-                    <input type="hidden" name="meeting_id" value="{{ $meeting->id }}">
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Upload</button>
+        <!-- Modal Upload Previous Minutes -->
+        <div class="modal fade" id="previousMinModal" tabindex="-1" aria-labelledby="previousMinModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalLabel">UPLOAD PREVIOUS MINUTES</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                </form>
-                <div id="uploadMessage" class="mt-2"></div>
+                    <div class="modal-body" id="">
+                        <form id="uploadMinutesForm" enctype="multipart/form-data">
+                            @csrf
+                            <label for="previous_minutes" class="form-label">Previous Minute File</label>
+                            <input type="file" name="previous_minutes" id="previous_minutes" class="form-control" required>
+                            <input type="hidden" name="meeting_id" value="{{ $meeting->id }}">
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-primary">Upload</button>
+                            </div>
+                        </form>
+                        <div id="uploadMessage" class="mt-2"></div>
 
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</div>
+
+        
 <div class="card p-4">
     <div class="mt-3 mb-3">
         <button type="button" id="exportOOB" class="btn btn-secondary d-flex gap-2 {{$orderOfBusiness->status == 0 ? 'd-none' : ''}}">
@@ -82,10 +84,10 @@
 
         <!-- Preliminaries Section -->
         <div class="mb-3">
-          <div class="d-flex justify-content-between mb-2 gap-2">
+            <div class="d-flex justify-content-between mb-2 gap-2">
               <label class="form-label">1. Preliminaries</label>
               <div class="d-flex align-items-center gap-2">
-                  @if (in_array(auth()->user()->role, [3, 4, 5]))
+                @if (session('isSecretary') && (session('secretary_level') == $meeting->getMeetingCouncilType()))
                       @if(empty($orderOfBusiness->previous_minutes))
                           <button class="btn btn-sm btn-primary d-flex align-items-center gap-2"
                           id="openMinutesModal">
@@ -95,7 +97,15 @@
                       @endif
 
                       {{-- Show View Button only if there is a file --}}
-                      @if(!empty($orderOfBusiness->previous_minutes))
+                      {{-- EDIT FILE --}}
+                    @if(empty($orderOfBusiness->previous_minutes))
+                        <button type="button" class="btn btn-sm btn-warning d-flex align-items-center gap-2" id="editMinutesButton" style="display: none;">
+                            <i class='bx bx-edit'></i> Edit Previous Minutes File
+                        </button>
+                    @endif
+                 @endif
+
+                  @if(!empty($orderOfBusiness->previous_minutes))
                           <a href="{{ asset('storage/previous_minutes/' . $orderOfBusiness->previous_minutes) }}"
                               target="_blank"
                               class="btn btn-sm btn-success d-flex align-items-center gap-2"
@@ -103,41 +113,21 @@
                               <i class='bx bx-file'></i>
                               View Previous Minutes
                           </a>
-
-                      {{-- EDIT FILE --}}
-                      @if (in_array(auth()->user()->role, [3, 4, 5]))
-                          <button type="button" class="btn btn-sm btn-warning d-flex align-items-center gap-2" id="editMinutesButton" style="display: none;">
-                              <i class='bx bx-edit'></i> Edit Previous Minutes File
-                          </button>
-                      @endif
-                  @endif
-                @endif
+                     @endif
 
               </div>
-          </div>
+            </div>
 
-            {{-- <div class="input-group input-group-merge">
-                <textarea
-                    id="preliminaries"
-                    class="form-control"
-                    placeholder="Enter preliminaries."
-                    aria-label="Enter preliminaries."
-                    name="preliminaries"
-                    rows="6"
-                    @if(session('isProponent') ||(session('isSecretary') && session('secretary_level') != $meeting->getMeetingCouncilType()))
-                        disabled
-                    @endif
-                >    {{$orderOfBusiness->preliminaries}}
-                </textarea>
-
-                @error('preliminaries')
-                    <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
-                @enderror
-            </div> --}}
-        @if(session('isProponent') ||(session('isSecretary') && session('secretary_level') != $meeting->getMeetingCouncilType()))
-          <div class="mt-1 mb-3 ms-4">
-            {!! $orderOfBusiness->preliminaries !!}
-          </div>
+            @if(session('isProponent') ||(session('isSecretary') && session('secretary_level') != $meeting->getMeetingCouncilType()))
+            <div class="mt-1 mb-3 ms-4">
+            {!! preg_replace_callback('/(1\.4\..*?)(?:\r?\n|$)/', function ($matches) use ($orderOfBusiness) {
+                if (!empty($orderOfBusiness->previous_minutes)) {
+                    $fileUrl = asset('storage/previous_minutes/' . $orderOfBusiness->previous_minutes);
+                    return '<a href="' . $fileUrl . '" target="_blank" class="text-primary text-decoration-underline">' . $matches[1] . '</a>';
+                }
+                return $matches[0]; // fallback if no file
+            }, $orderOfBusiness->preliminaries) !!}
+        </div>
         @else
           <div class="mt-3 mb-3">
             <textarea  name="preliminaries" id="preliminaries">{{ $orderOfBusiness->preliminaries ?? '' }}</textarea>
@@ -355,11 +345,14 @@
             </script>
     </div>
     <div class="mb-3">
+    
       <div class="d-flex align-items-center gap-2 mb-2">
           <label class="form-label m-0">3. Other Matters</label>
+        @if (session('isSecretary') && (session('secretary_level') == $meeting->getMeetingCouncilType()))
           <button id="addOtherMatterBtn" class="btn btn-primary btn-xs m-0" data-bs-toggle="tooltip" data-bs-placement="top" title="Add Other Matter">
               <i class='bx bx-plus'></i>
           </button>
+           @endif
       </div>
       @if ($otherMattersProposals->isNotEmpty())
         <div class="table-responsive text-nowrap mb-4">
@@ -450,6 +443,8 @@
     </form>
     @endif
 
+@if(session('isProponent') ||(session('isSecretary') && session('secretary_level') != $meeting->getMeetingCouncilType()))
+    @else
     <!-- ADD OTHER MATTERS MODAL -->
     <div class="modal fade" id="otherMattersModal" tabindex="-1" aria-labelledby="otherMattersModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -581,6 +576,7 @@
             </div>
         </div>
     </div>
+    @endif
 
 
     <!-- Modal Preview File -->
@@ -739,7 +735,7 @@ src="https://cdn.jsdelivr.net/npm/jodit@latest/es2021/jodit.fat.min.js"
     // Fetch proponent emails dynamically
     function fetchProponents(query) {
             $.ajax({
-                url: "{{route(getUserRole().'.fetchProponents')}}",
+                url: "{{route('fetchProponents')}}",
                 type: "GET",
                 data: { search: query },
                 success: function (response) {
@@ -812,53 +808,7 @@ src="https://cdn.jsdelivr.net/npm/jodit@latest/es2021/jodit.fat.min.js"
 
 
 
-        // Open Upload Modal
-        $("#openMinutesModal").click(function(e) {
-            e.preventDefault();
-            $("#previousMinModal").modal("show");
-        });
-
-        // Upload Previous Minutes Form Submission
-        $('#uploadMinutesForm').on('submit', function(e) {
-            e.preventDefault();
-
-            let formData = new FormData(this);
-
-            $.ajax({
-                url: "{{ route(getUserRole().'.upload.minutes') }}",
-                type: "POST",
-                data: formData,
-                processData: false,
-                contentType: false,
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                beforeSend: function() {
-                    toastr.info("Uploading previous minutes...", "", { timeOut: 0, extendedTimeOut: 0 });
-                },
-                success: function(response) {
-                    toastr.clear();
-                    if (response.success) {
-                        toastr.success(response.message);
-
-                        $('#previousMinModal').modal('hide');
-                        $("#uploadMinutesForm")[0].reset();
-
-                        // Refresh the minutes view without reloading the page
-                        checkPreviousMinutes();
-                    } else {
-                        toastr.error(response.message);
-                    }
-                },
-                error: function(xhr) {
-                    let errorMessage = "An error occurred. Please try again.";
-                    if (xhr.responseJSON && xhr.responseJSON.message) {
-                        errorMessage = xhr.responseJSON.message;
-                    }
-                    toastr.error(errorMessage);
-                }
-            });
-        });
+      
 
         // Check if previous minutes exist and update buttons accordingly
         function checkPreviousMinutes() {

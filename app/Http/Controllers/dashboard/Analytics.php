@@ -5,6 +5,9 @@ namespace App\Http\Controllers\dashboard;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
+
 
 
 class Analytics extends Controller
@@ -17,6 +20,12 @@ class Analytics extends Controller
 
       $role = session('user_role'); // this is the numeric active role
       $level = $role == 3 ? 0 : ($role == 4 ? 1 : ($role == 5 ? 2 : 0)); 
+
+
+      $totalUsers = User::count();
+
+      $academicCouncilCount = DB::table('academic_council_membership')->count();
+      $administrativeCouncilCount = DB::table('administrative_council_membership')->count();
 
       // dd($role);
       if(in_array($role, [0,1,2,6])){

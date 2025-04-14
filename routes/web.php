@@ -7,6 +7,7 @@ use App\Http\Controllers\ProposalController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\dashboard\Analytics;
 use App\Http\Controllers\Admin\AdminDashboard;
+use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\PdfController;
 
 use Illuminate\Support\Facades\Session;
@@ -28,6 +29,10 @@ Route::get('/new-login', function () {
 Route::get('/login', [LoginController::class, 'index'])->name('login');
 Route::post('/auth/google-login', [LoginController::class, 'handleGoogleLogin'])->name('auth.google.login');
 Route::get('/logout', [LoginController::class, 'destroy'])->name('auth.logout');
+
+Route::get('/linkstorage', function () {
+  Artisan::call('storage:link');
+});
 
 
 
@@ -67,6 +72,7 @@ Route::middleware(['auth', 'proponents'])->prefix('proponents')->group(function(
 
   Route::post('/order-of-business/upload-minutes', [OrderOfBusinessController::class, 'uploadPreviousMinutes'])->name('proponent.upload.minutes');
 
+  
 
 });
 
@@ -104,7 +110,7 @@ Route::middleware(['auth', 'local_secretary'])->prefix('local-campus-secretary')
   Route::post('/order-of-business/save/{level}/{oob_id}', [OrderOfBusinessController::class, 'saveOOB'])->name('local_sec.order_of_business.save');
   Route::post('/order-of-business/disseminate/{level}/{oob_id}', [OrderOfBusinessController::class, 'disseminateOOB'])->name('local_sec.dissemenate.order_of_business');
 
-  Route::get('/fetch-proponents', [ProposalController::class, 'fetchProponents'])->name('local_sec.fetchProponents');
+
   Route::post('/proposals/store/{meeting_id}', [ProposalController::class, 'addProposal'])->name('local_sec.addProposal');
 
   Route::post('/order-of-business/upload-minutes', [OrderOfBusinessController::class, 'uploadPreviousMinutes'])->name('local_sec.upload.minutes');
@@ -152,7 +158,7 @@ Route::middleware(['auth', 'university_secretary'])->prefix('university-secretar
 
   Route::post('/proposals/edit/{proposal_id}', [ProposalController::class, 'editProposal'])->name('univ_sec.proposal.edit.save');  // FINAL EDIT PROPOSAL
 
-  Route::get('/fetch-proponents', [ProposalController::class, 'fetchProponents'])->name('univ_sec.fetchProponents');
+
   Route::post('/proposals/store/{meeting_id}', [ProposalController::class, 'addProposal'])->name('univ_sec.addProposal');
 
 
@@ -193,7 +199,7 @@ Route::middleware(['auth', 'board_secretary'])->prefix('board-secretary')->group
 
   Route::post('/proposals/edit/{proposal_id}', [ProposalController::class, 'editProposal'])->name('board_sec.proposal.edit.save');  // FINAL EDIT PROPOSAL
 
-  Route::get('/fetch-proponents', [ProposalController::class, 'fetchProponents'])->name('board_sec.fetchProponents');
+
   Route::post('/proposals/store/{meeting_id}', [ProposalController::class, 'addProposal'])->name('board_sec.addProposal');
 
   Route::post('/order-of-business/upload-minutes', [OrderOfBusinessController::class, 'uploadPreviousMinutes'])->name('board_sec.upload.minutes');
@@ -202,46 +208,30 @@ Route::middleware(['auth', 'board_secretary'])->prefix('board-secretary')->group
 });
 
 
-Route::get('/sample', function () {
-  return view('content.sample');
+Route::middleware(['auth'])->group(function () {
+  Route::get('/fetch-proponents', [ProposalController::class, 'fetchProponents'])->name('fetchProponents');
+  Route::get('/search-users', [ProposalController::class, 'searchUsers'])->name('proponent.search-users');
+  Route::post('/proposals/update-selected-proposal-status', [ProposalController::class, 'updateSelectedProposalStatus'])->name('proposals.update_selected_proposal_status');
+  Route::get('/pdf', [PdfController::class, 'generatePDF']);
+  Route::post('/proposals/update-proposal-status', [ProposalController::class, 'updateProposalStatus'])->name('proposals.update_proposal_status');
+  Route::get('/order-of-business/pdf/{level}/{oob_id}', [OrderOfBusinessController::class, 'exportOOB_PDF'])->name('oob.export.pdf');
+  // Route::get('/order-of-business/pdf/{level}/{oob_id}', [PdfController::class, 'exportOOB_PDF'])->name('oob.export.pdf');
+  // Route::get('/order-of-business/pdf/{level}/{oob_id}', [OrderOfBusinessController::class, 'exportOOB_PDF'])->name('oob.export.pdf');
+  Route::post('/delete-proposal-file', [ProposalController::class, 'deleteFile']);
+  Route::post('/rename-proposal-file', [ProposalController::class, 'renameFile'])->name('rename.proposal.file');
+  Route::post('/update-proposal-file-order', [ProposalController::class, 'updateOrder']);
+  Route::post('/update-proposal-order/{level}', [OrderOfBusinessController::class, 'updateProposalOrder'])->name('update_proposal_order');
+  Route::post('/save-proposal-group/{level}', [OrderOfBusinessController::class, 'saveProposalGroup'])->name('save_proposal_group');
+  Route::post('/ungroup-proposal/{level}', [OrderOfBusinessController::class, 'ungroupProposal'])->name('ungroup_proposal');
+  Route::post('/update-proposal-group/{level}', [OrderOfBusinessController::class, 'updateProposalGroup'])->name('update_proposal_group');
+  Route::get('/get-previous-minutes/{meeting_id}', [OrderOfBusinessController::class, 'getPreviousMinutes'])->name('get.previous.minutes');
+  Route::post('/switch-role', [Analytics::class, 'switchRole'])->name('switch.role');
+
+  Route::post('/add-academic-member', [AdminController::class, 'storeAcademicMember'])->name('add.academic.member');
+Route::get('/search-hrmis-email', [AdminController::class, 'searchHrmisEmail'])->name('search.hrmis.email');
+
+
 });
-
-// TO BE ARANGED ROUTES
-Route::get('/search-users', [ProposalController::class, 'searchUsers'])->name('proponent.search-users');
-Route::post('/proposals/update-selected-proposal-status', [ProposalController::class, 'updateSelectedProposalStatus'])->name('proposals.update_selected_proposal_status');
-
-Route::get('/pdf', [PdfController::class, 'generatePDF']);
-
-
-Route::post('/proposals/update-proposal-status', [ProposalController::class, 'updateProposalStatus'])->name('proposals.update_proposal_status');
-
-Route::get('/order-of-business/pdf/{level}/{oob_id}', [OrderOfBusinessController::class, 'exportOOB_PDF'])->name('oob.export.pdf');
-
-
-// Route::get('/order-of-business/pdf/{level}/{oob_id}', [PdfController::class, 'exportOOB_PDF'])->name('oob.export.pdf');
-
-// Route::get('/order-of-business/pdf/{level}/{oob_id}', [OrderOfBusinessController::class, 'exportOOB_PDF'])->name('oob.export.pdf');
-
-
-Route::post('/delete-proposal-file', [ProposalController::class, 'deleteFile']);
-
-Route::post('/rename-proposal-file', [ProposalController::class, 'renameFile'])->name('rename.proposal.file');
-
-Route::post('/update-proposal-file-order', [ProposalController::class, 'updateOrder']);
-
-Route::post('/update-proposal-order/{level}', [OrderOfBusinessController::class, 'updateProposalOrder'])->name('update_proposal_order');
-
-Route::post('/save-proposal-group/{level}', [OrderOfBusinessController::class, 'saveProposalGroup'])->name('save_proposal_group');
-
-Route::post('/ungroup-proposal/{level}', [OrderOfBusinessController::class, 'ungroupProposal'])->name('ungroup_proposal');
-
-Route::post('/update-proposal-group/{level}', [OrderOfBusinessController::class, 'updateProposalGroup'])->name('update_proposal_group');
-
-Route::get('/get-previous-minutes/{meeting_id}', [OrderOfBusinessController::class, 'getPreviousMinutes'])->name('get.previous.minutes');
-
-Route::post('/switch-role', [Analytics::class, 'switchRole'])->name('switch.role');
-
-
 
 
 

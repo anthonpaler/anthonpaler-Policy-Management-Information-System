@@ -25,13 +25,13 @@ class HrmisEmployee extends Model
         'allergies', 'InActiveReason', 'date_of_assumption'
     ];
 
-    public function workExperiences()
-    {
-        return $this->hasMany(WorkExperience::class, 'EmployeeCode', 'id');
-    }
+    // public function workExperiences()
+    // {
+    //     return $this->hasMany(WorkExperience::class, 'EmployeeCode', 'id');
+    // }
 
-    public function designations()
-    {
-        return $this->hasMany(Designation::class, 'empId', 'id');
-    }
+    // public function designations()
+    // {
+    //     return $this->hasMany(Designation::class, 'empId', 'id');
+    // }
 }

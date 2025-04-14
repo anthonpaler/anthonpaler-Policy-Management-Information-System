@@ -60,6 +60,8 @@ class LoginController extends Controller
 
 
         Auth::login($user);
+        session(['available_roles' => $user->getRoles()]);
+
 
         return response()->json([
             'message' => 'Login successful.',

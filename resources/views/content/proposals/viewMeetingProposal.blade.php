@@ -748,7 +748,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // Fetch proponent emails dynamically
             function fetchProponents(query) {
                 $.ajax({
-                    url: "{{route(getUserRole().'.fetchProponents')}}",
+                    url: "{{route('fetchProponents')}}",
                     type: "GET",
                     data: { search: query },
                     success: function (response) {

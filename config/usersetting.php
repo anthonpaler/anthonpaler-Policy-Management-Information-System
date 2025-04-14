@@ -8,7 +8,8 @@ return [
         4 => 'University Secretary',
         5 => 'Board Secretary',
         6 => 'Not Defined',
-        7=> 'Super Admin'
+        7=> 'Super Admin',
+        8=> 'Board of Regents'
     ],
     'route_role' => [
         0 => 'proponent',
@@ -19,5 +20,6 @@ return [
         5 => 'board_sec',
         6 => 'proponent',
         7 => 'super_admin',
+        8 => 'board_regents',
     ],
 ];
