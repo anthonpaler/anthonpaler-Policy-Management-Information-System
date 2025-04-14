@@ -40,4 +40,12 @@ class LocalMeetingAgenda extends Model
     {
         return $this->belongsTo(LocalOob::class, 'local_oob_id');
     }
+
+    public static function countProposalsByMeeting($meetingId)
+    {
+    return self::where('local_council_meeting_id', $meetingId)
+        ->whereNotNull('local_proposal_id') // optional: count only if proposal is linked
+        ->count();
+    }
+
 }

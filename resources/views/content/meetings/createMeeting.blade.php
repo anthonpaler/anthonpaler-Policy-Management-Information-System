@@ -90,7 +90,7 @@
 
                             <select class="form-select @error('quarter') is-invalid @enderror" name="quarter" required>
                                 <option value="">Select Quarter</option>
-                                @foreach (config('meetings.quaterly_meetings') as $index => $item)
+                                @foreach (config('meetings.quarterly_meetings') as $index => $item)
                                     <option value="{{ $index }}" {{ old('quarter') == $index ? 'selected' : '' }}>
                                         {{ $item }}
                                     </option>

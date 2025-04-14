@@ -43,13 +43,13 @@ class LocalCouncilMeeting extends Model
     public function getIsSubmissionClosedAttribute()
     {
         $currentDate = Carbon::now();
-    
+
         if (!$this->submission_end || !$this->submission_start || !$this->meeting_date_time) {
-            return false; 
+            return false;
         }
-    
-        return $currentDate->greaterThan($this->submission_end) || 
-               $currentDate->lessThan($this->submission_start) ||  
+
+        return $currentDate->greaterThan($this->submission_end) ||
+               $currentDate->lessThan($this->submission_start) ||
                $currentDate->greaterThan($this->meeting_date_time);
     }
 
@@ -64,13 +64,13 @@ class LocalCouncilMeeting extends Model
         return $this->orderOfBusiness()->exists();
     }
 
-    // GET MEETING LEVEL 
+    // GET MEETING LEVEL
     public function getMeetingLevel()
     {
         return 'Local';
     }
 
-    // GET MEETING COUNCILTYPE 
+    // GET MEETING COUNCILTYPE
     public function getMeetingCouncilType()
     {
         return 0;
@@ -87,15 +87,15 @@ class LocalCouncilMeeting extends Model
     public function proposals()
     {
         return $this->hasManyThrough(
-            Proposal::class, 
-            LocalMeetingAgenda::class, 
+            Proposal::class,
+            LocalMeetingAgenda::class,
             'local_council_meeting_id', // Foreign key on LocalMeetingAgenda table
             'id', // Foreign key on Proposal table
             'id', // Local key on LocalCouncilMeeting table
             'local_proposal_id' // Local key on LocalMeetingAgenda table
         )->with('proponents');
     }
-    
+
 
     // Define relationship to Campus
     public function campus()
@@ -115,26 +115,37 @@ class LocalCouncilMeeting extends Model
     }
 
     public function councilMembers()
-{
-   // Ensure meeting has a valid council_type
-   if (is_null($this->council_type)) {
-    return collect(); // Return empty collection if no council_type
-}
+    {
+    // Ensure meeting has a valid council_type
+    if (is_null($this->council_type)) {
+            return collect(); // Return empty collection if no council_type
+        }
 
-$academicMembers = AcademicCouncilMembership::whereHas('employee')
-    ->where('council_type', $this->council_type)
-    ->with('employee')
-    ->get();
+        $academicMembers = AcademicCouncilMembership::whereHas('employee')
+            ->where('council_type', $this->council_type)
+            ->with('employee')
+            ->get();
 
-$adminMembers = AdministrativeCouncilMembership::whereHas('employee')
-    ->where('council_type', $this->council_type)
-    ->with('employee')
-    ->get();
+        $adminMembers = AdministrativeCouncilMembership::whereHas('employee')
+            ->where('council_type', $this->council_type)
+            ->with('employee')
+            ->get();
 
-return $academicMembers->merge($adminMembers)->map(function ($member) {
-    return $member->employee; 
-});
-}
+        return $academicMembers->merge($adminMembers)->map(function ($member) {
+            return $member->employee;
+        });
+    }
+
+    public function countProposals()
+    {
+        return $this->agendas()->whereNotNull('local_proposal_id')->count();
+    }
+
+    public function agendas()
+    {
+        return $this->hasMany(LocalMeetingAgenda::class, 'local_council_meeting_id');
+    }
+    
 
 
 }

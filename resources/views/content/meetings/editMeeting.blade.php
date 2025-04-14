@@ -125,7 +125,7 @@
 
                             <select class="form-control @error('quarter') is-invalid @enderror" name="quarter" required>
                                 <option value="">Select Quarter</option>
-                                @foreach (config('meetings.quaterly_meetings') as $index => $item)
+                                @foreach (config('meetings.quarterly_meetings') as $index => $item)
                                     <option value="{{ $index }}"
                                         {{ (isset($meeting) && (int) $meeting->quarter === (int) $index) ? 'selected' : '' }}>
                                         {{ $item }}
