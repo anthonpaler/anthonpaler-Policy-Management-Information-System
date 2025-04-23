@@ -26,6 +26,9 @@
         'Endorsed' => 0,
         'Returned' => 0,
         'Deferred' => 0,
+        'Approved with Coletilla' => 0,
+        'For Review' => 0,
+        'Confirmed' => 0,
     ];
 
     foreach ($proposals as $proposal) {
@@ -36,27 +39,130 @@
     }
 @endphp
 <div class="row">
-<!-- /single card  -->
-  <div class="col-lg-2 col-sm-6 mb-3">
-    <div class="card h-100">
-      <div class="card-body">
-        <div class="d-flex gap-2 justify-content-between">
-          <div class="card-info">
-            <p class="text-heading mb-1">For Endorsment</p>
-            <div class="d-flex align-items-center mb-1">
-                <h4 class="card-title mb-0 me-2">{{ $statusCounts['For Endorsement'] }}</h4>
-                <span class="text-primary"> proposals</span>
+  @if ($meeting-> getMeetingCouncilType() == 2)
+    <div class="col-lg-2 col-md-6 col-sm-6 mb-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="d-flex gap-2 justify-content-between">
+            <div class="card-warning">
+              <p class="text-heading mb-1">Approved with Coletilla</p>
+              <div class="d-flex align-items-center mb-1">
+                  <h4 class="card-title mb-0 me-2">{{ $statusCounts['Approved with Coletilla'] }}</h4>
+                <span class="text-warning">proposals</span>
+              </div>
             </div>
-          </div>
-          <div class="card-icon">
-            <span class="badge bg-label-primary rounded p-2">
-              <i class='bx bx-trending-up'></i>
-            </span>
+            <div class="card-icon">
+              <span class="badge bg-label-warning rounded p-2">
+                  <i class='bx bx-like' ></i>
+              </span>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
+    <div class="col-lg-2 col-md-6 col-sm-6 mb-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="d-flex gap-2 justify-content-between">
+            <div class="card-primary">
+              <p class="text-heading mb-1">For Review</p>
+              <div class="d-flex align-items-center mb-1">
+                  <h4 class="card-title mb-0 me-2">{{ $statusCounts['For Review'] }}</h4>
+                <span class="text-primary">proposals</span>
+              </div>
+            </div>
+            <div class="card-icon">
+              <span class="badge bg-label-primary rounded p-2">
+                <i class='bx bx-question-mark'></i>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-2 col-md-6 col-sm-6 mb-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="d-flex gap-2 justify-content-between">
+            <div class="card-success">
+              <p class="text-heading mb-1">Confirmed</p>
+              <div class="d-flex align-items-center mb-1">
+                  <h4 class="card-title mb-0 me-2">{{ $statusCounts['Confirmed'] }}</h4>
+                <span class="text-success">proposals</span>
+              </div>
+            </div>
+            <div class="card-icon">
+              <span class="badge bg-label-success rounded p-2">
+                <i class='bx bx-book-open'></i>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  @else
+    <div class="col-lg-2 col-sm-6 mb-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="d-flex gap-2 justify-content-between">
+            <div class="card-info">
+              <p class="text-heading mb-1">For Endorsment</p>
+              <div class="d-flex align-items-center mb-1">
+                  <h4 class="card-title mb-0 me-2">{{ $statusCounts['For Endorsement'] }}</h4>
+                  <span class="text-primary"> proposals</span>
+              </div>
+            </div>
+            <div class="card-icon">
+              <span class="badge bg-label-primary rounded p-2">
+                <i class='bx bx-trending-up'></i>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-2 col-md-6 col-sm-6 mb-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="d-flex gap-2 justify-content-between">
+            <div class="card-info">
+              <p class="text-heading mb-1">Endorsed</p>
+              <div class="d-flex align-items-center mb-1">
+                  <h4 class="card-title mb-0 me-2">{{ $statusCounts['Endorsed'] }}</h4>
+                  <span class="text-info">proposals</span>
+              </div>
+            </div>
+            <div class="card-icon">
+              <span class="badge bg-label-info rounded p-2">
+                  <i class='bx bx-up-arrow-circle' ></i>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-2 col-md-6 col-sm-6 mb-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="d-flex gap-2 justify-content-between">
+            <div class="card-info">
+              <p class="text-heading mb-1">Returned</p>
+              <div class="d-flex align-items-center mb-1">
+                  <h4 class="card-title mb-0 me-2">{{ $statusCounts['Returned'] }}</h4>
+                  <span class="text-warning">proposals</span>
+              </div>
+            </div>
+            <div class="card-icon">
+              <span class="badge bg-label-warning rounded p-2">
+                  <i class='bx bx-left-arrow-circle'></i>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  @endif
+
   <div class="col-lg-2 col-md-6 col-sm-6 mb-3">
     <div class="card h-100">
       <div class="card-body">
@@ -91,46 +197,6 @@
           <div class="card-icon">
             <span class="badge bg-label-success rounded p-2">
                 <i class='bx bx-like' ></i>
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="col-lg-2 col-md-6 col-sm-6 mb-3">
-    <div class="card h-100">
-      <div class="card-body">
-        <div class="d-flex gap-2 justify-content-between">
-          <div class="card-info">
-            <p class="text-heading mb-1">Endorsed</p>
-            <div class="d-flex align-items-center mb-1">
-                <h4 class="card-title mb-0 me-2">{{ $statusCounts['Endorsed'] }}</h4>
-                <span class="text-info">proposals</span>
-            </div>
-          </div>
-          <div class="card-icon">
-            <span class="badge bg-label-info rounded p-2">
-                <i class='bx bx-up-arrow-circle' ></i>
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="col-lg-2 col-md-6 col-sm-6 mb-3">
-    <div class="card h-100">
-      <div class="card-body">
-        <div class="d-flex gap-2 justify-content-between">
-          <div class="card-info">
-            <p class="text-heading mb-1">Returned</p>
-            <div class="d-flex align-items-center mb-1">
-                <h4 class="card-title mb-0 me-2">{{ $statusCounts['Returned'] }}</h4>
-                <span class="text-warning">proposals</span>
-            </div>
-          </div>
-          <div class="card-icon">
-            <span class="badge bg-label-warning rounded p-2">
-                <i class='bx bx-left-arrow-circle'></i>
             </span>
           </div>
         </div>
@@ -506,7 +572,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form method="POST" action="{{ route(getUserRole().'.addProposal', ['meeting_id' => encrypt($meeting->id)]) }}" enctype="multipart/form-data" id="proposalFrm">
+                <form method="POST" action="{{ route(getUserRole().'.addProposal', ['meeting_id' => encrypt($meeting->id)]) }}" enctype="multipart/form-data" id="addProposalFrm">
                     @csrf
 
                     <!-- Title -->
@@ -607,8 +673,6 @@
                         @enderror
                     </div>
 
-
-
                     <!-- Proposal Files -->
                     <div class="">
                         <h6 class="text-primary">PROPOSAL FILES</h6>
@@ -626,9 +690,8 @@
                     </div>
                     <!-- Submit Button -->
                     <div class="text-end">
-                        <button type="submit" class="btn btn-primary">Add Proposal</button>
+                        <button type="button" id="addProposalBtn" class="btn btn-primary">Add Proposal</button>
                     </div>
-
                 </form>
             </div>
         </div>
@@ -638,134 +701,133 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
 <script>
-    @if(session('toastr'))
-        toastr["{{ session('toastr.type') }}"]("{{ session('toastr.message') }}");
-    @endif
-    var proposalStatus = @json(config('proposals.status'));
-    $('#matter').on('change', function() {
-        var matter = $(this).val();
-        var subType = $('#sub_type');
-        var actionSelect = $('#action');
+  @if(session('toastr'))
+      toastr["{{ session('toastr.type') }}"]("{{ session('toastr.message') }}");
+  @endif
+  var proposalStatus = @json(config('proposals.status'));
+  $('#matter').on('change', function() {
+      var matter = $(this).val();
+      var subType = $('#sub_type');
+      var actionSelect = $('#action');
 
-        actionSelect.empty();
+      actionSelect.empty();
 
-        if (matter == 1) {
-            actionSelect.append(`
-                @if (session('user_role') == 3)
-                    <option value="4">Endorsement for Local ACAD</option>
-                    <option value="1">Endorsement for UACAD</option>
-                @endif
-                @if (session('user_role') == 4)
-                    <option value="6">Approval for UACAD</option>
-                    <option value="3">Endorsement for BOR</option>
-                @endif
-                @if (session('user_role') == 5)
-                    <option value="8">BOR Approval</option>
-                @endif
-            `);
-            subType.prop('disabled', true);
-            $('#subTypeContainer').css('display', 'none');
-        } else if (matter == 2) {
-            subType.prop('disabled', false);
-            $('#subTypeContainer').css('display', 'block');
+      if (matter == 1) {
+          actionSelect.append(`
+              @if (session('user_role') == 3)
+                  <option value="4">Endorsement for Local ACAD</option>
+                  <option value="1">Endorsement for UACAD</option>
+              @endif
+              @if (session('user_role') == 4)
+                  <option value="6">Approval for UACAD</option>
+                  <option value="3">Endorsement for BOR</option>
+              @endif
+              @if (session('user_role') == 5)
+                  <option value="8">BOR Approval</option>
+              @endif
+          `);
+          subType.prop('disabled', true);
+          $('#subTypeContainer').css('display', 'none');
+      } else if (matter == 2) {
+          subType.prop('disabled', false);
+          $('#subTypeContainer').css('display', 'block');
 
-            actionSelect.append(`
-                @if (session('user_role') == 3)
-                    <option value="5">Endorsement for Local ADCO</option>
-                    <option value="2">Endorsement for UADCO</option>
-                @endif
-                @if (session('user_role') == 4)
-                    <option value="7">Approval for UADCO</option>
-                    <option value="3">Endorsement for BOR</option>
-                @endif
-                @if (session('user_role') == 5)
-                    <option value="8">BOR Approval</option>
-                @endif
-            `);
-        }else if (matter == 3) {
-            subType.prop('disabled', true);
-            $('#subTypeContainer').css('display', 'none');
+          actionSelect.append(`
+              @if (session('user_role') == 3)
+                  <option value="5">Endorsement for Local ADCO</option>
+                  <option value="2">Endorsement for UADCO</option>
+              @endif
+              @if (session('user_role') == 4)
+                  <option value="7">Approval for UADCO</option>
+                  <option value="3">Endorsement for BOR</option>
+              @endif
+              @if (session('user_role') == 5)
+                  <option value="8">BOR Approval</option>
+              @endif
+          `);
+      }else if (matter == 3) {
+          subType.prop('disabled', true);
+          $('#subTypeContainer').css('display', 'none');
 
-            actionSelect.append(`
-                <option value="3">Endorsement for BOR</option>
-                <option value="9">BOR Confirmation</option>
-            `);
-        }
-        else if (matter == 4) {
-            subType.prop('disabled', true);
-            $('#subTypeContainer').css('display', 'none');
+          actionSelect.append(`
+              <option value="3">Endorsement for BOR</option>
+              <option value="9">BOR Confirmation</option>
+          `);
+      }
+      else if (matter == 4) {
+          subType.prop('disabled', true);
+          $('#subTypeContainer').css('display', 'none');
 
-            actionSelect.append(`
-                <option value="3">Endorsement for BOR</option>
-                <option value="10">BOR Information</option>
-            `);
+          actionSelect.append(`
+              <option value="3">Endorsement for BOR</option>
+              <option value="10">BOR Information</option>
+          `);
+      }
+  });
+
+  function getImageByFileType(fileType) {
+    switch (fileType) {
+        case "pdf":
+            return "{{ asset('assets/img/icons/file-icons/pdf.png') }}";
+        case "xls":
+            return "{{ asset('assets/img/icons/file-icons/xls.png') }}";
+        case "xlsx":
+            return "{{ asset('assets/img/icons/file-icons/xlsx.png') }}";
+        case "csv":
+            return "{{ asset('assets/img/icons/file-icons/csv-file.png') }}";
+        default:
+            return "{{ asset('assets/img/icons/file-icons/file.png') }}";
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    let emailInput = document.getElementById("proponent_email");
+    let tagify = new Tagify(emailInput, {
+        enforceWhitelist: false,
+        maxTags: 1,
+        whitelist: [],
+        dropdown: {
+            maxItems: 10,   // Show up to 10 results
+            enabled: 1,     // Show dropdown on input
+            closeOnSelect: false
         }
     });
 
-    function getImageByFileType(fileType) {
-        switch (fileType) {
-            case "pdf":
-                return "{{ asset('assets/img/icons/file-icons/pdf.png') }}";
-            case "xls":
-                return "{{ asset('assets/img/icons/file-icons/xls.png') }}";
-            case "xlsx":
-                return "{{ asset('assets/img/icons/file-icons/xlsx.png') }}";
-            case "csv":
-                return "{{ asset('assets/img/icons/file-icons/csv-file.png') }}";
-            default:
-                return "{{ asset('assets/img/icons/file-icons/file.png') }}";
+    document.querySelector("#addProposalFrm").addEventListener("submit", function (e) {
+        let tagifiedEmails = tagify.value.map(tag => tag.value);
+        let emailValue = tagifiedEmails[0] || "";
+
+        // Validate email format before submitting
+        if (!emailValue.match(/^[\w\.-]+@[\w\.-]+\.\w+$/)) {
+            e.preventDefault(); // Prevent form submission
+            toastr.error("Please enter a valid email address.");
+            return;
         }
-    }
-</script>
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-        let emailInput = document.getElementById("proponent_email");
-        let tagify = new Tagify(emailInput, {
-            enforceWhitelist: false,
-            maxTags: 1,
-            whitelist: [],
-            dropdown: {
-                maxItems: 10,   // Show up to 10 results
-                enabled: 1,     // Show dropdown on input
-                closeOnSelect: false
+
+        emailInput.value = emailValue;
+    });
+
+    // Fetch proponent emails dynamically
+    function fetchProponents(query) {
+        $.ajax({
+            url: "{{route('fetchProponents')}}",
+            type: "GET",
+            data: { search: query },
+            success: function (response) {
+                tagify.settings.whitelist = response;
+                tagify.dropdown.show(); // Show dropdown
             }
         });
+    }
 
-            document.querySelector("#proposalFrm").addEventListener("submit", function (e) {
-                let tagifiedEmails = tagify.value.map(tag => tag.value);
-                let emailValue = tagifiedEmails[0] || "";
-
-                // Validate email format before submitting
-                if (!emailValue.match(/^[\w\.-]+@[\w\.-]+\.\w+$/)) {
-                    e.preventDefault(); // Prevent form submission
-                    toastr.error("Please enter a valid email address.");
-                    return;
-                }
-
-                emailInput.value = emailValue;
-            });
-
-            // Fetch proponent emails dynamically
-            function fetchProponents(query) {
-                $.ajax({
-                    url: "{{route('fetchProponents')}}",
-                    type: "GET",
-                    data: { search: query },
-                    success: function (response) {
-                        tagify.settings.whitelist = response;
-                        tagify.dropdown.show(); // Show dropdown
-                    }
-                });
-            }
-
-            // Listen for input event to fetch data
-                tagify.on("input", function (e) {
-                    let value = e.detail.value;
-                    if (value.length >= 2) { // Fetch only if at least 2 characters are typed
-                        fetchProponents(value);
-                    }
-                });
-});
+    // Listen for input event to fetch data
+    tagify.on("input", function (e) {
+        let value = e.detail.value;
+        if (value.length >= 2) { // Fetch only if at least 2 characters are typed
+            fetchProponents(value);
+        }
+    });
+  });
 </script>
 <script src="{{asset('assets/js/customFileUplaod.js')}}"></script>
 <script src="{{asset('assets/js/proposal.js')}}"></script>

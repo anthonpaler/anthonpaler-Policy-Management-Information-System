@@ -247,7 +247,7 @@ $(document).ready(function() {
 
         });
 
-        console.log('Form Data:', formData);
+        // console.log('Form Data:', formData);
 
         // Send AJAX Request
         $.ajax({
@@ -283,6 +283,57 @@ $(document).ready(function() {
         });
     });
 
+    // ADD PROPOSAL
+    $("#addProposalBtn").on('click', function (e) {
+      e.preventDefault();
+
+      var rawEmail = $("#proponent_email").val();
+      var parsedEmail = JSON.parse(rawEmail)[0].value;
+
+      console.log(parsedEmail);
+      $("#proponent_email").val(parsedEmail);
+
+
+      var proposalFrm = $("#addProposalFrm")[0];
+      var formData = new FormData(proposalFrm);
+
+      var actionUrl = $("#addProposalFrm").attr('action');
+
+      uploadedProposalFiles.forEach((file, index) => {
+          formData.append(`proposal_files[${index}]`, file);
+      });
+      console.log('Form Data:', formData);
+
+      $.ajax({
+          method: "POST",
+          url: actionUrl,
+          data: formData,
+          processData: false,
+          contentType: false,
+          headers: {
+              'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+          },
+          beforeSend: function () {
+              $("#addProposalBtn").html(`<i class='bx bx-loader-alt bx-spin' ></i>
+                  <span>Adding Proposal...</span>`).prop('disabled', true);
+          },
+          success: function (response) {
+              $("#addProposalBtn").html(`Add Proposal`).prop('disabled', false);
+              // console.log(response);
+              showAlert(response.type, response.title, response.message);
+
+              if(response.type ==  'success'){
+                  location.reload();
+              }
+          },
+          error: function (xhr, status, error) {
+            $("#addProposalBtn").html(`Add Proposal`).prop('disabled', false);
+              console.log(xhr.responseText);
+              let response = JSON.parse(xhr.responseText);
+              showAlert("warning", response.title, response.message);
+          }
+      });
+    });
 
     // SUBMIT PROPOSAL FOR PROPONENT
     let submitProposalBtn = $("#submitProposalBtn");

@@ -19,7 +19,7 @@
     <form action="{{ route(getUserRole().'.proposal.submit', ['level' => $meeting->getMeetingLevel(),'meeting_id' => encrypt($meeting->id)]) }}" method="post" id="submitProposalFrm" meeting-id="{{encrypt($meeting->id)}}">
         <div class="d-flex flex-column justify-content-center align-items-center">
             <h4 class="card-header p-0 mb-2 text-center">
-                {{ config('meetings.quaterly_meetings.'.$meeting->quarter) }}
+                {{ config('meetings.quarterly_meetings.'.$meeting->quarter) }}
                 @if ($meeting->getMeetingCouncilType() == 0)
                     {{ config('meetings.council_types.local_level.'.$meeting->council_type) }}
                 @elseif ($meeting->getMeetingCouncilType() == 1)

@@ -26,7 +26,7 @@
                     </div>
                     <div class="meeting-head-text">
                         <div class="d-flex justify-content-between gap-2 flex-wrap">
-                            <h4 class="">{{ config('meetings.quaterly_meetings.'.$meeting->quarter) }} {{ config("meetings.council_types." . ['local_level', 'university_level', 'board_level'][$meeting->getMeetingCouncilType()] . ".{$meeting->council_type}") }}
+                            <h4 class="">{{ config('meetings.quarterly_meetings.'.$meeting->quarter) }} {{ config("meetings.council_types." . ['local_level', 'university_level', 'board_level'][$meeting->getMeetingCouncilType()] . ".{$meeting->council_type}") }}
                             {{$meeting->year}}</h4>
                             <div class="">
                                 <span class="btn btn-sm btn-{{$meeting->status == 0 ? 'primary' : "danger" }} d-flex gap-1">
@@ -53,7 +53,7 @@
             </div>
         </div>
     </div>
-    
+
     <form method="POST" action="{{ route(getUserRole().'.proposals.store', ['meeting_id' => encrypt($meeting->id)]) }}" enctype="multipart/form-data" id="proposalFrm">
         <div class="">
             <div class="d-flex flex-wrap align-items-center justify-content-between w-100 mb-3">
@@ -116,7 +116,7 @@
                                     <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
                                 @enderror
                             </div>
-                                
+
                             <div class="mb-4">
                                 <label class="form-label" for="action">Requested Action <span class="ms-1 text-danger">*</span></label>
                                 <div class="input-group input-group-merge">
@@ -172,7 +172,7 @@
                                     <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
                                 @enderror
                             </div>
-                            
+
                         </div>
                     </div>
                 </div>
@@ -258,7 +258,7 @@
             </div>
             <button type="submit" class="mt-4 btn btn-primary d-flex gap-2" id="submitProposalBtn">
                 <i class='bx bx-send' ></i>
-                <span class="text-nowrap">Submit Proposal</span> 
+                <span class="text-nowrap">Submit Proposal</span>
             </button>
         </div>
     </form>
@@ -311,7 +311,7 @@
             `);
         }
     });
-    
+
     function getImageByFileType(fileType) {
         switch (fileType) {
             case "pdf":
