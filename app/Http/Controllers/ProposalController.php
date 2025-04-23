@@ -444,139 +444,126 @@ class ProposalController extends Controller
     {
         DB::beginTransaction();
         try {
-            $proponent_email = is_array($request->proponent_email) ? $request->proponent_email[0] : $request->proponent_email;
-            $request->merge(['proponent_email' => $proponent_email]);
+        $proponent_email = is_array($request->proponent_email) ? $request->proponent_email[0] : $request->proponent_email;
+        $request->merge(['proponent_email' => $proponent_email]);
+
+        $meetingID = decrypt($meeting_id);
+        $userRole = session('user_role');
+
+        // Ensure the user is a secretary (Local = 3, University = 4, Board = 5)
+        if (!in_array($userRole, [3, 4, 5])) {
+            return response()->json(['type' => 'danger', 'message' => 'You are not authorized to submit a proposal!', 'title' => "Unauthorized"]);
+        }
+
+        // Determine meeting type
+        $meeting = $this->getMeetingModel($meetingID, $userRole);
+
+        if (!$meeting) {
+            return response()->json(['type' => 'danger', 'message' => 'Invalid meeting ID.', 'title' => "Error"]);
+        }
+
+        $request->validate([
+            'proponent_email' => 'required|email|exists:employees,EmailAddress',
+            'title' => 'required|string|max:255',
+            'action' => 'required|string|max:255',
+            'proposal_files' => 'required|array',
+            'proposal_files.*' => 'file|mimes:pdf,xls,xlsx,csv|max:100000',
+            'matter' => 'required|integer',
+            'sub_type' => 'nullable|integer',
+        ]);
 
 
-            $meetingID = decrypt($meeting_id);
-            $userRole = session('user_role');
+        $proponent = Employee::where('EmailAddress', $request->input('proponent_email'))->first();
 
-            // Ensure the user has the correct role (Secretary: Local=3, University=4, Board=5)
-            if (!in_array($userRole, [3, 4, 5])) {
-                return response()->json([
-                    'type' => 'danger',
-                    'message' => 'You are not authorized to submit other matters!',
-                    'title' => "Unauthorized"
-                ]);
-            }
+        $campus_id = session('campus_id');
+        $proposalStatus = 0;
+        if(session('isSecretary') && $userRole == 5){
+            $proposalStatus = 8;
+        }
 
-            // Retrieve meeting model based on role
-            $meeting = $this->getMeetingModel($meetingID, $userRole);
-            if (!$meeting) {
-                return response()->json([
-                    'type' => 'danger',
-                    'message' => 'Invalid meeting ID.',
-                    'title' => "Error"
-                ]);
-            }
+        // Create proposal
+        $proposal = Proposal::create([
+            'employee_id' => $proponent->id,
+            'campus_id' => $campus_id,
+            'title' => $request->input('title'),
+            'action' => $request->input('action'),
+            'type' => $request->input('matter'),
+            'sub_type' => $request->input('sub_type'),
+            'status' =>  $proposalStatus,
+        ]);
 
-            // Validate input
-            $request->validate([
-                'proponent_email' => 'required|email|exists:employees,EmailAddress',
-                'title' => 'required|string|max:255',
-                'action' => 'required|string|max:255',
-                'proposal_files' => 'required|array',
-                'proposal_files.*' => 'file|mimes:pdf,xls,xlsx,csv|max:100000',
-                'matter' => 'required|integer',
-                'sub_type' => 'nullable|integer',
-            ]);
+        $oobID = null; // Default to null
 
-            $proponent = Employee::where('EmailAddress', $request->input('proponent_email'))->first();
-
-            $campus_id = session('campus_id');
-
-            // Create Proposal Entry
-            $proposal = Proposal::create([
-                'employee_id' => $proponent->id,
-                'campus_id' => $campus_id,
-                'title' => $request->input('title'),
-                'action' => $request->input('action'),
-                'type' => $request->input('matter'),
-                'sub_type' => $request->input('sub_type'),
-                'status' => 0,
-            ]);
-
-            $oobID = null; // Default to null
+        if ($userRole == 3) { // Local Secretary
+            $oob = LocalOoB::where('local_council_meeting_id', $meetingID)->first();
+            $oobID = $oob ? $oob->id : null;
+        } elseif ($userRole == 4) { // University Secretary
+            $oob = UniversityOoB::where('university_council_meeting_id', $meetingID)->first();
+            $oobID = $oob ? $oob->id : null;
+        } elseif ($userRole == 5) { // Board Secretary
+            $oob = BoardOoB::where('bor_meeting_id', $meetingID)->first();
+            $oobID = $oob ? $oob->id : null;
+        }
 
 
-            if ($userRole == 3) { // Local Secretary
-                $oob = LocalOoB::where('local_council_meeting_id', $meetingID)->first();
-                $oobID = $oob ? $oob->id : null;
-            } elseif ($userRole == 4) { // University Secretary
-                $oob = UniversityOoB::where('university_council_meeting_id', $meetingID)->first();
-                $oobID = $oob ? $oob->id : null;
-            } elseif ($userRole == 5) { // Board Secretary
-                $oob = BoardOoB::where('bor_meeting_id', $meetingID)->first();
-                $oobID = $oob ? $oob->id : null;
-            }
 
-            // Attach the proposal to the appropriate meeting agenda
-        $this->attachProposalToAgenda($meetingID, $proposal->id, $userRole, $oobID);
+        // Attach proposal to the corresponding meeting agenda
+        $this->attachProposalToAgenda($meetingID, $proposal->id, $userRole, $oobID,  $proposalStatus);
 
         // Attach the proposal to the Other Matters table
         $this->attachProposalToOtherMatter($proposal->id, $userRole);
 
-            // Handle File Uploads
-            $fileIds = [];
-            $file_order_no = 1;
-            if ($request->hasFile('proposal_files')) {
-                foreach ($request->file('proposal_files') as $file) {
-                    $originalNameWithExt = $file->getClientOriginalName();
-                    $extension = $file->getClientOriginalExtension();
+          // Handle file uploads
+          $fileIds = [];
+          $file_order_no = 1;
 
-                    // Extract filename without final extension
-                    preg_match('/^(.*?)(\(\d+\))?(\.\w+)?$/', $originalNameWithExt, $matches);
-                    $baseName = trim($matches[1]);
-                    $filename = "{$baseName}.{$extension}";
+          $fileStatus = 1;
 
-                    $i = 1;
-                    while (Storage::disk('public')->exists("proposals/{$filename}")) {
-                        $filename = "{$baseName} ({$i}).{$extension}";
-                        $i++;
-                    }
+          if(session('isSecretary')){
+            $fileStatus = 2;
+          }
 
-                    // Store the file
-                    $filePath = $file->storeAs('proposals', $filename, 'public');
+          if ($request->hasFile('proposal_files')) {
+            foreach ($request->file('proposal_files') as $file) {
+              $filename = $this->generateUniqueFilename($file);
+              $file->storeAs('proposals', $filename, 'public');
+              $proposalFile = ProposalFile::create([
+                  'proposal_id' => $proposal->id,
+                  'file' => $filename,
+                  'version' => 1,
+                  'file_status' => $fileStatus,
+                  'is_active' => true,
+                  'order_no' => $file_order_no,
+              ]);
 
-                    // Save file record in DB
-                    $proposalFile = ProposalFile::create([
-                        'proposal_id' => $proposal->id,
-                        'file' => $filename,
-                        'version' => 1,
-                        'file_status' => 1,
-                        'file_reference_id' => null,
-                        'is_active' => true,
-                        'order_no' => $file_order_no,
-                    ]);
-
-                    $fileIds[] = $proposalFile->id;
-                    $file_order_no++;
-                }
+              $fileIds[] = $proposalFile->id;
+              $file_order_no++;
             }
+          }
 
-            // Save file IDs in proposal logs
-            $fileIdsString = implode(',', $fileIds);
+          // Save file IDs in proposal logs
+          $fileIdsString = implode(',', $fileIds);
 
-            ProposalLog::create([
-                'proposal_id' => $proposal->id,
-                'employee_id' => session('employee_id'),
-                'comments' => null,
-                'status' => 0,
-                'level' => 0,
-                'action' => 7,
-                'file_id' => $fileIdsString,
-            ]);
+          ProposalLog::create([
+              'proposal_id' => $proposal->id,
+              'employee_id' => session('employee_id'),
+              'comments' => null,
+              'status' => 0,
+              'level' => 0,
+              'action' => 7,
+              'file_id' => $fileIdsString,
+          ]);
 
-            $proponentIds = explode(',', $request->input('proponent_email'));
+          $proponentIds = explode(',', $request->input('proponent_email'));
 
-            foreach ($proponentIds as $employeeId) {
-                $proponent = Employee::where('EmailAddress', $request->input('proponent_email'))->first();
+          foreach ($proponentIds as $employeeId) {
+              $proponent = Employee::where('EmailAddress', $request->input('proponent_email'))->first();
 
-                ProposalProponent::create([
-                    'proposal_id' => $proposal->id,
-                    'employee_id' => $proponent->id,
-                ]);
-            }
+              ProposalProponent::create([
+                  'proposal_id' => $proposal->id,
+                  'employee_id' => $proponent->id,
+              ]);
+          }
 
             DB::commit();
 

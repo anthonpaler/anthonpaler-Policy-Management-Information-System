@@ -481,11 +481,11 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title text-primary" id="otherMattersModalLabel">Add Other Matters</h5>
+                    <h5 class="modal-title text-primary" id="otherMattersModalLabel">Add Proposal for Other Matters</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form method="POST" action="{{ route(getUserRole().'.addOtherMatters', ['meeting_id' => encrypt($meeting->id)]) }}" enctype="multipart/form-data" id="otherMattersFrm">
+                    <form method="POST" action="{{ route(getUserRole().'.addOtherMatters', ['meeting_id' => encrypt($meeting->id)]) }}" enctype="multipart/form-data" id="addProposalFrm">
                         @csrf
 
                         <!-- Title -->
@@ -501,7 +501,7 @@
                                 <span id="email-icon" class="input-group-text"><i class="bx bx-envelope"></i></span>
                                 <input
                                     type="text"
-                                    id="proponent_email_matter"
+                                    id="proponent_email"
                                     name="proponent_email"
                                     class="form-control @error('proponent_email') is-invalid @enderror"
                                     placeholder="Enter proponent's email"
@@ -599,7 +599,7 @@
                     </div>
 
                     <div class="text-end">
-                        <button type="submit" id="addMatter" class="btn btn-primary">Add Other Matters</button>
+                        <button type="button" id="addProposalBtn" class="btn btn-primary">Add Proposal</button>
                     </div>
                   </form>
                 </div>
@@ -809,7 +809,7 @@ src="https://cdn.jsdelivr.net/npm/jodit@latest/es2021/jodit.fat.min.js"
     Jodit.make('#preliminaries');
 
     document.addEventListener("DOMContentLoaded", function () {
-        let emailInput = document.getElementById("proponent_email_matter");
+        let emailInput = document.getElementById("proponent_email");
         let tagify = new Tagify(emailInput, {
             enforceWhitelist: false,
             maxTags: 1,
@@ -821,7 +821,7 @@ src="https://cdn.jsdelivr.net/npm/jodit@latest/es2021/jodit.fat.min.js"
             }
         });
 
-        document.querySelector("#otherMattersFrm").addEventListener("submit", function (e) {
+        document.querySelector("#addProposalFrm").addEventListener("submit", function (e) {
         let tagifiedEmails = tagify.value.map(tag => tag.value);
         let emailValue = tagifiedEmails[0] || "";
 
@@ -860,55 +860,13 @@ src="https://cdn.jsdelivr.net/npm/jodit@latest/es2021/jodit.fat.min.js"
     var proposalStatus = @json(config('proposals.status'));
     $(document).ready(function () {
 
-        // Open Add Other Matter Modal
+        
         $("#addOtherMatterBtn").on("click", function (e) {
             e.preventDefault();
             $("#otherMattersModal").modal("show");
         });
 
-        $("#otherMattersFrm").on("submit", function (e) {
-            e.preventDefault(); // Prevent default form submission
-
-            let formData = new FormData(this);
-            let submitButton = $("#addMatter");
-            submitButton.prop("disabled", true); // Disable button to prevent duplicate submissions
-
-            $.ajax({
-                url: $(this).attr("action"),
-                type: "POST",
-                data: formData,
-                processData: false,
-                contentType: false,
-                beforeSend: function () {
-                submitButton.prop("disabled", true); // Disable button to prevent duplicate submissions
-                submitButton.text("Adding..."); // Optionally change button text
-            },
-                success: function (response) {
-                    if (response.type === "success") {
-                        toastr.success(response.message, "Success");
-                        $("#otherMattersModal").modal("hide"); // Close the modal
-                        $("#otherMattersFrm")[0].reset(); // Reset the form
-
-                        // Optionally refresh the list of Other Matters without reloading
-                        loadOtherMatters();
-                    } else {
-                        toastr.error(response.message, "Error");
-                    }
-                },
-                error: function (xhr) {
-                    let response = xhr.responseJSON;
-                    if (response && response.message) {
-                        toastr.error(response.message, "Error");
-                    } else {
-                        toastr.error("An unexpected error occurred.", "Error");
-                    }
-                },
-                complete: function () {
-                    submitButton.prop("disabled", false); // Re-enable button
-                }
-            });
-        });
-
+       
 
 
 
