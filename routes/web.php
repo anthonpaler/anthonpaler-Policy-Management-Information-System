@@ -6,6 +6,7 @@ use App\Http\Controllers\OrderOfBusinessController;
 use App\Http\Controllers\ProposalController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\dashboard\Analytics;
+use App\Http\Controllers\dashboard\BoardRegents;
 use App\Http\Controllers\Admin\AdminDashboard;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\PdfController;
@@ -209,7 +210,7 @@ Route::middleware(['auth', 'board_secretary'])->prefix('board-secretary')->group
 
 
 Route::middleware(['auth', 'board_of_regents'])->prefix('board-of-regents')->group(function() {
-  Route::get('/dashboard', [Analytics::class, 'secretaryDashboard'])->name('board_regents.dashboard');
+  Route::get('/dashboard', [BoardRegents::class, 'index'])->name('board_regents.dashboard');
   Route::get('/meetings', [MeetingController::class, 'viewMeetings'])->name('board_regents.meetings');
   Route::get('/meetings/create-meeting', [MeetingController::class, 'viewCreateMeeting'])->name('board_regents.view_create_meeting');
   Route::post('/meetings/create', [MeetingController::class, 'createMeeting'])->name('board_regents.meetings.create');
@@ -269,6 +270,17 @@ Route::middleware(['auth'])->group(function () {
   Route::post('add-group-proposal-attachment', [ProposalController::class, 'addGroupProposalAttachment'])->name('proposal.group-proposal.add-attachment');
   Route::post('edit-group-proposal-attachment', [ProposalController::class, 'editGroupProposalAttachment'])->name('proposal.group-proposal.edit-attachment');
   Route::post('delete-group-proposal-attachment', [ProposalController::class, 'deleteGroupProposalAttachment'])->name('proposal.group-proposal.delete-attachment');
+  Route::get('/search/hrmis-email', [AdminController::class, 'searchHrmisEmail'])->name('search.hrmis.email');
+  Route::post('/add/academic-council', [AdminController::class, 'AddAcademicMember'])->name('add.academic.member');
+  Route::post('/add/administrative-council', [AdminController::class, 'AddAdministrativeMember'])->name('add.administrative.member');
+  Route::post('/add/joint-council', [AdminController::class, 'AddJointCouncilMember'])->name('add.joint.member');
+  Route::get('/council/counts', [AdminDashboard::class, 'getCouncilCounts'])->name('get.council.counts');
+
+
+
+
+
+
 });
 
 

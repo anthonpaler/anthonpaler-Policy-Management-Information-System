@@ -30,67 +30,32 @@
           <b class="user-profile-text ml-1 text-dark">
             <div>
               <h6 class="">{{ auth()->user()->name }}</h6>
-              <span>{{ config('usersetting.role.'.session('user_role')) }}</span>
+              <span>{{ config('usersetting.role.'.auth()->user()->role) }}</span>
             </div>
 
             <h5>DASHBOARD</h5>
           </b>
         </div>
-        <div class="p-4">
+        <div class="p-1">
 
         </div>
       </div>
     </div>
-    <div class="row">
-      <div class="col-12 col-xl-4 col-md-6">
-        <div class="card h-100 mt-4">
-          <div class="card-body">
-            <div class="bg-label-primary rounded-3 text-center mb-4 pt-6">
-              <img class="img-fluid" src="https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo/assets/img/illustrations/sitting-girl-with-laptop.png" alt="Card girl image" style="width: 52%;">
-            </div>
-            <h5 class="mb-2">Latest BOR Meeting</h5>
-            <p>Next Generation Frontend Architecture Using Layout Engine And React Native Web.</p>
-            <div class="row mb-4 g-3">
-              <div class="col-6">
-                <div class="d-flex align-items-center">
-                  <div class="avatar flex-shrink-0 me-3">
-                    <span class="avatar-initial rounded bg-label-primary"><i class="bx bx-calendar"></i></span>
-                  </div>
-                  <div>
-                    <h6 class="mb-0 text-nowrap">17 Nov 23</h6>
-                    <small>Date</small>
-                  </div>
-                </div>
-              </div>
-              <div class="col-6">
-                <div class="d-flex align-items-center">
-                  <div class="avatar flex-shrink-0 me-3">
-                    <span class="avatar-initial rounded bg-label-primary"><i class="bx bx-time-five"></i></span>
-                  </div>
-                  <div>
-                    <h6 class="mb-0 text-nowrap">32 minutes</h6>
-                    <small>Duration</small>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-12 text-center">
-              <a href="javascript:void(0);" class="btn btn-primary w-100 d-grid">Join the event</a>
-            </div>
-          </div>
-        </div>
+    <hr>
+    <p class="font-medium-3 text-bold-500 d-flex align-items-center gap-3"><i class="bx bxs-megaphone text-danger"></i> ANNOUNCEMENTS <i class="text-danger bx bxs-megaphone"></i></p>
+    <div class="card mt-3">
+      <div class="card-body">
+        <p>No announcements have been made yet.</p>
       </div>
-      <div class="col">
-        <div class="card mt-4">
-          .
-        </div>
-      </div>
-      <div class="col">
-        <div class="card mt-4">
-          .
-        </div>
-      </div>
+      {{-- @foreach ($meetings as $meeting)
+        <span>{{$loop->iteration}} HA {{$meeting->id}} HAHAHAH   {{$meeting->getProposalCount()}}</span>
+      @endforeach --}}
     </div>
   </div>
+
+
+  
+
+
 </div>
 @endsection

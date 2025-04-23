@@ -3,18 +3,21 @@
 @section('title', 'Order of Business')
 
 @section('content')
-<div class="bread-crumbs overflow-auto" style="max-width: 100%; white-space: nowrap;">
-    <h5>Dashboard</h5>
-    <div class="divider"></div>
-    <a href="/">
-        <i class='bx bx-home-alt' ></i>
-    </a>
-    <i class='bx bx-chevron-right' ></i>
-    <a href="{{ route(getUserRole().'.order-of-business')}}" >Order of Business</a>
-    <i class='bx bx-chevron-right' ></i>
-    <a href="#" >Order of Business Information</a>
-</div>
-
+ 
+    <div class="bread-crumbs overflow-auto" style="max-width: 100%; white-space: nowrap;">
+        <h5>Dashboard</h5>
+        @if(!session('isBoardRegent'))  
+            <div class="divider"></div>
+            <a href="/">
+                <i class='bx bx-home-alt' ></i>
+            </a>
+            <i class='bx bx-chevron-right' ></i>
+            <a href="{{ route(getUserRole().'.order-of-business')}}" >Order of Business</a>
+            <i class='bx bx-chevron-right' ></i>
+            <a href="#" >Order of Business Information</a>
+        @endif
+    </div>
+ 
         <!-- Modal Upload Previous Minutes -->
         <div class="modal fade" id="previousMinModal" tabindex="-1" aria-labelledby="previousMinModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
@@ -54,7 +57,7 @@
     @endif
         <div class="d-flex flex-column justify-content-center align-items-center">
             <h4 class="card-header p-0 mb-2 text-center">
-                {{ config('meetings.quaterly_meetings.'.$meeting->quarter) }}
+                {{ config('meetings.quarterly_meetings.'.$meeting->quarter) }}
                 @if ($meeting->getMeetingCouncilType() == 0)
                     {{ config('meetings.council_types.local_level.'.$meeting->council_type) }}
                 @elseif ($meeting->getMeetingCouncilType() == 1)
@@ -118,16 +121,10 @@
               </div>
           </div>
 
-            @if(session('isProponent') ||(session('isSecretary') && session('secretary_level') != $meeting->getMeetingCouncilType()))
+        @if(session('isProponent') || session('isBoardRegent') ||(session('isSecretary') && session('secretary_level') != $meeting->getMeetingCouncilType()))
             <div class="mt-1 mb-3 ms-4">
-            {!! preg_replace_callback('/(1\.4\..*?)(?:\r?\n|$)/', function ($matches) use ($orderOfBusiness) {
-                if (!empty($orderOfBusiness->previous_minutes)) {
-                    $fileUrl = asset('storage/previous_minutes/' . $orderOfBusiness->previous_minutes);
-                    return '<a href="' . $fileUrl . '" target="_blank" class="text-primary text-decoration-underline">' . $matches[1] . '</a>';
-                }
-                return $matches[0]; // fallback if no file
-            }, $orderOfBusiness->preliminaries) !!}
-        </div>
+            {!! $orderOfBusiness->preliminaries !!}
+            </div>
         @else
           <div class="mt-3 mb-3">
             <textarea  name="preliminaries" id="preliminaries">{{ $orderOfBusiness->preliminaries ?? '' }}</textarea>
@@ -381,10 +378,14 @@
 
       <div class="d-flex align-items-center gap-2 mb-2">
           <label class="form-label m-0">3. Other Matters</label>
+
+          @if(session('isSecretary'))
           <button id="addOtherMatterBtn" class="btn btn-primary btn-xs m-0" data-bs-toggle="tooltip" data-bs-placement="top" title="Add Other Matter">
               <i class='bx bx-plus'></i>
           </button>
+          @endif
       </div>
+
       @if ($otherMattersProposals->isNotEmpty())
         <div class="table-responsive text-nowrap mb-4">
             <table class="table table-bordered sortable" id="{{ session('isSecretary') && (session('secretary_level') == $meeting->getMeetingCouncilType()) ? 'oobOtherMatterTable' :  ''}}">
@@ -475,6 +476,7 @@
     @endif
 
     <!-- ADD OTHER MATTERS MODAL -->
+    @if (session('isSecretary'))
     <div class="modal fade" id="otherMattersModal" tabindex="-1" aria-labelledby="otherMattersModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -604,6 +606,7 @@
             </div>
         </div>
     </div>
+    @endif
 
 
     <!-- Modal Preview File -->

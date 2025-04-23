@@ -20,74 +20,74 @@ class Analytics extends Controller
 {
     public function secretaryDashboard()
     {
-      $level = session('secretary_level');
-      $campusId = session('campus_id');
-      $meetings = collect();
-      $upperMeetings = collect();
+      // $level = session('secretary_level');
+      // $campusId = session('campus_id');
+      // $meetings = collect();
+      // $upperMeetings = collect();
 
-      $meetingModel = [
-        0 => LocalCouncilMeeting::class,
-        1 => UniversityCouncilMeeting::class,
-        2 => BorMeeting::class,
-      ];
+      // $meetingModel = [
+      //   0 => LocalCouncilMeeting::class,
+      //   1 => UniversityCouncilMeeting::class,
+      //   2 => BorMeeting::class,
+      // ];
 
-      // FOR SAME LEVEL MEETINGS
-      if( $level == 0){
-        $latestMeetingRecord = $meetingModel[$level]::where('campus_id', $campusId)->orderByDesc('created_at')->first();
-      }else{
-        $latestMeetingRecord = $meetingModel[$level]::orderByDesc('created_at')->first();
-      }
-      $latest_quarter = $latestMeetingRecord->quarter ?? null;
-      $latest_year = $latestMeetingRecord->year ?? null;
+      // // FOR SAME LEVEL MEETINGS
+      // if( $level == 0){
+      //   $latestMeetingRecord = $meetingModel[$level]::where('campus_id', $campusId)->orderByDesc('created_at')->first();
+      // }else{
+      //   $latestMeetingRecord = $meetingModel[$level]::orderByDesc('created_at')->first();
+      // }
+      // $latest_quarter = $latestMeetingRecord->quarter ?? null;
+      // $latest_year = $latestMeetingRecord->year ?? null;
 
-      if( $level == 0){
-        $meetings =$meetingModel[$level]::where('campus_id', $campusId)->where('year', $latest_year)->where('quarter', $latest_quarter)->get();
-      }else{
-        $meetings =$meetingModel[$level]::where('year', $latest_year)->where('quarter', $latest_quarter)->get();
-      }
+      // if( $level == 0){
+      //   $meetings =$meetingModel[$level]::where('campus_id', $campusId)->where('year', $latest_year)->where('quarter', $latest_quarter)->get();
+      // }else{
+      //   $meetings =$meetingModel[$level]::where('year', $latest_year)->where('quarter', $latest_quarter)->get();
+      // }
 
-      if(in_array($level , [0,1])){
-        // FOR UPPER LEVEL MEETINGS
-        $latestUpperMeetingRecord = $meetingModel[$level+1]::orderByDesc('created_at')->first();
+      // if(in_array($level , [0,1])){
+      //   // FOR UPPER LEVEL MEETINGS
+      //   $latestUpperMeetingRecord = $meetingModel[$level+1]::orderByDesc('created_at')->first();
 
-        $latest_upper_quarter = $latestUpperMeetingRecord->quarter ?? null;
-        $latest_upper_year = $latestUpperMeetingRecord->year ?? null;
+      //   $latest_upper_quarter = $latestUpperMeetingRecord->quarter ?? null;
+      //   $latest_upper_year = $latestUpperMeetingRecord->year ?? null;
 
-        $upperMeetings =$meetingModel[$level+1]::where('year', $latest_upper_year)->where('quarter', $latest_upper_quarter)->get();
-      }
+      //   $upperMeetings =$meetingModel[$level+1]::where('year', $latest_upper_year)->where('quarter', $latest_upper_quarter)->get();
+      // }
 
 
       // dd($meetings, $upperMeetings);
-      return view('content.dashboard.secretary.dashboard', compact('meetings', 'upperMeetings'));
+      return view('content.dashboard.secretary.dashboard');
     }
 
     public function proponentDashboard()
     {
-      $role = session('user_role');
-      $campusId = session('campus_id');
-      $meetings = collect();
+      // $role = session('user_role');
+      // $campusId = session('campus_id');
+      // $meetings = collect();
 
-      $allowedCouncilTypes = [1];
-      if ($role == 0) {
-          $allowedCouncilTypes = [1, 2];
-      } elseif ($role == 1) {
-          $allowedCouncilTypes = [1, 3];
-      } elseif ($role == 2) {
-          $allowedCouncilTypes = [1, 2, 3];
-      }
+      // $allowedCouncilTypes = [1];
+      // if ($role == 0) {
+      //     $allowedCouncilTypes = [1, 2];
+      // } elseif ($role == 1) {
+      //     $allowedCouncilTypes = [1, 3];
+      // } elseif ($role == 2) {
+      //     $allowedCouncilTypes = [1, 2, 3];
+      // }
 
-      $latestMeetingRecord = LocalCouncilMeeting::where('campus_id', $campusId)
-        ->whereIn('council_type', $allowedCouncilTypes)
-        ->orderByDesc('created_at')
-        ->first();
+      // $latestMeetingRecord = LocalCouncilMeeting::where('campus_id', $campusId)
+      //   ->whereIn('council_type', $allowedCouncilTypes)
+      //   ->orderByDesc('created_at')
+      //   ->first();
 
-      $meetings = LocalCouncilMeeting::where('campus_id', $campusId)
-        ->where('year', $latest_year)
-        ->where('quarter', $latest_quarter)
-        ->whereIn('council_type', $allowedCouncilTypes)
-        ->get();
+      // $meetings = LocalCouncilMeeting::where('campus_id', $campusId)
+      //   ->where('year', $latest_year)
+      //   ->where('quarter', $latest_quarter)
+      //   ->whereIn('council_type', $allowedCouncilTypes)
+      //   ->get();
 
-      return view('content.dashboard.proponent.dashboard', compact('meetings'));
+      return view('content.dashboard.proponent.dashboard');
     }
 
     public function switchRole(Request $request)

@@ -141,11 +141,6 @@ class MeetingController extends Controller
                 $employeeQuery->whereIn('id', function($query) {
                     $query->select('employee_id')->from('academic_council_membership');
                 });
-            }elseif($level == 2){
-                $employeeQuery->whereIn('id', function ($query) {
-                    $query->select('employee_id')->from('bor_member'); // use your actual BOR membership table name
-                });
-
             }elseif ($request->input('council_type') == 3) { // Administrative Council
                 $employeeQuery->whereIn('id', function($query) {
                     $query->select('employee_id')->from('administrative_council_membership');
@@ -157,6 +152,13 @@ class MeetingController extends Controller
                               DB::table('administrative_council_membership')->select('employee_id')
                           );
                 });
+            }
+
+
+            // Add BOR members *only if* it's a BOR-level meeting
+            if ($level == 2) {
+                $borMemberIds = DB::table('bor_member')->pluck('employee_id')->toArray();
+                $employeeQuery->orWhereIn('id', $borMemberIds);
             }
 
             // Filter by campus if needed
@@ -184,32 +186,40 @@ class MeetingController extends Controller
 
 
             // // 🔹 Send SMS Notifications
-            //   $smsController = new SMSController();
-            //   $quarter = config('meetings.quaterly_meetings')[$request->input('quarter')] ?? '';
-            //   $level = config('meetings.level')[$level] ?? '';
-            //   $councilType = config('meetings.council_types')[strtolower($level) . '_level'][$request->input('council_type')] ?? '';
-            //   $meetingDateTime = date('M j, Y g:i A', strtotime($request->input('meeting_date_time')));
+              $smsController = new SMSController();
+              $quarter = config('meetings.quaterly_meetings')[$request->input('quarter')] ?? '';
+              $council_type = "";
+              if ($meeting->getMeetingCouncilType() == 0){
+                  $council_type = config('meetings.council_types.local_level.'.$meeting->council_type) ;
+              }
+              elseif ($meeting->getMeetingCouncilType() == 1){
+                  $council_type = config('meetings.council_types.university_level.'.$meeting->council_type) ;
+              }
+              elseif ($meeting->getMeetingCouncilType() == 2){
+                  $council_type = config('meetings.council_types.board_level.'.$meeting->council_type) ;
+              }
 
+              $meetingDateTime = date('M j, Y g:i A', strtotime($request->input('meeting_date_time')));
+              
+              $message = "ADVISORY!\nThe $quarter – $council_type\nwill be on $meetingDateTime.\nfor more details please visit https://policy.southernleytestateu.edu.ph";
 
-            //   $message = "ADVISORY!\nThe $quarter – $councilType\nwill be on $meetingDateTime.\nfor more details please visit https://policy.southernleytestateu.edu.ph";
+              foreach ($emails as $index => $email) {
+                $phone = $cellNumbers[$index] ?? null;
 
-            //   foreach ($emails as $index => $email) {
-            //     $phone = $cellNumbers[$index] ?? null;
+            //     // If no cellphone in `employees` table, check `hrmis.employee` table
+                if (empty($phone)) {
+                    $hrmisEmployee = HrmisEmployee::where('EmailAddress', $email)->first();
+                    $phone = $hrmisEmployee?->Cellphone;
+                }
 
-            // //     // If no cellphone in `employees` table, check `hrmis.employee` table
-            //     if (empty($phone)) {
-            //         $hrmisEmployee = HrmisEmployee::where('EmailAddress', $email)->first();
-            //         $phone = $hrmisEmployee?->Cellphone;
-            //     }
-
-            // //     // Send SMS if phone number is found
-            //     if (!empty($phone)) {
-            //         $smsResponse = $smsController->send($phone, $message);
-            //         if ($smsResponse['Error'] == 1) {
-            //             \Log::error("SMS Failed to $phone: " . $smsResponse['Message']);
-            //         }
-            //     }
-            // }
+            //     // Send SMS if phone number is found
+                if (!empty($phone)) {
+                    $smsResponse = $smsController->send($phone, $message);
+                    if ($smsResponse['Error'] == 1) {
+                        \Log::error("SMS Failed to $phone: " . $smsResponse['Message']);
+                    }
+                }
+            }
 
 
             DB::commit();
@@ -364,15 +374,15 @@ class MeetingController extends Controller
                 $employeeQuery->where('campus', session('campus_id'));
             }
 
-            $emails = $employeeQuery->pluck('EmailAddress')->toArray();
-            $cellNumbers = $employeeQuery->pluck('Cellphone')->toArray();
+            // $emails = $employeeQuery->pluck('EmailAddress')->toArray();
+            // $cellNumbers = $employeeQuery->pluck('Cellphone')->toArray();
 
-            // Send email notifications in batches
-            $chunks = array_chunk($emails, 50);
-            foreach ($chunks as $batch) {
-                Mail::to($batch)->send(new MeetingUpdateNotification($meeting,$updatedFields));
-                sleep(2);
-            }
+            // // Send email notifications in batches
+            // $chunks = array_chunk($emails, 50);
+            // foreach ($chunks as $batch) {
+            //     Mail::to($batch)->send(new MeetingUpdateNotification($meeting,$updatedFields));
+            //     sleep(2);
+            // }
 
             // // 🔹 Send SMS Notifications
             // $smsController = new SMSController();

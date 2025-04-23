@@ -42,43 +42,29 @@
       </div>
     </div>
     <hr>
-    @if(session('user_role') != 8)
+    {{-- @if(session('user_role') != 8)
       <p class="font-medium-3 text-bold-500 d-flex align-items-center gap-3"><i class="bx bxs-megaphone text-danger"></i> ANNOUNCEMENTS <i class="text-danger bx bxs-megaphone"></i></p>
       <div class="card mt-3">
         <div class="card-body">
           <p>No announcements have been made yet.</p>
         </div>
-        {{-- @foreach ($meetings as $meeting)
+        @foreach ($meetings as $meeting)
           <span>{{$loop->iteration}} HA {{$meeting->id}} HAHAHAH   {{$meeting->getProposalCount()}}</span>
-        @endforeach --}}
+        @endforeach
       </div>
-    @endif
+    @endif --}}
 
   </div>
   
 </div>
 
-@if(session('user_role') == 8)
-    <div class="row mb-12 g-6">
-        <div class="col-md-6 col-lg-4 mt-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Order Of Business (Agenda)</h5>
-                    <p class="card-text">Please click the button below to view the Order Of Business or the Provisional Agenda</p>
 
-                    @php
-                        // Assume you're getting the latest or active BOR-level OOB ID dynamically here
-                        $oob = \App\Models\BoardOob::where('status', 1)->latest()->first();
-                    @endphp
 
-                    @if($oob)
-                        <a href="{{ route(getUserRole().'.order_of_business.view-oob', ['level' => $oob->meeting->getMeetingLevel(), 'oob_id'=> encrypt( $oob->id)]) }}"
-                           class="btn btn-primary">VIEW AGENDA</a>
-                    @else
-                        <button class="btn btn-secondary" disabled>No Agenda Available</button>
-                    @endif
-                </div>
-            </div>
+@if(isset($noAgendaMessage))
+    <div class="alert alert-info d-flex align-items-center gap-2" role="alert">
+        <i class="bx bx-info-circle fs-4"></i>
+        <div>
+            {{ $noAgendaMessage }}
         </div>
     </div>
 @endif

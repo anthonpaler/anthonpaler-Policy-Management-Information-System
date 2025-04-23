@@ -44,20 +44,105 @@ class AdminController extends Controller
         return response()->json($finalResults);
     }
 
-    public function storeAcademicMember(Request $request)
+    public function AddAcademicMember(Request $request)
     {
         $request->validate([
             'email' => 'required|email',
-            'campus' => 'required|string'
+            'campus' => 'required|integer',
         ]);
+    
+        try {
+            // First, create or get the employee
+            $employee = Employee::firstOrCreate(
+                ['EmailAddress' => $request->email],
+                ['campus' => $request->campus]
+            );
+    
+            // Then, add to academic_council_membership if not already present
+            $exists = DB::table('academic_council_membership')
+                        ->where('employee_id', $employee->id)
+                        ->exists();
+    
+            if (!$exists) {
+                DB::table('academic_council_membership')->insert([
+                    'employee_id' => $employee->id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+    
+            return response()->json(['message' => 'Academic Council Member added successfully']);
+        } catch (\Throwable $th) {
+            return response()->json(['error' => $th->getMessage()], 500);
+        }
+    }
 
-        Employee::firstOrCreate(
+
+    public function AddAdministrativeMember(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'campus' => 'required|integer',
+        ]);
+    
+        try {
+            // First, create or get the employee
+            $employee = Employee::firstOrCreate(
+                ['EmailAddress' => $request->email],
+                ['campus' => $request->campus]
+            );
+    
+            // Then, add to academic_council_membership if not already present
+            $exists = DB::table('administrative_council_membership')
+                        ->where('employee_id', $employee->id)
+                        ->exists();
+    
+            if (!$exists) {
+                DB::table('administrative_council_membership')->insert([
+                    'employee_id' => $employee->id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+    
+            return response()->json(['message' => 'Administrative Council Member added successfully']);
+        } catch (\Throwable $th) {
+            return response()->json(['error' => $th->getMessage()], 500);
+        }
+    }
+
+
+    public function AddJointCouncilMember(Request $request)
+{
+    $request->validate([
+        'email' => 'required|email',
+        'campus' => 'required|integer',
+    ]);
+
+    try {
+        // Step 1: Add to employees table
+        $employee = Employee::firstOrCreate(
             ['EmailAddress' => $request->email],
             ['campus' => $request->campus]
         );
 
-        return response()->json(['message' => 'Member added successfully']);
+        // Step 2: Add to academic_council_membership if not exists
+        DB::table('academic_council_membership')->updateOrInsert(
+            ['employee_id' => $employee->id],
+            ['updated_at' => now(), 'created_at' => now()]
+        );
+
+        // Step 3: Add to administrative_council_membership if not exists
+        DB::table('administrative_council_membership')->updateOrInsert(
+            ['employee_id' => $employee->id],
+            ['updated_at' => now(), 'created_at' => now()]
+        );
+
+        return response()->json(['message' => 'Joint Council Member added successfully']);
+    } catch (\Throwable $th) {
+        return response()->json(['error' => $th->getMessage()], 500);
     }
+}
 
    
 

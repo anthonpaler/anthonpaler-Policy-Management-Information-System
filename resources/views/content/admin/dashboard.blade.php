@@ -72,11 +72,11 @@
                       <span class="text-heading">Academic Council Members</span>
                       <div class="d-flex align-items-center my-1">
                         <h4 class="mb-0 me-2"></h4>
-                        <p class="text-primary mb-0">{{ $academicCouncilCount }}</p>
+                        <p class="text-primary mb-0" id="academicCount">{{ $academicCouncilCount }}</p>
                       </div>
                     </div>
                     <div class="avatar">
-                      <span class="avatar-initial rounded bg-label-info view-academic-members" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#academicModal">
+                      <span class="avatar-initial rounded bg-label-info view-academic-members" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#councilModal" data-council-type="academic">
                         <i class="icon-base bx bx-user-plus icon-lg showMemberInfo" style="cursor: pointer;"></i>
                       </span>
                     </div>
@@ -95,11 +95,11 @@
                         <span class="text-heading">Administrative Council Members</span>
                         <div class="d-flex align-items-center my-1">
                           <h4 class="mb-0 me-2"></h4>
-                          <p class="text-primary mb-0">{{ $administrativeCouncilCount }}</p>
+                          <p class="text-primary mb-0" id="administrativeCount">{{ $administrativeCouncilCount }}</p>
                         </div>
                       </div>
                       <div class="avatar">
-                        <span class="avatar-initial rounded bg-label-info view-admin-members" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#administrativeModal">
+                        <span class="avatar-initial rounded bg-label-info view-admin-members" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#councilModal" data-council-type="administrative">
                         <i class="icon-base bx bx-user-plus icon-lg"></i>
                         </span>
                       </div>
@@ -118,11 +118,11 @@
                         <span class="text-heading">Joint Cuncil Member</span>
                         <div class="d-flex align-items-center my-1">
                           <h4 class="mb-0 me-2"></h4>
-                          <p class="text-primary mb-0">{{ $jointCount }}</p>
+                          <p class="text-primary mb-0" id="jointCount">{{ $jointCount }}</p>
                         </div>
                       </div>
                       <div class="avatar">
-                       <span class="avatar-initial rounded bg-label-info view-joint-members" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#jointModal">
+                       <span class="avatar-initial rounded bg-label-info view-joint-members" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#councilModal" data-council-type="joint">
                         <i class="icon-base bx bx-user-plus icon-lg"></i>
                         </span>
                       </div>
@@ -137,6 +137,33 @@
 </div>
 
 
+<!-- Reusable Council Modal -->
+<div class="modal fade" id="councilModal" tabindex="-1" aria-labelledby="councilModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      
+      <div class="modal-header">
+        <h5 class="modal-title" id="councilModalLabel">Council Member</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="mb-3">
+          <label for="councilEmail" class="form-label">Email</label>
+          <input type="text" class="form-control" id="councilEmail">
+        </div>
+        <div class="mb-3">
+          <label for="councilCampus" class="form-label">Campus</label>
+          <input type="text" class="form-control" id="councilCampus" readonly>
+        </div>
+        <button class="btn btn-primary" id="addCouncilMember">Add Member</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{{-- 
 <!-- Add Academic Council Member Modal -->
 <div class="modal fade" id="academicModal" tabindex="-1" aria-labelledby="academicModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
@@ -214,81 +241,119 @@
       </div>
     </div>
   </div>
-</div>
+</div> --}}
 
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.css">
 <script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
+
 <script>
+
+ function refreshCouncilCounts() {
+        $.ajax({
+            url: "{{ route('get.council.counts') }}",
+            method: "GET",
+            success: function (data) {
+                $('#academicCount').text(data.academic);
+                $('#administrativeCount').text(data.administrative);
+                $('#jointCount').text(data.joint);
+            },
+            error: function (xhr) {
+                console.error("Failed to fetch council counts:", xhr);
+            }
+        });
+    }
+
+
 $(document).ready(function () {
-    let emailInput = document.querySelector('#academicEmail');
-    let tagify = new Tagify(emailInput, {
-        whitelist: [],
-        dropdown: {
-            enabled: 1,
-            position: "text",
-            maxItems: 10
-        }
-    });
+    let currentCouncilType = null;
+    let tagify;
+  refreshCouncilCounts();
+    // When modal is triggered
+      $('[data-council-type]').on('click', function () {
+        currentCouncilType = $(this).data('council-type');
+        let title = currentCouncilType.charAt(0).toUpperCase() + currentCouncilType.slice(1) + " Council Member";
+        $('#councilModalLabel').text(title);
 
-    tagify.on('input', function (e) {
-        $.ajax({
-            url: "{{ route('search.hrmis.email') }}",
-            type: "GET",
-            data: { query: e.detail.value },
-            success: function (data) {
-                tagify.settings.whitelist = data.map(item => item.EmailAddress);
-                tagify.dropdown.show.call(tagify, e.detail.value);
+        // Reset fields
+        $('#councilEmail').val('');
+        $('#councilCampus').val('').removeData('campus-id');
+
+        // Destroy and reinitialize tagify
+        if (tagify) tagify.destroy();
+        tagify = new Tagify(document.querySelector('#councilEmail'), {
+            whitelist: [],
+            dropdown: {
+                enabled: 1,
+                position: "text",
+                maxItems: 10
             }
         });
-    });
 
-    tagify.on('add', function (e) {
-        let selectedEmail = e.detail.data.value;
-        $.ajax({
-            url: "{{ route('search.hrmis.email') }}",
-            type: "GET",
-            data: { query: selectedEmail },
-            success: function (data) {
-                let match = data.find(item => item.EmailAddress === selectedEmail);
-                if (match) {
-                     $('#academicCampus').val(match.CampusName); // display name
-                      $('#academicCampus').data('campus-id', match.CampusID); // store ID in data attribute
+        tagify.on('input', function (e) {
+            $.ajax({
+                url: "{{ route('search.hrmis.email') }}",
+                type: "GET",
+                data: { query: e.detail.value },
+                success: function (data) {
+                    tagify.settings.whitelist = data.map(item => item.EmailAddress);
+                    tagify.dropdown.show.call(tagify, e.detail.value);
                 }
-            }
+            });
+        });
+
+        tagify.on('add', function (e) {
+            let selectedEmail = e.detail.data.value;
+            $.ajax({
+                url: "{{ route('search.hrmis.email') }}",
+                type: "GET",
+                data: { query: selectedEmail },
+                success: function (data) {
+                    let match = data.find(item => item.EmailAddress === selectedEmail);
+                    if (match) {
+                        $('#councilCampus').val(match.CampusName);
+                        $('#councilCampus').data('campus-id', match.CampusID);
+                    }
+                }
+            });
+        });
+
+        tagify.on('remove', function () {
+            $('#councilCampus').val('').removeData('campus-id');
         });
     });
 
-    tagify.on('remove', function () {
-    $('#academicCampus').val('');
-    $('#academicCampus').removeData('campus-id');
-});
-
-    $('#addAcademicMember').on('click', function () {
+    $('#addCouncilMember').on('click', function () {
+        refreshCouncilCounts();
         let email = tagify.value[0]?.value;
-        let campusId = $('#academicCampus').data('campus-id');
+        let campusId = $('#councilCampus').data('campus-id');
 
         if (!email || !campusId) {
-        alert('Please select a valid email from the suggestions.');
-        return;
+            alert('Please select a valid email from the suggestions.');
+            return;
         }
 
+        let routeMap = {
+            academic: "{{ route('add.academic.member') }}",
+            administrative: "{{ route('add.administrative.member') }}",
+            joint: "{{ route('add.joint.member') }}"
+        };
+
         $.ajax({
-            url: "{{ route('add.academic.member') }}",
+            url: routeMap[currentCouncilType],
             type: "POST",
             data: {
                 _token: '{{ csrf_token() }}',
                 email: email,
-                campus: campusId // store actual campus ID
+                campus: campusId
             },
             success: function (response) {
                 alert(response.message);
                 tagify.removeAllTags();
-                $('#academicCampus').val('');
-                $('#academicCampus').removeData('campus-id');
-                $('#academicModal').modal('hide');
+                $('#councilCampus').val('').removeData('campus-id');
+                $('#councilModal').modal('hide');
             },
             error: function (xhr) {
                 alert('Something went wrong: ' + xhr.responseText);
@@ -296,6 +361,7 @@ $(document).ready(function () {
         });
     });
 });
+</script>
 
-</script> 
+
 @endsection

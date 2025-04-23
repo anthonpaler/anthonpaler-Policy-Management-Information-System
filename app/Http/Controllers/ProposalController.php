@@ -446,7 +446,7 @@ class ProposalController extends Controller
             $existsInOOB = BoardOoB::where('bor_meeting_id', $meetingID)->exists();
             BoardMeetingAgenda::create([
                 'bor_meeting_id' => $meetingID,
-                'bor_proposal_id' => $proposalID,
+                'board_proposal_id' => $proposalID,
                 'board_oob_id' => $oobID, // Store OOB ID
                 'status' => $existsInOOB ? 1 : 0, // Update status
             ]);
@@ -1446,11 +1446,19 @@ class ProposalController extends Controller
         DB::beginTransaction();
 
         try {
+
+            $decryptedProposals = array_map(function ($encryptedId) {
+                return decrypt($encryptedId);
+              }, $request->input('proposals', []));
+  
+              $request->merge(['proposals' => $decryptedProposals]);
+
+              
             // Validate the request
             $data = $request->validate([
                 'group_title' => 'required|string',
                 'proposals' => 'required|array',
-                'proposals.*' => 'integer|exists:proposals,id',
+                'proposals.*' => 'exists:proposals,id',
             ]);
 
             // Determine the correct agenda model
@@ -1648,4 +1656,16 @@ class ProposalController extends Controller
 
         return $filename;
     }
+
+    /* Get the correct Proposal foreign key column based on the level.
+    */
+   private function getProposalAgendaColumn(string $level): string
+   {
+       return match ($level) {
+           'Local' => 'local_proposal_id',
+           'University' => 'university_proposal_id',
+           'BOR' => 'board_proposal_id',
+           default => '',
+       };
+   }
 }

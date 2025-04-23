@@ -12,7 +12,6 @@
 
 
     <ul>
-        <li><strong>Description:</strong> {{ $description }}</li>
         <li><strong>Date & Time:</strong> {{ $date }}</li>
         <li><strong>Submission Start:</strong> {{ $submission_start }}</li>
         <li><strong>Submission End:</strong> {{ $submission_end }}</li>

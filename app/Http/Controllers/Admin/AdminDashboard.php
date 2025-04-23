@@ -32,6 +32,28 @@ class AdminDashboard extends Controller
       return view('content.admin.dashboard', compact('totalUsers', 'academicCouncilCount', 'administrativeCouncilCount',  'jointCount'));
     }
 
+    public function getCouncilCounts()
+{
+    // Same logic from your index() method
+    $academicIds = DB::table('academic_council_membership')->pluck('employee_id')->toArray();
+    $administrativeIds = DB::table('administrative_council_membership')->pluck('employee_id')->toArray();
+
+    $jointIds = array_intersect($academicIds, $administrativeIds);
+    $jointCount = count($jointIds);
+
+    $academicOnly = array_diff($academicIds, $jointIds);
+    $administrativeOnly = array_diff($administrativeIds, $jointIds);
+
+    $academicCouncilCount = count($academicOnly);
+    $administrativeCouncilCount = count($administrativeOnly);
+
+    return response()->json([
+        'academic' => $academicCouncilCount,
+        'administrative' => $administrativeCouncilCount,
+        'joint' => $jointCount
+    ]);
+}
+
 
     
   

@@ -7,7 +7,7 @@
 
   <title>Order Of Business</title>
   <style>
-    @font-face {
+    /* @font-face {
       font-family: 'Cambria';
       font-style: normal;
       font-weight: 400;
@@ -18,9 +18,7 @@
       font-style: bold;
       font-weight: 700;
       src: url("{{ public_path('fonts/CAMBRIAB.TTF') }}") format('truetype');
-    }
-
-
+    } */
 
     header{
       position: fixed;
@@ -43,7 +41,7 @@
       margin-left: 1.2cm;
       margin-right: 1.2cm;
       margin-bottom: 2.1cm;
-      font-family: 'Cambria';
+      /* font-family: 'Cambria'; */
       /* border: 1px dashed blue; */
       page-break-before: auto;
     }
@@ -102,7 +100,7 @@
       display: table;
       width: 100%;
       text-align: center;
-      font-family: 'Cambria';
+      /* font-family: 'Cambria'; */
     }
     .watermark,
     .time-generated{
@@ -111,7 +109,7 @@
       color: #000;
       font-size: 10px;
       top: -17px;
-      font-family: 'Cambria';
+      /* font-family: 'Cambria'; */
     }
     .time-generated{
       left: 1.25cm;
@@ -139,7 +137,7 @@
       font-weight: bold;
       text-align: center;
       text-transform: uppercase;
-      font-family: 'Cambria';
+      /* font-family: 'Cambria'; */
     }
     .section-title{
       font-size: 12px;
@@ -245,7 +243,7 @@
       <span class="text-muted fw-light text-center">{{ \Carbon\Carbon::parse($meeting->meeting_date_time)->format('F d, Y, l, h:i A') }}</span>
 
       @if ($meeting->modality == 1 || $meeting->modality == 3)
-      <span> | Venue  at  {{$meeting->venue->name}}</span>
+      <span> | Venue  at  {{$meeting->venue}}</span>
       @elseif ($meeting->modality == 2 || $meeting->modality == 3)
       <span> | Via {{ config('meetings.mode_if_online_types.'.$meeting->mode_if_online) }} - Online</span>
       @else

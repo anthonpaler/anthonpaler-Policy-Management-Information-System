@@ -27,18 +27,22 @@ class MeetingNotification extends Mailable
 
     public function build()
     {
+        $meeting = $this->meeting;
 
-        $level_mapping = [
-            0 => 'local_level',
-            1 => 'university_level',
-            2 => 'board_level',
-        ];
         
-        $level = strtolower($this->meeting->getMeetingLevel()); // Converts 'Local' -> 'local', 'University' -> 'university'
-        $level_key = "{$level}_level";
-        $council_type = isset(config('meetings.council_types')[$level_key][$this->meeting->council_type]) 
-        ? config('meetings.council_types')[$level_key][$this->meeting->council_type] 
-        : 'N/A';
+
+
+        $council_type = "";
+        if ($meeting->getMeetingCouncilType() == 0){
+            $council_type = config('meetings.council_types.local_level.'.$meeting->council_type) ;
+        }
+        elseif ($meeting->getMeetingCouncilType() == 1){
+            $council_type = config('meetings.council_types.university_level.'.$meeting->council_type) ;
+        }
+        elseif ($meeting->getMeetingCouncilType() == 2){
+            $council_type = config('meetings.council_types.board_level.'.$meeting->council_type) ;
+        }
+
         
         return $this->subject('New Meeting Scheduled')
                     ->view('emails.create-meeting-notification')
@@ -49,7 +53,7 @@ class MeetingNotification extends Mailable
                     'submission_start' => $this->meeting->submission_start,
                     'submission_end' => $this->meeting->submission_end,
                     'link' => $this->meeting->link,
-                    'quarter' => config('meetings.quaterly_meetings')[$this->meeting->quarter] ?? 'N/A',
+                    'quarter' => config('meetings.quarterly_meetings')[$this->meeting->quarter] ?? 'N/A',
                     'council_type' => $council_type,
                     'modality' => $this->meeting->modality,
                     ]);

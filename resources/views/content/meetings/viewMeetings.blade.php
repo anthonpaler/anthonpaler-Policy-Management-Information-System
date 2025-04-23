@@ -32,19 +32,19 @@
                 <li class="custom_tab_item meeting-tab {{ session('isProponent') || session('secretary_level') == 0 ? 'active' : '' }}" data-level = "0">
                     <div class="">
                         <i class='bx bx-book-open' ></i>
-                        <span>Local Meetings</span>
+                        <span>Local Council Meetings</span>
                     </div>
                 </li>
                 <li class="custom_tab_item meeting-tab {{ session('secretary_level') == 1 ? 'active' : '' }} " data-level = "1">
                     <div class="">
                         <i class='bx bx-book-reader'></i>
-                        <span>University Meetings</span>
+                        <span>University Council Meetings</span>
                     </div>
                 </li>
                 <li class="custom_tab_item meeting-tab {{ session('secretary_level') == 2 ? 'active' : '' }}" data-level = "2">
                     <div class="">
                         <i class='bx bxs-book-reader' ></i>
-                        <span>Board Meetings</span>
+                        <span>Board of Regents Meetings</span>
                     </div>
                 </li>
             </ul>

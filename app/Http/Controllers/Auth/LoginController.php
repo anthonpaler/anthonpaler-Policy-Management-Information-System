@@ -112,7 +112,6 @@ class LoginController extends Controller
 
               } elseif($isUniversitySecretary){
                 $role = 4; // University Secretary
-                   // University Campus Secretary
 
               } elseif($isBoardSecretary){
                 $role = 5; // Board Secretary
@@ -126,7 +125,7 @@ class LoginController extends Controller
                 } elseif ($isAcademicCouncil) {
                     $role = 0; // Academic Council
 
-                }elseif ($request->email == "lycabalogo@gmail.com") {
+                }elseif ($request->email == "kortomandac@gmail.com") {
                     $role = 7; // Super Admin
 
                 }
