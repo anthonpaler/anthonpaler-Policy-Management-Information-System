@@ -395,7 +395,6 @@ class OrderOfBusinessController extends Controller
                 }
 
                 $groupId = $proposal->proposal->group_proposal_id ?? null;
-
                 if ($groupId) {
                     if (!isset($categorizedProposals[$type][$groupId])) {
                         $categorizedProposals[$type][$groupId] = collect();
@@ -696,7 +695,7 @@ class OrderOfBusinessController extends Controller
     {
       DB::beginTransaction();
       try {
-        $orderData = $request->input('orderData');  
+        $orderData = $request->input('orderData');
         // Determine the correct Model class based on the level
         $agendaModel = match ($level) {
             'Local' => LocalMeetingAgenda::class,

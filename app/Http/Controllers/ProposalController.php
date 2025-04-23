@@ -1446,6 +1446,12 @@ class ProposalController extends Controller
         DB::beginTransaction();
 
         try {
+            $decryptedProposals = array_map(function ($encryptedId) {
+              return decrypt($encryptedId);
+            }, $request->input('proposals', []));
+
+            $request->merge(['proposals' => $decryptedProposals]);
+
             // Validate the request
             $data = $request->validate([
                 'group_title' => 'required|string',
@@ -1647,5 +1653,19 @@ class ProposalController extends Controller
         }
 
         return $filename;
+    }
+
+
+    /**
+     * Get the correct Proposal foreign key column based on the level.
+     */
+    private function getProposalAgendaColumn(string $level): string
+    {
+        return match ($level) {
+            'Local' => 'local_proposal_id',
+            'University' => 'university_proposal_id',
+            'BOR' => 'board_proposal_id',
+            default => '',
+        };
     }
 }

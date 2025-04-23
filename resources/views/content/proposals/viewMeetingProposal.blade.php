@@ -26,6 +26,9 @@
         'Endorsed' => 0,
         'Returned' => 0,
         'Deferred' => 0,
+        'Approved with Coletilla' => 0,
+        'For Review' => 0,
+        'Confirmed' => 0,
     ];
 
     foreach ($proposals as $proposal) {
@@ -36,27 +39,130 @@
     }
 @endphp
 <div class="row">
-<!-- /single card  -->
-  <div class="col-lg-2 col-sm-6 mb-3">
-    <div class="card h-100">
-      <div class="card-body">
-        <div class="d-flex gap-2 justify-content-between">
-          <div class="card-info">
-            <p class="text-heading mb-1">For Endorsment</p>
-            <div class="d-flex align-items-center mb-1">
-                <h4 class="card-title mb-0 me-2">{{ $statusCounts['For Endorsement'] }}</h4>
-                <span class="text-primary"> proposals</span>
+  @if ($meeting-> getMeetingCouncilType() == 2)
+    <div class="col-lg-2 col-md-6 col-sm-6 mb-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="d-flex gap-2 justify-content-between">
+            <div class="card-warning">
+              <p class="text-heading mb-1">Approved with Coletilla</p>
+              <div class="d-flex align-items-center mb-1">
+                  <h4 class="card-title mb-0 me-2">{{ $statusCounts['Approved with Coletilla'] }}</h4>
+                <span class="text-warning">proposals</span>
+              </div>
             </div>
-          </div>
-          <div class="card-icon">
-            <span class="badge bg-label-primary rounded p-2">
-              <i class='bx bx-trending-up'></i>
-            </span>
+            <div class="card-icon">
+              <span class="badge bg-label-warning rounded p-2">
+                  <i class='bx bx-like' ></i>
+              </span>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
+    <div class="col-lg-2 col-md-6 col-sm-6 mb-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="d-flex gap-2 justify-content-between">
+            <div class="card-primary">
+              <p class="text-heading mb-1">For Review</p>
+              <div class="d-flex align-items-center mb-1">
+                  <h4 class="card-title mb-0 me-2">{{ $statusCounts['For Review'] }}</h4>
+                <span class="text-primary">proposals</span>
+              </div>
+            </div>
+            <div class="card-icon">
+              <span class="badge bg-label-primary rounded p-2">
+                <i class='bx bx-question-mark'></i>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-2 col-md-6 col-sm-6 mb-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="d-flex gap-2 justify-content-between">
+            <div class="card-success">
+              <p class="text-heading mb-1">Confirmed</p>
+              <div class="d-flex align-items-center mb-1">
+                  <h4 class="card-title mb-0 me-2">{{ $statusCounts['Confirmed'] }}</h4>
+                <span class="text-success">proposals</span>
+              </div>
+            </div>
+            <div class="card-icon">
+              <span class="badge bg-label-success rounded p-2">
+                <i class='bx bx-book-open'></i>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  @else
+    <div class="col-lg-2 col-sm-6 mb-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="d-flex gap-2 justify-content-between">
+            <div class="card-info">
+              <p class="text-heading mb-1">For Endorsment</p>
+              <div class="d-flex align-items-center mb-1">
+                  <h4 class="card-title mb-0 me-2">{{ $statusCounts['For Endorsement'] }}</h4>
+                  <span class="text-primary"> proposals</span>
+              </div>
+            </div>
+            <div class="card-icon">
+              <span class="badge bg-label-primary rounded p-2">
+                <i class='bx bx-trending-up'></i>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-2 col-md-6 col-sm-6 mb-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="d-flex gap-2 justify-content-between">
+            <div class="card-info">
+              <p class="text-heading mb-1">Endorsed</p>
+              <div class="d-flex align-items-center mb-1">
+                  <h4 class="card-title mb-0 me-2">{{ $statusCounts['Endorsed'] }}</h4>
+                  <span class="text-info">proposals</span>
+              </div>
+            </div>
+            <div class="card-icon">
+              <span class="badge bg-label-info rounded p-2">
+                  <i class='bx bx-up-arrow-circle' ></i>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-2 col-md-6 col-sm-6 mb-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="d-flex gap-2 justify-content-between">
+            <div class="card-info">
+              <p class="text-heading mb-1">Returned</p>
+              <div class="d-flex align-items-center mb-1">
+                  <h4 class="card-title mb-0 me-2">{{ $statusCounts['Returned'] }}</h4>
+                  <span class="text-warning">proposals</span>
+              </div>
+            </div>
+            <div class="card-icon">
+              <span class="badge bg-label-warning rounded p-2">
+                  <i class='bx bx-left-arrow-circle'></i>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  @endif
+
   <div class="col-lg-2 col-md-6 col-sm-6 mb-3">
     <div class="card h-100">
       <div class="card-body">
@@ -91,46 +197,6 @@
           <div class="card-icon">
             <span class="badge bg-label-success rounded p-2">
                 <i class='bx bx-like' ></i>
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="col-lg-2 col-md-6 col-sm-6 mb-3">
-    <div class="card h-100">
-      <div class="card-body">
-        <div class="d-flex gap-2 justify-content-between">
-          <div class="card-info">
-            <p class="text-heading mb-1">Endorsed</p>
-            <div class="d-flex align-items-center mb-1">
-                <h4 class="card-title mb-0 me-2">{{ $statusCounts['Endorsed'] }}</h4>
-                <span class="text-info">proposals</span>
-            </div>
-          </div>
-          <div class="card-icon">
-            <span class="badge bg-label-info rounded p-2">
-                <i class='bx bx-up-arrow-circle' ></i>
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="col-lg-2 col-md-6 col-sm-6 mb-3">
-    <div class="card h-100">
-      <div class="card-body">
-        <div class="d-flex gap-2 justify-content-between">
-          <div class="card-info">
-            <p class="text-heading mb-1">Returned</p>
-            <div class="d-flex align-items-center mb-1">
-                <h4 class="card-title mb-0 me-2">{{ $statusCounts['Returned'] }}</h4>
-                <span class="text-warning">proposals</span>
-            </div>
-          </div>
-          <div class="card-icon">
-            <span class="badge bg-label-warning rounded p-2">
-                <i class='bx bx-left-arrow-circle'></i>
             </span>
           </div>
         </div>

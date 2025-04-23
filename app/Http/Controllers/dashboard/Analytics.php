@@ -31,6 +31,12 @@ class Analytics extends Controller
         2 => BorMeeting::class,
       ];
 
+      // $agendaModel = [
+      //   0 => LocalMeetingAgenda::class,
+      //   1 => UniversityMeetingAgenda::class,
+      //   2 => BoardMeetingAgenda::class,
+      // ];
+
       // FOR SAME LEVEL MEETINGS
       if( $level == 0){
         $latestMeetingRecord = $meetingModel[$level]::where('campus_id', $campusId)->orderByDesc('created_at')->first();
