@@ -44,6 +44,22 @@ class UniversityCouncilMeeting extends Model
                $currentDate->greaterThan($this->meeting_date_time);
     }
 
+    // public function getIsSubmissionClosedAttribute()
+    // {
+    //     $currentDate = Carbon::now();
+
+    //     if (!$this->submission_end || !$this->submission_start || !$this->meeting_date_time) {
+    //         return false;
+    //     }
+
+    //     $submissionEnd = Carbon::parse($this->submission_end)->endOfDay();
+
+    //     return $currentDate->greaterThan($submissionEnd) ||
+    //           $currentDate->lessThan($this->submission_start) ||
+    //           $currentDate->greaterThan($this->meeting_date_time);
+    // }
+    
+
     // DETERMINE IF THE MEETING EXIST IN UNIVERSITY OOB
     public function orderOfBusiness()
     {

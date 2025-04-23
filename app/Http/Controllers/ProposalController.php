@@ -279,10 +279,6 @@ class ProposalController extends Controller
                 return response()->json(['type' => 'danger', 'message' => 'Invalid meeting ID.', 'title' => "Error"]);
             }
 
-            // if ($meeting->getIsSubmissionClosedAttribute() || ($meeting->status == 1)) {
-            //     return response()->json(['type' => 'danger', 'message' => 'The submission or the meeting is already closed!', 'title' => "Meeting Closed!"]);
-            // }
-
             $request->validate([
                 'proponent_email' => 'required|email|exists:employees,EmailAddress',
                 'title' => 'required|string|max:255',
@@ -297,7 +293,10 @@ class ProposalController extends Controller
             $proponent = Employee::where('EmailAddress', $request->input('proponent_email'))->first();
 
             $campus_id = session('campus_id');
-
+            $proposalStatus = 0;
+            if(session('isSecretary') && $userRole == 5){
+              $proposalStatus = 8;
+            }
 
             // Create proposal
             $proposal = Proposal::create([
@@ -307,7 +306,7 @@ class ProposalController extends Controller
                 'action' => $request->input('action'),
                 'type' => $request->input('matter'),
                 'sub_type' => $request->input('sub_type'),
-                'status' => 0,
+                'status' =>  $proposalStatus,
             ]);
 
             $oobID = null; // Default to null
@@ -326,44 +325,34 @@ class ProposalController extends Controller
 
 
             // Attach proposal to the corresponding meeting agenda
-            $this->attachProposalToAgenda($meetingID, $proposal->id, $userRole, $oobID);
+            $this->attachProposalToAgenda($meetingID, $proposal->id, $userRole, $oobID,  $proposalStatus);
 
             // Handle file uploads
             $fileIds = [];
             $file_order_no = 1;
+
+            $fileStatus = 1;
+
+            if(session('isSecretary')){
+              $fileStatus = 2;
+            }
+
             if ($request->hasFile('proposal_files')) {
-                foreach ($request->file('proposal_files') as $file) {
-                    $originalNameWithExt = $file->getClientOriginalName();
-                    $extension = $file->getClientOriginalExtension();
+              foreach ($request->file('proposal_files') as $file) {
+                $filename = $this->generateUniqueFilename($file);
+                $file->storeAs('proposals', $filename, 'public');
+                $proposalFile = ProposalFile::create([
+                    'proposal_id' => $proposal->id,
+                    'file' => $filename,
+                    'version' => 1,
+                    'file_status' => $fileStatus,
+                    'is_active' => true,
+                    'order_no' => $file_order_no,
+                ]);
 
-                    // Extract filename without final extension
-                    preg_match('/^(.*?)(\(\d+\))?(\.\w+)?$/', $originalNameWithExt, $matches);
-                    $baseName = trim($matches[1]);
-                    $filename = "{$baseName}.{$extension}";
-
-                    $i = 1;
-                    while (Storage::disk('public')->exists("proposals/{$filename}")) {
-                        $filename = "{$baseName} ({$i}).{$extension}";
-                        $i++;
-                    }
-
-                    // Store the file
-                    $filePath = $file->storeAs('proposals', $filename, 'public');
-
-                    // Save file record in DB
-                    $proposalFile = ProposalFile::create([
-                        'proposal_id' => $proposal->id,
-                        'file' => $filename,
-                        'version' => 1,
-                        'file_status' => 1,
-                        'file_reference_id' => null,
-                        'is_active' => true,
-                        'order_no' => $file_order_no,
-                    ]);
-
-                    $fileIds[] = $proposalFile->id;
-                    $file_order_no++;
-                }
+                $fileIds[] = $proposalFile->id;
+                $file_order_no++;
+              }
             }
 
             // Save file IDs in proposal logs
@@ -392,15 +381,12 @@ class ProposalController extends Controller
 
             DB::commit();
 
-            return redirect()->back()->with('toastr', [
-                'type' => 'success',
-                'message' => 'Proposal added successfully!',
-            ]);
+            return response()->json(['type' => 'success', 'message' => 'Proposal added successfully!', 'title' => 'Success!']);
 
         } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response()->json(['type' => 'danger', 'message' => $th->getMessage(), 'title' => "Something went wrong!"]);
+            return response()->json(['type' => 'danger', 'message' => $th->getMessage(), 'title' => 'Something went wrong!']);
         }
     }
 
@@ -422,7 +408,7 @@ class ProposalController extends Controller
     /**
      * Attach proposal to the appropriate agenda table based on the meeting type.
      */
-    private function attachProposalToAgenda($meetingID, $proposalID, $roleID, $oobID = null)
+    private function attachProposalToAgenda($meetingID, $proposalID, $roleID, $oobID = null,  $proposalStatus)
     {
         $status = 0; // Default status
 
@@ -432,7 +418,7 @@ class ProposalController extends Controller
                 'local_council_meeting_id' => $meetingID,
                 'local_proposal_id' => $proposalID,
                 'local_oob_id' => $oobID, // Store OOB ID
-                'status' => $existsInOOB ? 1 : 0, // Update status
+                'status' => $existsInOOB ? 1 : $proposalStatus, // Update status
             ]);
         } elseif ($roleID == 4) { // University Secretary
             $existsInOOB = UniversityOoB::where('university_council_meeting_id', $meetingID)->exists();
@@ -440,7 +426,7 @@ class ProposalController extends Controller
                 'university_meeting_id' => $meetingID,
                 'university_proposal_id' => $proposalID,
                 'university_oob_id' => $oobID, // Store OOB ID
-                'status' => $existsInOOB ? 1 : 0, // Update status
+                'status' => $existsInOOB ? 1 : $proposalStatus, // Update status
             ]);
         } elseif ($roleID == 5) { // Board Secretary
             $existsInOOB = BoardOoB::where('bor_meeting_id', $meetingID)->exists();
@@ -448,7 +434,7 @@ class ProposalController extends Controller
                 'bor_meeting_id' => $meetingID,
                 'bor_proposal_id' => $proposalID,
                 'board_oob_id' => $oobID, // Store OOB ID
-                'status' => $existsInOOB ? 1 : 0, // Update status
+                'status' => $existsInOOB ? 1 : $proposalStatus, // Update status
             ]);
         }
     }
