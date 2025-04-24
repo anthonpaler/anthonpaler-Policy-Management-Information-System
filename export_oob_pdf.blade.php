@@ -180,9 +180,9 @@
       text-transform: uppercase;
       padding: 7px;
     }
-    /* .tr-group{
+    .tr-group{
       background-color:rgb(191, 218, 248);
-    } */
+    }
     td {
       text-align: left;
       border: .5px solid #AACFEA;

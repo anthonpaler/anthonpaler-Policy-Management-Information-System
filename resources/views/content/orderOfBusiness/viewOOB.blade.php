@@ -472,7 +472,7 @@
                                         <tr class="tr-group selectable-row group position-relative" data-group="true" data-id="{{encrypt($proposal['data']->first()->proposal_group->id )}}">
                                           <td>2.<span class="order_no">{{ $counter }}</span></td>
                                           <td colspan="4">
-                                            <strong>{{ $proposal['data']->first()->proposal_group->group_title ?? 'Group Proposal' }}</strong>
+                                            <span>{{ $proposal['data']->first()->proposal_group->group_title ?? 'Group Proposal' }}</span>
                                             @if (session('isSecretary') && (session('secretary_level') == $meeting->getMeetingCouncilType()))
                                                 <div class="dropdown position-absolute" style="right: 10px; top: 50%; transform: translateY(-50%); z-index: 1000;">
                                                     <button class="btn btn-sm btn-warning dropdown-toggle d-none group-menu-btn" type="button" data-bs-toggle="dropdown">
