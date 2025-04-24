@@ -26,7 +26,7 @@
         'Endorsed' => 0,
         'Returned' => 0,
         'Deferred' => 0,
-        'Approved with Coletilla' => 0,
+        'Approved with Colatilla' => 0,
         'For Review' => 0,
         'Confirmed' => 0,
     ];
@@ -45,9 +45,9 @@
         <div class="card-body">
           <div class="d-flex gap-2 justify-content-between">
             <div class="card-warning">
-              <p class="text-heading mb-1">Approved with Coletilla</p>
+              <p class="text-heading mb-1">Approved with Colatilla</p>
               <div class="d-flex align-items-center mb-1">
-                  <h4 class="card-title mb-0 me-2">{{ $statusCounts['Approved with Coletilla'] }}</h4>
+                  <h4 class="card-title mb-0 me-2">{{ $statusCounts['Approved with Colatilla'] }}</h4>
                 <span class="text-warning">proposals</span>
               </div>
             </div>

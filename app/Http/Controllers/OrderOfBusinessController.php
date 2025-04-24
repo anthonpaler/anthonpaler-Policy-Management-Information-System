@@ -856,13 +856,5 @@ class OrderOfBusinessController extends Controller
         /**
      * Get the correct Proposal foreign key column based on the level.
      */
-    private function getProposalAgendaColumn(string $level): string
-    {
-        return match ($level) {
-            'Local' => 'local_proposal_id',
-            'University' => 'university_proposal_id',
-            'BOR' => 'board_proposal_id',
-            default => '',
-        };
-    }
+   
 }

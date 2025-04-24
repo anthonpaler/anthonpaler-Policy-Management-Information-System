@@ -54,8 +54,9 @@
                         @enderror
                         </div>
                     </div>
+                    
                     <div class="mb-3">
-                        <label class="form-label" for="basic-icon-default-message">Description & Other Reminders (Optional)</label>
+                        <label class="form-label" for="basic-icon-default-message">Title Description</label>
                         <div class="input-group input-group-merge">
                             <!-- <span id="basic-icon-default-message2" class="input-group-text">
                                 <i class="bx bx-comment"></i>
@@ -63,8 +64,8 @@
                             <textarea
                                 id="basic-icon-default-message"
                                 class="form-control"
-                                placeholder="Enter description..."
-                                aria-label="Enter description..."
+                               placeholder="Enter the title description of the meeting(eg. 99th Board Of Regents (Regular) meeting"
+                                aria-label="Enter the title description of the meeting..."
                                 aria-describedby="basic-icon-default-message2"
                                 name="description"
                                 rows="5"

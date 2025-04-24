@@ -245,8 +245,7 @@ class ProposalController extends Controller
     {
       $query = $request->input('search');
 
-      $users = User::whereIn('role', [0, 1, 2])
-                   ->where('email', 'LIKE', "%{$query}%")
+      $users = User::where('email', 'LIKE', "%{$query}%")
                    ->pluck('email')
                    ->filter(function ($email) {
                        return filter_var($email, FILTER_VALIDATE_EMAIL);
@@ -1419,6 +1418,13 @@ class ProposalController extends Controller
         DB::beginTransaction();
 
         try {
+
+            $decryptedProposals = array_map(function ($encryptedId) {
+                return decrypt($encryptedId);
+              }, $request->input('proposals', []));
+  
+              $request->merge(['proposals' => $decryptedProposals]);
+
             // Validate the request
             $data = $request->validate([
                 'group_title' => 'required|string',
@@ -1620,5 +1626,15 @@ class ProposalController extends Controller
         }
 
         return $filename;
+    }
+
+    private function getProposalAgendaColumn(string $level): string
+    {
+        return match ($level) {
+            'Local' => 'local_proposal_id',
+            'University' => 'university_proposal_id',
+            'BOR' => 'board_proposal_id',
+            default => '',
+        };
     }
 }
