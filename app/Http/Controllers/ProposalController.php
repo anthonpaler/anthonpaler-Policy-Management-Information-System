@@ -57,17 +57,12 @@ class ProposalController extends Controller
             0 => [0, 2, 6],
             1 => [1, 2, 6],
             2 => [0, 1, 2, 6],
-            3 => [0, 1, 2, 6],
-            4 => [0, 1, 2, 6],
-            5 => [0, 1, 2, 6],
-            6 => [0, 1, 2, 6],
             default => [],
         };
 
         if (empty($roles)) {
             return response()->json([]);
         }
-
 
         if(session('isProponent')){
             if (!$campus_id) {
@@ -86,8 +81,7 @@ class ProposalController extends Controller
         }
 
         if(session('isSecretary')){
-            $users = User::whereIn('role', $roles)
-            ->where(function ($q) use ($query) {
+            $users = User::where(function ($q) use ($query) {
                 $q->where('name', 'LIKE', "%{$query}%")
                 ->orWhere('email', 'LIKE', "%{$query}%");
             })

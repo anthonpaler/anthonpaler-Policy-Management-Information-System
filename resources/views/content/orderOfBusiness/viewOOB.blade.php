@@ -3,10 +3,10 @@
 @section('title', 'Order of Business')
 
 @section('content')
- 
+
     <div class="bread-crumbs overflow-auto" style="max-width: 100%; white-space: nowrap;">
         <h5>Dashboard</h5>
-        @if(!session('isBoardRegent'))  
+        @if(!session('isBoardRegent'))
             <div class="divider"></div>
             <a href="/">
                 <i class='bx bx-home-alt' ></i>
@@ -17,7 +17,7 @@
             <a href="#" >Order of Business Information</a>
         @endif
     </div>
- 
+
         <!-- Modal Upload Previous Minutes -->
         <div class="modal fade" id="previousMinModal" tabindex="-1" aria-labelledby="previousMinModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
@@ -46,7 +46,7 @@
 
 
 <div class="card p-4">
-    <div class="mt-3 mb-3">
+    <div class="mt-3 mb-3 d-flex justify-content-between align-items-center">
         <button type="button" id="exportOOB" class="btn btn-secondary d-flex gap-2 {{$orderOfBusiness->status == 0 ? 'd-none' : ''}}">
             <a href="{{ route('oob.export.pdf', ['level' => $orderOfBusiness->meeting->getMeetingLevel(), 'oob_id' => encrypt($orderOfBusiness->id)]) }}" class="text-white d-flex align-items-center gap-2" target="_blank"><i class='bx bx-export'></i> Export OOB</a>
         </button>
@@ -90,7 +90,7 @@
             <div class="d-flex justify-content-between mb-2 gap-2">
               <label class="form-label">1. Preliminaries</label>
               <div class="d-flex align-items-center gap-2">
-                  @if (in_array(auth()->user()->role, [3, 4, 5]))
+                  {{-- @if (in_array(auth()->user()->role, [3, 4, 5]))
                       @if(empty($orderOfBusiness->previous_minutes))
                           <button class="btn btn-sm btn-primary d-flex align-items-center gap-2"
                           id="openMinutesModal">
@@ -99,7 +99,6 @@
                           </button>
                       @endif
 
-                      {{-- Show View Button only if there is a file --}}
                       @if(!empty($orderOfBusiness->previous_minutes))
                           <a href="{{ asset('storage/previous_minutes/' . $orderOfBusiness->previous_minutes) }}"
                               target="_blank"
@@ -109,15 +108,21 @@
                               View Previous Minutes
                           </a>
 
-                      {{-- EDIT FILE --}}
                       @if (in_array(auth()->user()->role, [3, 4, 5]))
                           <button type="button" class="btn btn-sm btn-warning d-flex align-items-center gap-2" id="editMinutesButton" style="display: none;">
                               <i class='bx bx-edit'></i> Edit Previous Minutes File
                           </button>
                       @endif
-                  @endif
-                @endif
-
+                  @endif --}}
+                {{-- @endif --}}
+                <button type="button" class="btn btn-sm btn-primary d-flex align-items-center gap-2"
+                id="uploadOOBFileModalTrigger" data-toggle="modal" data-target="#uploadOOBFileModal">
+                    Upload OOB File
+                </button>
+                <button type="button" class="btn btn-sm btn-success d-flex align-items-center gap-2"
+                id="OOBFileModalTrigger" data-toggle="modal" data-target="#OOBFileModal">
+                    View OOB Files
+                </button>
               </div>
           </div>
 
@@ -130,6 +135,203 @@
             <textarea  name="preliminaries" id="preliminaries">{{ $orderOfBusiness->preliminaries ?? '' }}</textarea>
           </div>
         @endif
+        <script>
+          $("#uploadOOBFileModalTrigger").on("click", function(e) {
+            e.preventDefault();
+            $("#uploadOOBFileModal").modal("show");
+          });
+          $("#OOBFileModalTrigger").on("click", function(e) {
+            e.preventDefault();
+            $("#OOBFileModal").modal("show");
+          });
+        </script>
+        {{-- UPLOAD OOB MODAL --}}
+        <div class="modal fade" id="uploadOOBFileModal" tabindex="-1" aria-labelledby="uploadOOBFileModalLabel" aria-hidden="true">
+          <div class="modal-dialog modal-md modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header">
+                  <div class="d-flex align-items-center gap-3">
+                      <h5 class="modal-title" id="uploadOOBFileModalLabel">Upload OOB File</h5>
+                  </div>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <form method="post" enctype="multipart/form-data" action="{{route('proposal.group-proposal.add-attachment')}}" id="groupAttachmentFrm" data-id="">
+                @csrf
+                <div class="modal-body">
+                  <div class="mb-3">
+                    <label class="form-label" for="">File Type<span class="ms-1 text-danger">*</span></label>
+                    <div class="input-group input-group-merge">
+                      <span  class="input-group-text">
+                        <i class='bx bx-file' ></i>
+                      </span>
+                      <select name="" id="" class="form-select">
+                        <option value="" disabled selected>Select File Type</option>
+                        @foreach (config('order_of_business.oob_file_type') as $index => $item)
+                          <option value="{{ $index }}">{{ $item }}</option>
+                        @endforeach
+                      </select>
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label" for="">Attach File<span class="ms-1 text-danger">*</span></label>
+                    <input type="file" class="form-control" name="file">
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-primary" id="addGroupAttachBtn">Add Attachment</button>
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+        <!-- Modal for Renaming File -->
+        <div class="modal fade" id="renameFileModal" tabindex="-1" aria-labelledby="renameFileModallLabel"
+        aria-hidden="true" data-file-id="">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="renameFileModallLabel">Rename File</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label" for="">Current File Name</label>
+                        <div class="input-group input-group-merge">
+                            <span id="" class="input-group-text">
+                                <i class='bx bx-file' ></i>
+                            </span>
+                            <input type="text" class="form-control" id="currentFileName" value="" disabled>
+                        </div>
+                    </div>
+                    <div class="">
+                        <label class="form-label" for="">New File Name</label>
+                        <div class="input-group input-group-merge">
+                            <span id="" class="input-group-text">
+                                <i class='bx bx-rename' ></i>
+                            </span>
+                            <input type="text" class="form-control" id="newFileName" placeholder="Enter new file name">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button class="btn btn-primary d-flex gap-2" id="renameFileBtn">Rename</button>
+                </div>
+            </div>
+          </div>
+        </div>
+        {{-- OOB FILES MODAL --}}
+        <div class="modal fade" id="OOBFileModal" tabindex="-1" aria-labelledby="OOBFileModalLabel" aria-hidden="true">
+          <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header">
+                  <div class="d-flex align-items-center gap-3">
+                      <h5 class="modal-title" id="OOBFileModalLabel">OOB Files</h5>
+                  </div>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <form method="post" enctype="multipart/form-data" action="" id="groupAttachmentFrm" data-id="">
+                @csrf
+                <div class="modal-body">
+                  <div class="file-container d-flex flex-column gap-3">
+                    <div class="d-flex justify-content-between gap-2 align-items-center">
+                      <div class="d-flex align-items-center gap-3">
+                          <div class="">
+                              <img src="{{  asset('assets/img/icons/file-icons/pdf.png') }}" class="file-icon" alt="File Icon">
+                          </div>
+                          <div class="file-name">
+                              <span style="color: #3E4043;" class="text-wrap view-single-file-preview"
+                              data-file-url="/storage/proposals">Previous Minutes 0f 98th Board of Regenets (Regular) Meeting Held on October 15, 2025.pdf</span>
+                              <div class="d-flex gap-2">
+                                <small  class="text-muted">Previous Minutes</small>
+                              </div>
+                          </div>
+                      </div>
+                      <div class="d-flex align-items-center gap-2">
+                        <button
+                            class="action-btn success"
+                            data-bs-toggle="modal"
+                            data-bs-target="#renameFileModal"
+                            data-id=""
+                            data-filename="">
+                            <i class='bx bx-rename'></i>
+                            <span class="tooltiptext">Rename</span>
+                        </button>
+                        <button class="action-btn danger"  data-id="" >
+                            <i class='bx bx-trash-alt'></i>
+                            <span class="tooltiptext">Delete</span>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="d-flex justify-content-between gap-2 align-items-center">
+                      <div class="d-flex align-items-center gap-3">
+                          <div class="">
+                              <img src="{{  asset('assets/img/icons/file-icons/pdf.png') }}" class="file-icon" alt="File Icon">
+                          </div>
+                          <div class="file-name">
+                            <span style="color: #3E4043;" class="text-wrap view-single-file-preview"
+                            data-file-url="/storage/proposals">Matrix of Resolution Approved at the Regular Meeting on October 15, 2025.pdf</span>
+                            <div class="d-flex gap-2">
+                              <small  class="text-muted">Matrix of Resolution</small>
+                            </div>
+                          </div>
+                      </div>
+                      <div class="d-flex align-items-center gap-2">
+                        <button
+                            class="action-btn success rename-file-btn"
+                            data-bs-toggle="modal"
+                            data-bs-target="#renameFileModal"
+                            data-id=""
+                            data-filename="">
+                            <i class='bx bx-rename'></i>
+                            <span class="tooltiptext">Rename</span>
+                        </button>
+                        <button class="action-btn danger delete-proposal-file"  data-id="" >
+                            <i class='bx bx-trash-alt'></i>
+                            <span class="tooltiptext">Delete</span>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="d-flex justify-content-between gap-2 align-items-center">
+                      <div class="d-flex align-items-center gap-3">
+                          <div class="">
+                              <img src="{{  asset('assets/img/icons/file-icons/pdf.png') }}" class="file-icon" alt="File Icon">
+                          </div>
+                          <div class="file-name">
+                            <span style="color: #3E4043;" class="text-wrap view-single-file-preview"
+                            data-file-url="/storage/proposals">Previous Attendance at the Regular Meeting on October 15, 2025.pdf</span>
+                            <div class="d-flex gap-2">
+                              <small  class="text-muted">Previous Attendance</small>
+                            </div>
+                          </div>
+                      </div>
+                      <div class="d-flex align-items-center gap-2">
+                        <button
+                            class="action-btn success rename-file-btn"
+                            data-bs-toggle="modal"
+                            data-bs-target="#renameFileModal"
+                            data-id=""
+                            data-filename="">
+                            <i class='bx bx-rename'></i>
+                            <span class="tooltiptext">Rename</span>
+                        </button>
+                        <button class="action-btn danger delete-proposal-file"  data-id="" >
+                            <i class='bx bx-trash-alt'></i>
+                            <span class="tooltiptext">Delete</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-primary" id="SaveOOBFileChanges">Save Changes</button>
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
         <!-- Modal -->
         <div class="modal fade" id="proposalFIleModal" tabindex="-1" aria-labelledby="proposalFIleModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -860,13 +1062,13 @@ src="https://cdn.jsdelivr.net/npm/jodit@latest/es2021/jodit.fat.min.js"
     var proposalStatus = @json(config('proposals.status'));
     $(document).ready(function () {
 
-        
+
         $("#addOtherMatterBtn").on("click", function (e) {
             e.preventDefault();
             $("#otherMattersModal").modal("show");
         });
 
-       
+
 
 
 
