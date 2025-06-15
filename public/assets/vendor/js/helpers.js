@@ -638,7 +638,7 @@ var Helpers = {
   // *******************************************************************************
   // * Life cycle
   init: function init() {
-    var _this10 = this;
+    var _this0 = this;
     if (this._initialized) return;
     this._initialized = true;
 
@@ -651,17 +651,17 @@ var Helpers = {
     // Bind init event
     this.off('init._Helpers');
     this.on('init._Helpers', function () {
-      _this10.off('resize._Helpers:redrawMenu');
-      _this10.on('resize._Helpers:redrawMenu', function () {
+      _this0.off('resize._Helpers:redrawMenu');
+      _this0.on('resize._Helpers:redrawMenu', function () {
         // eslint-disable-next-line no-unused-expressions
-        _this10.isSmallScreen() && !_this10.isCollapsed() && _this10._redrawLayoutMenu();
+        _this0.isSmallScreen() && !_this0.isCollapsed() && _this0._redrawLayoutMenu();
       });
 
       // Force repaint in IE 10
       if (typeof document.documentMode === 'number' && document.documentMode < 11) {
-        _this10.off('resize._Helpers:ie10RepaintBody');
-        _this10.on('resize._Helpers:ie10RepaintBody', function () {
-          if (_this10.isFixed()) return;
+        _this0.off('resize._Helpers:ie10RepaintBody');
+        _this0.on('resize._Helpers:ie10RepaintBody', function () {
+          if (_this0.isFixed()) return;
           var scrollTop = document.documentElement.scrollTop;
           document.body.style.display = 'none';
           // document.body.offsetHeight
@@ -673,7 +673,7 @@ var Helpers = {
     this._triggerEvent('init');
   },
   destroy: function destroy() {
-    var _this11 = this;
+    var _this1 = this;
     if (!this._initialized) return;
     this._initialized = false;
     this._removeClass('layout-transitioning');
@@ -688,7 +688,7 @@ var Helpers = {
     this._listeners.filter(function (listener) {
       return listener.event !== 'init';
     }).forEach(function (listener) {
-      return _this11._listeners.splice(_this11._listeners.indexOf(listener), 1);
+      return _this1._listeners.splice(_this1._listeners.indexOf(listener), 1);
     });
   },
   // ---
